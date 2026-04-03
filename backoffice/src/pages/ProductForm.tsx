@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import apiClient from '../api/client';
-import { X } from 'lucide-react';
+import { X, ChevronDown } from 'lucide-react';
+import { COLORS_LIST, getColorHex, isLightColor } from '../utils/colors';
 
 interface Category {
     id: number;
@@ -34,6 +35,89 @@ interface ProductFormProps {
     onSave: () => void;
 }
 
+function ColorPickerSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+    const [open, setOpen] = useState(false);
+    const selected = COLORS_LIST.find(c => c.value === value);
+    const hex = selected ? getColorHex(selected.value) : null;
+    const isMulti = hex === 'multicolor';
+    const light = selected ? isLightColor(selected.value) : false;
+    return (
+        <div style={{ position: 'relative' }}>
+            <div
+                onClick={() => setOpen(o => !o)}
+                style={{
+                    display: 'flex', alignItems: 'center', gap: '10px',
+                    padding: '0.75rem 1rem', cursor: 'pointer', userSelect: 'none',
+                    border: '1px solid #d1d5db', borderRadius: '0.5rem',
+                    background: 'white', fontSize: '1rem', minHeight: '50px',
+                }}
+            >
+                {selected ? (
+                    <>
+                        {isMulti ? (
+                            <span style={{ display: 'inline-block', width: '22px', height: '22px', borderRadius: '4px', flexShrink: 0, background: 'linear-gradient(135deg,#ef4444 0%,#f59e0b 25%,#22c55e 50%,#3b82f6 75%,#a855f7 100%)', border: '1px solid rgba(0,0,0,0.12)' }} />
+                        ) : (
+                            <span style={{ display: 'inline-block', width: '22px', height: '22px', borderRadius: '4px', flexShrink: 0, background: hex!, border: light ? '1px solid #d1d5db' : '1px solid rgba(0,0,0,0.18)' }} />
+                        )}
+                        <span style={{ flex: 1, fontWeight: 600 }}>{selected.labelAr}</span>
+                        <span style={{ fontSize: '13px', color: '#6b7280' }}>{selected.labelEn}</span>
+                    </>
+                ) : (
+                    <span style={{ flex: 1, color: '#6b7280' }}>بدون لون</span>
+                )}
+                <ChevronDown size={16} color="#9ca3af" style={{ flexShrink: 0, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+            </div>
+
+            {open && (
+                <>
+                    <div onClick={() => setOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 199 }} />
+                    <div style={{
+                        position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, zIndex: 200,
+                        background: 'white', border: '1px solid #e5e7eb', borderRadius: '10px',
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.14)', overflow: 'hidden', maxHeight: '320px', overflowY: 'auto',
+                    }}>
+                        <div
+                            onClick={() => { onChange(''); setOpen(false); }}
+                            style={{ padding: '11px 14px', cursor: 'pointer', fontSize: '0.9rem', color: '#6b7280', borderBottom: '1px solid #f3f4f6', background: !value ? '#f0f4ff' : 'white' }}
+                            onMouseEnter={e => { if (value) e.currentTarget.style.background = '#f9fafb'; }}
+                            onMouseLeave={e => { if (value) e.currentTarget.style.background = 'white'; }}
+                        >
+                            بدون لون
+                        </div>
+                        {COLORS_LIST.map(c => {
+                            const cHex = getColorHex(c.value);
+                            const cMulti = cHex === 'multicolor';
+                            const cLight = isLightColor(c.value);
+                            const isActive = value === c.value;
+                            return (
+                                <div
+                                    key={c.value}
+                                    onClick={() => { onChange(c.value); setOpen(false); }}
+                                    style={{
+                                        padding: '10px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px',
+                                        background: isActive ? '#f0f4ff' : 'white', fontSize: '0.9rem',
+                                        borderBottom: '1px solid #f9fafb',
+                                    }}
+                                    onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#f9fafb'; }}
+                                    onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'white'; }}
+                                >
+                                    {cMulti ? (
+                                        <span style={{ display: 'inline-block', width: '22px', height: '22px', borderRadius: '4px', flexShrink: 0, background: 'linear-gradient(135deg,#ef4444 0%,#f59e0b 25%,#22c55e 50%,#3b82f6 75%,#a855f7 100%)', border: '1px solid rgba(0,0,0,0.12)' }} />
+                                    ) : (
+                                        <span style={{ display: 'inline-block', width: '22px', height: '22px', borderRadius: '4px', flexShrink: 0, background: cHex, border: cLight ? '1px solid #d1d5db' : '1px solid rgba(0,0,0,0.18)' }} />
+                                    )}
+                                    <span style={{ fontWeight: isActive ? 700 : 500, color: '#111827', flex: 1 }}>{c.labelAr}</span>
+                                    <span style={{ fontSize: '13px', color: '#9ca3af' }}>{c.labelEn}</span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </>
+            )}
+        </div>
+    );
+}
+
 export default function ProductForm({ product, onClose, onSave }: ProductFormProps) {
     // Hierarchy data
     const [categories, setCategories] = useState<Category[]>([]);
@@ -56,9 +140,12 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
         nameEn: '',
         nameAr: '',
         brand: '',
+        size: '',
+        color: '',
         unit: 'PCS',
         cost: 0,
         costAvg: 0,
+        costMethod: 'COST_AVG' as 'COST_AVG' | 'LAST_PRICE',
         priceRetail: 0,
         priceWholesale: 0,
         minQty: 3,
@@ -83,9 +170,12 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
                 nameEn: product.nameEn || '',
                 nameAr: product.nameAr || '',
                 brand: product.brand || '',
+                size: product.size || '',
+                color: product.color || '',
                 unit: product.unit || 'PCS',
                 cost: Number(product.cost) || 0,
                 costAvg: Number(product.costAvg) || 0,
+                costMethod: product.costMethod || 'COST_AVG',
                 priceRetail: Number(product.priceRetail) || 0,
                 priceWholesale: Number(product.priceWholesale) || 0,
                 minQty: product.minQty || 3,
@@ -143,8 +233,10 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
     }, [formData.cost, formData.costAvg, selectedCategoryId, selectedSubcategoryId, selectedItemTypeId, categories, subcategories, itemTypes]);
 
     const recalculatePrices = () => {
-        // Use costAvg for existing products, cost for new products
-        const costValue = product ? (Number(formData.costAvg) || 0) : (Number(formData.cost) || 0);
+        // Use cost based on costMethod setting
+        const costValue = product
+            ? (formData.costMethod === 'LAST_PRICE' ? Number(formData.cost) : Number(formData.costAvg)) || 0
+            : Number(formData.cost) || 0;
         if (costValue <= 0) return;
 
         let retailMargin = 0;
@@ -295,7 +387,7 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
                 categoryId: selectedCategoryId,
             };
 
-            // ✅ For editing existing products, use costAvg instead of cost
+            // ✅ For editing existing products, include costAvg
             if (product) {
                 payload.costAvg = costAvg;
                 delete payload.cost; // Remove cost field for updates
@@ -652,6 +744,64 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
                             />
                         </div>
 
+                        {/* Size */}
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>المقاس (Size)</label>
+                            <select
+                                value={formData.size}
+                                onChange={(e) => setFormData({ ...formData, size: e.target.value })}
+                                style={{
+                                    width: '100%',
+                                    padding: '0.75rem',
+                                    border: '1px solid #d1d5db',
+                                    borderRadius: '0.5rem',
+                                    fontSize: '1rem',
+                                }}
+                            >
+                                <option value="">بدون مقاس</option>
+                                <optgroup label="مقاسات ملابس">
+                                    <option value="XS">XS - صغير جداً</option>
+                                    <option value="S">S - صغير</option>
+                                    <option value="M">M - وسط</option>
+                                    <option value="L">L - كبير</option>
+                                    <option value="XL">XL - كبير جداً</option>
+                                    <option value="XXL">XXL - كبير جداً ٢</option>
+                                    <option value="XXXL">XXXL - كبير جداً ٣</option>
+                                </optgroup>
+                                <optgroup label="مقاسات أحذية">
+                                    <option value="36">36</option>
+                                    <option value="37">37</option>
+                                    <option value="38">38</option>
+                                    <option value="39">39</option>
+                                    <option value="40">40</option>
+                                    <option value="41">41</option>
+                                    <option value="42">42</option>
+                                    <option value="43">43</option>
+                                    <option value="44">44</option>
+                                    <option value="45">45</option>
+                                    <option value="46">46</option>
+                                </optgroup>
+                                <optgroup label="مقاسات أطفال">
+                                    <option value="2-3Y">2-3 سنوات</option>
+                                    <option value="3-4Y">3-4 سنوات</option>
+                                    <option value="4-5Y">4-5 سنوات</option>
+                                    <option value="5-6Y">5-6 سنوات</option>
+                                    <option value="6-8Y">6-8 سنوات</option>
+                                    <option value="8-10Y">8-10 سنوات</option>
+                                    <option value="10-12Y">10-12 سنوات</option>
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        {/* Color */}
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>اللون (Color)</label>
+                            <ColorPickerSelect
+                                value={formData.color}
+                                onChange={(v) => setFormData({ ...formData, color: v })}
+                            />
+                        </div>
+
                         {/* Unit */}
                         <div>
                             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>الوحدة *</label>
@@ -673,6 +823,30 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
                                 <option value="L">L - لتر</option>
                                 <option value="M">M - متر</option>
                             </select>
+                        </div>
+
+                        {/* Cost Method */}
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>طريقة احتساب التكلفة</label>
+                            <select
+                                value={formData.costMethod}
+                                onChange={(e) => setFormData({ ...formData, costMethod: e.target.value as 'COST_AVG' | 'LAST_PRICE' })}
+                                style={{
+                                    width: '100%',
+                                    padding: '0.75rem',
+                                    border: '1px solid #d1d5db',
+                                    borderRadius: '0.5rem',
+                                    fontSize: '1rem',
+                                }}
+                            >
+                                <option value="COST_AVG">متوسط التكلفة (Cost Average)</option>
+                                <option value="LAST_PRICE">آخر سعر شراء (Last Price)</option>
+                            </select>
+                            <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>
+                                {formData.costMethod === 'LAST_PRICE'
+                                    ? '💡 سيتم احتساب سعر البيع بناءً على آخر سعر شراء'
+                                    : '💡 سيتم احتساب سعر البيع بناءً على متوسط التكلفة'}
+                            </p>
                         </div>
 
                         {/* Cost (Last Purchase) - Only for new products */}
@@ -719,7 +893,7 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
                                     }}
                                 />
                                 <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>
-                                    آخر تكلفة شراء: {formData.cost.toFixed(2)} ر.س
+                                    آخر تكلفة شراء: {formData.cost.toFixed(2)} ج.م
                                 </div>
                             </div>
                         )}

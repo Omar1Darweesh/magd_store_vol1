@@ -22,7 +22,7 @@ export class ProductsService {
   constructor(
     private prisma: PrismaService,
     private productAudit: ProductAuditService,
-  ) {}
+  ) { }
 
   // ============================================
   // CATEGORY OPERATIONS
@@ -330,9 +330,12 @@ export class ProductsService {
       nameEn: productData.nameEn,
       nameAr: productData.nameAr,
       brand: productData.brand,
+      size: productData.size,
+      color: productData.color,
       unit: productData.unit,
       cost: productData.cost,
       costAvg: productData.cost, // ✅ Initialize costAvg with cost
+      costMethod: productData.costMethod ?? 'COST_AVG',
       priceRetail: productData.priceRetail,
       priceWholesale: productData.priceWholesale,
       minQty: productData.minQty,
@@ -887,6 +890,10 @@ export class ProductsService {
       updateData.nameAr = updateProductDto.nameAr;
     if (updateProductDto.brand !== undefined)
       updateData.brand = updateProductDto.brand;
+    if (updateProductDto.size !== undefined)
+      updateData.size = updateProductDto.size;
+    if (updateProductDto.color !== undefined)
+      updateData.color = updateProductDto.color;
     if (updateProductDto.unit !== undefined)
       updateData.unit = updateProductDto.unit;
     if (updateProductDto.cost !== undefined) {
@@ -898,6 +905,8 @@ export class ProductsService {
       // ✅ Allow manual costAvg updates
       updateData.costAvg = updateProductDto.costAvg;
     }
+    if (updateProductDto.costMethod !== undefined)
+      updateData.costMethod = updateProductDto.costMethod;
     if (updateProductDto.priceRetail !== undefined)
       updateData.priceRetail = updateProductDto.priceRetail;
     if (updateProductDto.priceWholesale !== undefined)

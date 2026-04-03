@@ -79,3 +79,22 @@ export class CreateSupplierDto {
   @IsOptional()
   paymentTerms?: string;
 }
+
+export class CreateSupplierPaymentDto {
+  @IsNumber()
+  @Min(0.01)
+  amount: number;
+
+  @IsInt()
+  @IsOptional()
+  grnId?: number;
+
+  @IsOptional()
+  method?: string;
+
+  @IsOptional()
+  notes?: string;
+
+  @IsOptional()
+  paymentDate?: string;
+}

@@ -992,7 +992,7 @@ function CategoryCard({ category, isExpanded, onToggle, onEdit, onDelete, onAddS
                                                     fontSize: '0.9375rem',
                                                     fontWeight: '700'
                                                 }}>
-                                                    {Number(product.priceRetail).toFixed(2)} ر.س
+                                                    {Number(product.priceRetail).toFixed(2)} ج.م
                                                 </div>
                                             </div>
                                         </div>
@@ -1402,7 +1402,7 @@ function ItemTypeCard({ itemType, onEdit, onDelete, isExpanded, onToggle, produc
                                                 fontWeight: '700',
                                                 color: '#6366f1',
                                             }}>
-                                                {Number(product.priceRetail || 0).toFixed(2)} ر.س
+                                                {Number(product.priceRetail || 0).toFixed(2)} ج.م
                                             </div>
                                         </div>
                                     </div>
@@ -1604,7 +1604,7 @@ function MixedCategoryProducts({ categoryId }: { categoryId: number }) {
                                 {product.stock || 0} متاح
                             </div>
                             <div style={{ fontSize: '14px', fontWeight: '700' }}>
-                                {Number(product.priceRetail).toFixed(2)} ر.س
+                                {Number(product.priceRetail).toFixed(2)} ج.م
                             </div>
                         </div>
                     </div>

@@ -3,12 +3,80 @@ import { Search, Trash2, ShoppingCart, User, Building, Users, Printer, LogOut } 
 import apiClient from '../api/client';
 import './POS.css';
 
+const COLOR_MAP: Record<string, string> = {
+    // Arabic
+    'أبيض': '#FFFFFF', 'أسود': '#111827', 'رمادي': '#9ca3af', 'بيج': '#c9b99a',
+    'كريمي': '#f5f0dc', 'أحمر': '#ef4444', 'وردي': '#f9a8d4', 'برتقالي': '#fb923c',
+    'أصفر': '#fbbf24', 'أخضر': '#22c55e', 'أخضر زيتي': '#4a7c59', 'أزرق': '#3b82f6',
+    'أزرق سماوي': '#38bdf8', 'أزرق كحلي': '#1e3a8a', 'بنفسجي': '#a855f7',
+    'بني': '#92400e', 'كاكي': '#a1855f', 'ذهبي': '#d4a017', 'فضي': '#b0b7c3',
+    'متعدد الألوان': 'multicolor',
+    // English aliases
+    'white': '#FFFFFF', 'black': '#111827', 'gray': '#9ca3af', 'grey': '#9ca3af',
+    'beige': '#c9b99a', 'cream': '#f5f0dc', 'red': '#ef4444', 'pink': '#f9a8d4',
+    'orange': '#fb923c', 'yellow': '#fbbf24', 'green': '#22c55e', 'olive': '#4a7c59',
+    'blue': '#3b82f6', 'sky blue': '#38bdf8', 'navy': '#1e3a8a', 'purple': '#a855f7',
+    'brown': '#92400e', 'khaki': '#a1855f', 'gold': '#d4a017', 'silver': '#b0b7c3',
+    'multicolor': 'multicolor', 'multi': 'multicolor',
+};
+const LIGHT_COLORS = new Set(['أبيض', 'كريمي', 'أصفر', 'بيج', 'فضي', 'white', 'cream', 'yellow', 'beige', 'silver']);
+
+function getColorHex(name: string): string {
+    if (!name) return '#e2e8f0';
+    return COLOR_MAP[name] ?? COLOR_MAP[name.toLowerCase()] ?? '#e2e8f0';
+}
+
+function SizeBadge({ size, large }: { size: string; large?: boolean }) {
+    return (
+        <span style={{
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            minWidth: large ? '34px' : '28px', height: large ? '26px' : '22px', padding: '0 7px',
+            background: '#1e293b', color: 'white', borderRadius: '4px',
+            fontSize: large ? '12px' : '10px', fontWeight: 800, letterSpacing: '0.5px',
+            fontFamily: 'monospace', userSelect: 'none', flexShrink: 0,
+        }}>
+            {size}
+        </span>
+    );
+}
+
+function ColorSwatch({ color, large }: { color: string; large?: boolean }) {
+    const hex = getColorHex(color);
+    const isMulti = hex === 'multicolor';
+    const isLight = LIGHT_COLORS.has(color) || LIGHT_COLORS.has(color.toLowerCase());
+    const swatchSize = large ? '18px' : '14px';
+    return (
+        <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: '5px',
+            padding: large ? '3px 9px 3px 4px' : '2px 7px 2px 3px',
+            background: 'white', border: '1px solid #e2e8f0', borderRadius: '5px', flexShrink: 0,
+        }}>
+            {isMulti ? (
+                <span style={{
+                    display: 'inline-block', width: swatchSize, height: swatchSize, borderRadius: '3px', flexShrink: 0,
+                    background: 'linear-gradient(135deg, #ef4444 0%, #f59e0b 25%, #22c55e 50%, #3b82f6 75%, #a855f7 100%)',
+                    border: '1px solid rgba(0,0,0,0.12)',
+                }} />
+            ) : (
+                <span style={{
+                    display: 'inline-block', width: swatchSize, height: swatchSize, borderRadius: '3px', flexShrink: 0,
+                    background: hex,
+                    border: isLight ? '1px solid #d1d5db' : '1px solid rgba(0,0,0,0.15)',
+                }} />
+            )}
+            <span style={{ fontSize: large ? '12px' : '11px', fontWeight: 600, color: '#374151' }}>{color}</span>
+        </span>
+    );
+}
+
 interface Product {
     id: number;
     barcode: string;
     nameEn: string;
     nameAr?: string;
     code?: string;
+    size?: string;
+    color?: string;
     priceRetail: number;
     priceWholesale?: number;
     taxRate?: number;
@@ -138,12 +206,6 @@ function POS() {
     const updateCustomPrice = (productId: number, newPrice: number) => {
         const item = cart.find(i => i.id === productId);
         if (!item) return;
-
-        if (newPrice < Number(item.cost)) {
-            playBeep('error');
-            setMessage('⚠️ يجب أن يكون السعر أعلى من الحد الأدنى المسموح به');
-            return;
-        }
 
         setCart(cart.map(i => {
             if (i.id === productId) {
@@ -1039,6 +1101,13 @@ function POS() {
                                                 {item.barcode} • {item.price.toFixed(2)} ر.س
                                             </small>
 
+                                            {(item.size || item.color) && (
+                                                <div style={{ display: 'flex', gap: '5px', marginBottom: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                                                    {item.size && <SizeBadge size={item.size} />}
+                                                    {item.color && <ColorSwatch color={item.color} />}
+                                                </div>
+                                            )}
+
                                             {item.stock !== undefined && (
                                                 <small style={{
                                                     color: item.stock <= 10 ? '#f59e0b' : '#10b981',
@@ -1567,24 +1636,14 @@ function POS() {
                                 </p>
                             </div>
 
-                            <div style={{ marginBottom: '20px', padding: '14px', background: '#fef3c7', borderRadius: '10px', border: '1px solid #fbbf24' }}>
-                                <p style={{ margin: 0, fontSize: '13px', color: '#92400e', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontWeight: '500' }}>
-                                    <span style={{ fontSize: '18px' }}>⚠️</span>
-                                    يجب أن يكون السعر أعلى من الحد الأدنى المسموح به
-                                </p>
-                            </div>
-
                             <form onSubmit={(e) => {
                                 e.preventDefault();
                                 const form = e.target as HTMLFormElement;
                                 const input = form.elements.namedItem('customPrice') as HTMLInputElement;
                                 const newPrice = parseFloat(input.value);
 
-                                if (newPrice && newPrice >= editingPrice.cost) {
+                                if (newPrice) {
                                     updateCustomPrice(editingPrice.productId, newPrice);
-                                } else if (newPrice < editingPrice.cost) {
-                                    playBeep('error');
-                                    setMessage('⚠️ يجب أن يكون السعر أعلى من الحد الأدنى المسموح به');
                                 }
                             }}>
                                 <div style={{ marginBottom: '20px' }}>
@@ -1719,10 +1778,16 @@ function POS() {
                                         }}
                                     >
                                         <div style={{ flex: 1, textAlign: 'right' }}>
-                                            <div style={{ fontWeight: 600, marginBottom: '4px' }}>{p.nameEn}</div>
+                                            <div style={{ fontWeight: 600, marginBottom: '4px' }}>{p.nameAr || p.nameEn}</div>
                                             <div style={{ fontSize: '14px', color: '#10b981' }}>
                                                 {selectedCustomer?.type === 'WHOLESALE' && p.priceWholesale ? p.priceWholesale : p.priceRetail} ر.س
                                             </div>
+                                            {(p.size || p.color) && (
+                                                <div style={{ display: 'flex', gap: '5px', marginTop: '5px', flexWrap: 'wrap', alignItems: 'center' }}>
+                                                    {p.size && <SizeBadge size={p.size} />}
+                                                    {p.color && <ColorSwatch color={p.color} />}
+                                                </div>
+                                            )}
                                             {p.stock !== undefined && (
                                                 <div style={{
                                                     fontSize: '12px',
@@ -2030,6 +2095,13 @@ function POS() {
                                                 <div style={{ fontWeight: '600' }}>{product.barcode}</div>
                                                 {product.code && <div style={{ fontSize: '11px', color: '#94a3b8' }}>#{product.code}</div>}
                                             </div>
+
+                                            {(product.size || product.color) && (
+                                                <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+                                                    {product.size && <SizeBadge size={product.size} large />}
+                                                    {product.color && <ColorSwatch color={product.color} large />}
+                                                </div>
+                                            )}
 
                                             <div style={{
                                                 fontSize: '22px',

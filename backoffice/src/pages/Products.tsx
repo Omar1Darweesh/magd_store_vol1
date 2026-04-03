@@ -1,9 +1,137 @@
 import { useState, useEffect } from 'react';
-import { Clock, Edit, Trash, Plus, Search, Filter, TrendingUp } from 'lucide-react';
+import { Clock, Edit, Trash, Plus, Search, Filter, TrendingUp, ChevronDown } from 'lucide-react';
 import ProductForm from './ProductForm';
 import ProductAuditHistory from './ProductAuditHistory';
 import ProductTransactions from './ProductTransactions';
 import apiClient from '../api/client';
+import { COLORS_LIST, getColorHex, isLightColor } from '../utils/colors';
+
+function SizeBadge({ size }: { size: string }) {
+    return (
+        <span style={{
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            minWidth: '28px', height: '20px', padding: '0 6px',
+            background: '#1e293b', color: 'white', borderRadius: '4px',
+            fontSize: '10px', fontWeight: 800, letterSpacing: '0.5px',
+            fontFamily: 'monospace', userSelect: 'none', flexShrink: 0,
+        }}>
+            {size}
+        </span>
+    );
+}
+
+function ColorSwatch({ color }: { color: string }) {
+    const hex = getColorHex(color);
+    const isMulti = hex === 'multicolor';
+    const light = isLightColor(color);
+    return (
+        <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: '5px',
+            padding: '2px 7px 2px 3px', background: 'white',
+            border: '1px solid #e2e8f0', borderRadius: '5px', flexShrink: 0,
+        }}>
+            {isMulti ? (
+                <span style={{
+                    display: 'inline-block', width: '14px', height: '14px', borderRadius: '3px', flexShrink: 0,
+                    background: 'linear-gradient(135deg,#ef4444 0%,#f59e0b 25%,#22c55e 50%,#3b82f6 75%,#a855f7 100%)',
+                    border: '1px solid rgba(0,0,0,0.12)',
+                }} />
+            ) : (
+                <span style={{
+                    display: 'inline-block', width: '14px', height: '14px', borderRadius: '3px', flexShrink: 0,
+                    background: hex,
+                    border: light ? '1px solid #d1d5db' : '1px solid rgba(0,0,0,0.15)',
+                }} />
+            )}
+            <span style={{ fontSize: '11px', fontWeight: 600, color: '#374151' }}>{color}</span>
+        </span>
+    );
+}
+
+function ColorFilterSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+    const [open, setOpen] = useState(false);
+    const selected = COLORS_LIST.find(c => c.value === value);
+    const hex = selected ? getColorHex(selected.value) : null;
+    const isMulti = hex === 'multicolor';
+    const light = selected ? isLightColor(selected.value) : false;
+    return (
+        <div style={{ position: 'relative' }}>
+            <div
+                onClick={() => setOpen(o => !o)}
+                style={{
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    padding: '0.75rem 1rem', cursor: 'pointer', userSelect: 'none',
+                    border: value ? '2px solid #667eea' : '1px solid #e5e7eb',
+                    borderRadius: '8px', background: 'white', fontWeight: value ? 600 : 'normal',
+                    fontSize: '0.875rem', minHeight: '46px',
+                }}
+            >
+                <Filter size={16} color={value ? '#667eea' : '#9ca3af'} style={{ flexShrink: 0 }} />
+                {selected ? (
+                    <>
+                        {isMulti ? (
+                            <span style={{ display: 'inline-block', width: '14px', height: '14px', borderRadius: '3px', flexShrink: 0, background: 'linear-gradient(135deg,#ef4444 0%,#f59e0b 25%,#22c55e 50%,#3b82f6 75%,#a855f7 100%)', border: '1px solid rgba(0,0,0,0.12)' }} />
+                        ) : (
+                            <span style={{ display: 'inline-block', width: '14px', height: '14px', borderRadius: '3px', flexShrink: 0, background: hex!, border: light ? '1px solid #d1d5db' : '1px solid rgba(0,0,0,0.15)' }} />
+                        )}
+                        <span style={{ flex: 1 }}>{selected.labelAr}</span>
+                        <span style={{ fontSize: '11px', color: '#9ca3af' }}>{selected.labelEn}</span>
+                    </>
+                ) : (
+                    <span style={{ flex: 1, color: '#374151' }}>كل الألوان</span>
+                )}
+                <ChevronDown size={14} color="#9ca3af" style={{ flexShrink: 0, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+            </div>
+
+            {open && (
+                <>
+                    <div onClick={() => setOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 99 }} />
+                    <div style={{
+                        position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, zIndex: 100,
+                        background: 'white', border: '1px solid #e5e7eb', borderRadius: '10px',
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.12)', overflow: 'hidden', maxHeight: '300px', overflowY: 'auto',
+                    }}>
+                        <div
+                            onClick={() => { onChange(''); setOpen(false); }}
+                            style={{ padding: '10px 14px', cursor: 'pointer', fontSize: '0.875rem', color: '#6b7280', borderBottom: '1px solid #f3f4f6', background: !value ? '#f0f4ff' : 'white', fontWeight: !value ? 600 : 'normal' }}
+                            onMouseEnter={e => { if (value) e.currentTarget.style.background = '#f9fafb'; }}
+                            onMouseLeave={e => { if (value) e.currentTarget.style.background = 'white'; }}
+                        >
+                            كل الألوان
+                        </div>
+                        {COLORS_LIST.map(c => {
+                            const cHex = getColorHex(c.value);
+                            const cMulti = cHex === 'multicolor';
+                            const cLight = isLightColor(c.value);
+                            const isActive = value === c.value;
+                            return (
+                                <div
+                                    key={c.value}
+                                    onClick={() => { onChange(c.value); setOpen(false); }}
+                                    style={{
+                                        padding: '9px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px',
+                                        background: isActive ? '#f0f4ff' : 'white', fontSize: '0.875rem',
+                                        borderBottom: '1px solid #f9fafb',
+                                    }}
+                                    onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#f9fafb'; }}
+                                    onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'white'; }}
+                                >
+                                    {cMulti ? (
+                                        <span style={{ display: 'inline-block', width: '18px', height: '18px', borderRadius: '4px', flexShrink: 0, background: 'linear-gradient(135deg,#ef4444 0%,#f59e0b 25%,#22c55e 50%,#3b82f6 75%,#a855f7 100%)', border: '1px solid rgba(0,0,0,0.12)' }} />
+                                    ) : (
+                                        <span style={{ display: 'inline-block', width: '18px', height: '18px', borderRadius: '4px', flexShrink: 0, background: cHex, border: cLight ? '1px solid #d1d5db' : '1px solid rgba(0,0,0,0.18)' }} />
+                                    )}
+                                    <span style={{ fontWeight: isActive ? 700 : 500, color: '#111827', flex: 1 }}>{c.labelAr}</span>
+                                    <span style={{ fontSize: '12px', color: '#9ca3af' }}>{c.labelEn}</span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </>
+            )}
+        </div>
+    );
+}
 
 interface Product {
     id: number;
@@ -12,9 +140,12 @@ interface Product {
     nameEn: string;
     nameAr: string;
     brand: string;
+    size?: string;
+    color?: string;
     unit: string;
     costAvg?: number;
     cost: number;
+    costMethod?: 'COST_AVG' | 'LAST_PRICE';
     priceRetail: number;
     priceWholesale: number;
     minQty: number;
@@ -65,11 +196,13 @@ export default function Products() {
     const [selectedProductForTransactions, setSelectedProductForTransactions] = useState<any>(null);
     const [showInactive, setShowInactive] = useState(false);
     const [stockFilter, setStockFilter] = useState<string>(''); // Add this line
+    const [sizeFilter, setSizeFilter] = useState<string>('');
+    const [colorFilter, setColorFilter] = useState<string>('');
 
     useEffect(() => {
         fetchProducts();
         fetchCategories();
-    }, [searchTerm, selectedCategory, selectedSubcategory, selectedItemType, page, showInactive, stockFilter]); // Add stockFilter here
+    }, [searchTerm, selectedCategory, selectedSubcategory, selectedItemType, page, showInactive, stockFilter, sizeFilter, colorFilter]); // Add stockFilter here
 
     const fetchProducts = async () => {
         setLoading(true);
@@ -91,10 +224,14 @@ export default function Products() {
                 params.stockStatus = stockFilter;
             }
 
+            // Client-side size/color filters (applied after fetch)
             const response = await apiClient.get('/products', { params });
+            let fetchedProducts = response.data.data;
 
-            // ✅ FIXED: Use backend results directly (no client-side filtering)
-            setProducts(response.data.data);
+            if (sizeFilter) fetchedProducts = fetchedProducts.filter((p: any) => p.size === sizeFilter);
+            if (colorFilter) fetchedProducts = fetchedProducts.filter((p: any) => p.color === colorFilter);
+
+            setProducts(fetchedProducts);
             setTotalPages(Math.ceil(response.data.total / 50));
         } catch (error) {
             console.error('Failed to fetch products:', error);
@@ -152,7 +289,7 @@ export default function Products() {
         return subcategory?.itemTypes || [];
     };
 
-    const hasActiveFilters = searchTerm || selectedCategory || selectedSubcategory || selectedItemType || stockFilter;
+    const hasActiveFilters = searchTerm || selectedCategory || selectedSubcategory || selectedItemType || stockFilter || sizeFilter || colorFilter;
 
     return (
         <div style={{ padding: '2rem' }}>
@@ -406,6 +543,49 @@ export default function Products() {
                         </select>
                     </div>
 
+                    {/* Size Filter */}
+                    <div style={{ position: 'relative' }}>
+                        <Filter
+                            size={18}
+                            style={{
+                                position: 'absolute',
+                                right: '12px',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                color: sizeFilter ? '#667eea' : '#9ca3af',
+                            }}
+                        />
+                        <select
+                            value={sizeFilter}
+                            onChange={(e) => { setSizeFilter(e.target.value); setPage(1); }}
+                            style={{
+                                width: '100%',
+                                padding: '0.75rem 2.5rem 0.75rem 1rem',
+                                border: sizeFilter ? '2px solid #667eea' : '1px solid #e5e7eb',
+                                borderRadius: '8px',
+                                fontSize: '0.875rem',
+                                background: 'white',
+                                fontWeight: sizeFilter ? 600 : 'normal',
+                            }}
+                        >
+                            <option value="">كل المقاسات</option>
+                            <optgroup label="ملابس">
+                                {['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'].map(s => <option key={s} value={s}>{s}</option>)}
+                            </optgroup>
+                            <optgroup label="أحذية">
+                                {['36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46'].map(s => <option key={s} value={s}>{s}</option>)}
+                            </optgroup>
+                            <optgroup label="أطفال">
+                                {['2-3Y', '3-4Y', '4-5Y', '5-6Y', '6-8Y', '8-10Y', '10-12Y'].map(s => <option key={s} value={s}>{s}</option>)}
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    {/* Color Filter */}
+                    <ColorFilterSelect
+                        value={colorFilter}
+                        onChange={(v) => { setColorFilter(v); setPage(1); }}
+                    />
                 </div>
 
                 {/* Filter Actions Row */}
@@ -497,6 +677,8 @@ export default function Products() {
                                     setSelectedSubcategory(null);
                                     setSelectedItemType(null);
                                     setStockFilter(''); // Add this line
+                                    setSizeFilter('');
+                                    setColorFilter('');
                                     setPage(1);
                                 }}
                                 style={{
@@ -607,6 +789,12 @@ export default function Products() {
                                                 <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem' }}>
                                                     {product.nameEn}
                                                 </div>
+                                                {(product.size || product.color) && (
+                                                    <div style={{ display: 'flex', gap: '4px', marginTop: '5px', flexWrap: 'wrap', alignItems: 'center' }}>
+                                                        {product.size && <SizeBadge size={product.size} />}
+                                                        {product.color && <ColorSwatch color={product.color} />}
+                                                    </div>
+                                                )}
                                             </td>
                                             <td style={{ padding: '1rem' }}>
                                                 <div style={{ fontFamily: 'monospace', fontSize: '0.875rem' }}>
@@ -615,12 +803,12 @@ export default function Products() {
                                             </td>
                                             <td style={{ padding: '1rem', textAlign: 'center' }}>
                                                 <div style={{ fontWeight: '600', color: '#059669' }}>
-                                                    {Number(product.priceRetail).toFixed(2)} ر.س
+                                                    {Number(product.priceRetail).toFixed(2)} ج.م
                                                 </div>
                                             </td>
                                             <td style={{ padding: '1rem', textAlign: 'center' }}>
                                                 <div style={{ fontWeight: '600', color: '#111827' }}>
-                                                    {Number(product.costAvg || product.cost || 0).toFixed(2)} ر.س
+                                                    {Number(product.costAvg || product.cost || 0).toFixed(2)} ج.م
                                                 </div>
                                                 <div style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.25rem' }}>
                                                     آخر شراء: {Number(product.cost || 0).toFixed(2)}

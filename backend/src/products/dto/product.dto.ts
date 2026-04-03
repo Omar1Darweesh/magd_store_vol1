@@ -4,8 +4,10 @@ import {
   IsOptional,
   IsNumber,
   IsBoolean,
+  IsEnum,
   Min,
 } from 'class-validator';
+import { CostMethod } from '@prisma/client';
 
 export class CreateProductDto {
   @IsString()
@@ -40,11 +42,23 @@ export class CreateProductDto {
 
   @IsString()
   @IsOptional()
+  size?: string;
+
+  @IsString()
+  @IsOptional()
+  color?: string;
+
+  @IsString()
+  @IsOptional()
   unit?: string;
 
   @IsNumber()
   @Min(0)
   cost: number;
+
+  @IsEnum(CostMethod)
+  @IsOptional()
+  costMethod?: CostMethod;
 
   @IsNumber()
   @Min(0)
@@ -105,6 +119,14 @@ export class UpdateProductDto {
 
   @IsString()
   @IsOptional()
+  size?: string;
+
+  @IsString()
+  @IsOptional()
+  color?: string;
+
+  @IsString()
+  @IsOptional()
   unit?: string;
 
   @IsNumber()
@@ -116,6 +138,10 @@ export class UpdateProductDto {
   @Min(0)
   @IsOptional()
   costAvg?: number;
+
+  @IsEnum(CostMethod)
+  @IsOptional()
+  costMethod?: CostMethod;
 
   @IsNumber()
   @Min(0)

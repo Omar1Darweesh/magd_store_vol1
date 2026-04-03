@@ -38,7 +38,9 @@ model User {
   payments       Payment[]
   priceHistory   PriceHistory[]
   productAudits  ProductAudit[]
-  salesInvoices  SalesInvoice[]
+  supplierAudits   SupplierAudit[]
+  supplierPayments SupplierPayment[]
+  salesInvoices    SalesInvoice[]
   salesReturns   SalesReturn[]
   stockMovements StockMovement[]
   roles          UserRole[]
@@ -206,9 +208,12 @@ model Product {
   nameAr           String?             @map("name_ar") @db.VarChar(255)
   categoryId       Int?                @map("category_id")
   brand            String?             @db.VarChar(255)
+  size             String?             @db.VarChar(100)
+  color            String?             @db.VarChar(100)
   unit             String              @default("PCS") @db.VarChar(50)
   cost             Decimal             @default(0) @db.Decimal(10, 2)
   costAvg          Decimal             @default(0) @map("cost_avg") @db.Decimal(10, 2)
+  costMethod       CostMethod          @default(COST_AVG) @map("cost_method")
   priceRetail      Decimal             @default(0) @map("price_retail") @db.Decimal(10, 2)
   priceWholesale   Decimal             @default(0) @map("price_wholesale") @db.Decimal(10, 2)
   retailMargin         Float?          @map("retail_margin")
@@ -396,8 +401,44 @@ model Supplier {
   updatedAt      DateTime        @updatedAt @map("updated_at")
   goodsReceipts  GoodsReceipt[]
   purchaseOrders PurchaseOrder[]
+  auditLogs      SupplierAudit[]
+  payments       SupplierPayment[]
 
   @@map("suppliers")
+}
+
+model SupplierPayment {
+  id          Int           @id @default(autoincrement())
+  supplierId  Int           @map("supplier_id")
+  grnId       Int?          @map("grn_id")
+  amount      Decimal       @db.Decimal(10, 2)
+  paymentDate DateTime      @default(now()) @map("payment_date")
+  method      String?       @db.VarChar(100)
+  notes       String?
+  createdBy   Int           @map("created_by")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  supplier    Supplier      @relation(fields: [supplierId], references: [id])
+  grn         GoodsReceipt? @relation(fields: [grnId], references: [id])
+  user        User          @relation(fields: [createdBy], references: [id])
+
+  @@index([supplierId])
+  @@index([grnId])
+  @@map("supplier_payments")
+}
+
+model SupplierAudit {
+  id         Int         @id @default(autoincrement())
+  supplierId Int         @map("supplier_id")
+  action     AuditAction
+  oldData    Json?       @map("old_data")
+  newData    Json?       @map("new_data")
+  userId     Int         @map("user_id")
+  createdAt  DateTime    @default(now()) @map("created_at")
+  supplier   Supplier    @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  user       User        @relation(fields: [userId], references: [id])
+
+  @@index([supplierId])
+  @@map("supplier_audits")
 }
 
 model PurchaseOrder {
@@ -445,6 +486,7 @@ model GoodsReceipt {
   createdAt   DateTime           @default(now()) @map("created_at")
   updatedAt   DateTime           @updatedAt @map("updated_at")
   lines       GoodsReceiptLine[]
+  payments    SupplierPayment[]
   branch      Branch             @relation(fields: [branchId], references: [id])
   user        User               @relation(fields: [createdBy], references: [id])
   supplier    Supplier           @relation(fields: [supplierId], references: [id])
@@ -494,6 +536,11 @@ model PriceHistory {
 
   @@index([productId])
   @@map("price_history")
+}
+
+enum CostMethod {
+  COST_AVG
+  LAST_PRICE
 }
 
 enum CustomerType {

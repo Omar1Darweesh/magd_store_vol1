@@ -77,14 +77,15 @@ async function bootstrap() {
     // START BACKUP SCHEDULER
     // ============================================
     console.log('💾 Starting backup scheduler...');
-    console.log('📅 Daily backups scheduled for 2:00 AM');
+    console.log('📅 Daily backups scheduled for 9:00 PM');
 
     // Get DatabaseService instance
     const databaseService = app.get(DatabaseService);
 
-    // Schedule backup at 2:00 AM daily
-    // ✅ Production: Daily at 2:00 AM
-    cron.schedule('0 2 * * *', async () => {
+    // Schedule backup at 9:00 PM daily
+    // ✅ Production: Daily at 9:00 PM (21:00)
+    cron.schedule('0 21 * * *', async () => {
+
 
       console.log(`[${new Date().toISOString()}] Starting scheduled backup...`);
 

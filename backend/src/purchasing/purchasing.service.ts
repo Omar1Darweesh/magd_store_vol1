@@ -4,24 +4,28 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { CreateGRNDto, CreateSupplierDto } from './dto/purchasing.dto';
+import { CreateGRNDto, CreateSupplierDto, CreateSupplierPaymentDto } from './dto/purchasing.dto';
 import { MovementType } from '@prisma/client';
 import { CostAccountingService } from '../stock/cost-accounting.service';
-import { ProfitMarginService } from '../products/profit-margin.service'; // ✅ ADDED
+import { ProfitMarginService } from '../products/profit-margin.service';
+import { SupplierAuditService } from './supplier-audit.service';
 
 @Injectable()
 export class PurchasingService {
   constructor(
     private prisma: PrismaService,
     private costAccountingService: CostAccountingService,
-    private profitMarginService: ProfitMarginService, // ✅ ADDED
-  ) {}
+    private profitMarginService: ProfitMarginService,
+    private supplierAuditService: SupplierAuditService,
+  ) { }
 
   // ============= Suppliers =============
-  async createSupplier(createSupplierDto: CreateSupplierDto) {
-    return this.prisma.supplier.create({
+  async createSupplier(createSupplierDto: CreateSupplierDto, userId: number) {
+    const supplier = await this.prisma.supplier.create({
       data: createSupplierDto,
     });
+    await this.supplierAuditService.logChange(supplier.id, 'CREATE', supplier, null, userId);
+    return supplier;
   }
 
   async findAllSuppliers(params?: {
@@ -74,17 +78,19 @@ export class PurchasingService {
     return supplier;
   }
 
-  async updateSupplier(id: number, data: any) {
-    await this.findOneSupplier(id);
-    return this.prisma.supplier.update({
+  async updateSupplier(id: number, data: any, userId: number) {
+    const oldSupplier = await this.findOneSupplier(id);
+    const updated = await this.prisma.supplier.update({
       where: { id },
       data,
     });
+    await this.supplierAuditService.logChange(id, 'UPDATE', updated, oldSupplier, userId);
+    return updated;
   }
 
-  async removeSupplier(id: number) {
-    await this.findOneSupplier(id);
-    // Ideally check for associated GRNs first
+  async removeSupplier(id: number, userId: number) {
+    const supplier = await this.findOneSupplier(id);
+    await this.supplierAuditService.logChange(id, 'DELETE', null, supplier, userId);
     return this.prisma.supplier.delete({ where: { id } });
   }
 
@@ -364,5 +370,96 @@ export class PurchasingService {
     }
 
     return `GRN-${branch.code}-${datePrefix}-${String(sequence).padStart(4, '0')}`;
+  }
+
+  // ============= Supplier Payments =============
+
+  async addSupplierPayment(
+    supplierId: number,
+    dto: CreateSupplierPaymentDto,
+    userId: number,
+  ) {
+    await this.findOneSupplier(supplierId);
+
+    if (dto.grnId) {
+      const grn = await this.prisma.goodsReceipt.findUnique({ where: { id: dto.grnId } });
+      if (!grn || grn.supplierId !== supplierId) {
+        throw new NotFoundException('GRN not found for this supplier');
+      }
+    }
+
+    return this.prisma.supplierPayment.create({
+      data: {
+        supplierId,
+        grnId: dto.grnId,
+        amount: dto.amount,
+        method: dto.method,
+        notes: dto.notes,
+        paymentDate: dto.paymentDate ? new Date(dto.paymentDate) : new Date(),
+        createdBy: userId,
+      },
+      include: {
+        user: { select: { id: true, username: true, fullName: true } },
+        grn: { select: { id: true, grnNo: true } },
+      },
+    });
+  }
+
+  async deleteSupplierPayment(paymentId: number) {
+    const payment = await this.prisma.supplierPayment.findUnique({ where: { id: paymentId } });
+    if (!payment) throw new NotFoundException('Payment not found');
+    return this.prisma.supplierPayment.delete({ where: { id: paymentId } });
+  }
+
+  async getSupplierFinancials(supplierId: number) {
+    await this.findOneSupplier(supplierId);
+
+    const [grns, payments] = await Promise.all([
+      this.prisma.goodsReceipt.findMany({
+        where: { supplierId },
+        include: {
+          lines: { include: { product: { select: { id: true, nameAr: true, nameEn: true, barcode: true } } } },
+          user: { select: { id: true, username: true, fullName: true } },
+          payments: true,
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.supplierPayment.findMany({
+        where: { supplierId },
+        include: {
+          user: { select: { id: true, username: true, fullName: true } },
+          grn: { select: { id: true, grnNo: true } },
+        },
+        orderBy: { paymentDate: 'desc' },
+      }),
+    ]);
+
+    const totalInvoiced = grns.reduce((sum, g) => sum + Number(g.total), 0);
+    const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount), 0);
+    const balance = totalInvoiced - totalPaid;
+
+    // Enrich GRNs with per-GRN paid amount
+    const grnsWithPayments = grns.map((grn) => {
+      const grnPaid = grn.payments.reduce((sum, p) => sum + Number(p.amount), 0);
+      return {
+        ...grn,
+        totalNum: Number(grn.total),
+        subtotalNum: Number(grn.subtotal),
+        taxAmountNum: Number(grn.taxAmount),
+        paidAmount: grnPaid,
+        remaining: Math.max(0, Number(grn.total) - grnPaid),
+      };
+    });
+
+    return {
+      summary: {
+        totalInvoiced,
+        totalPaid,
+        balance,
+        grnCount: grns.length,
+      },
+      grns: grnsWithPayments,
+      payments,
+    };
   }
 }

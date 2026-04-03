@@ -420,23 +420,23 @@ export default function Sales() {
                                             {sale.customer?.name || 'عميل نقدي (Retail)'}
                                         </td>
                                         <td style={{ padding: '12px 16px', borderBottom: '1px solid #e5e7eb' }}>
-                                            {Number(sale.subtotal || 0).toFixed(2)} ر.س
+                                            {Number(sale.subtotal || 0).toFixed(2)} ج.م
                                         </td>
                                         <td style={{ padding: '12px 16px', borderBottom: '1px solid #e5e7eb' }}>
-                                            {sale.totalDiscount > 0 ? `-${Number(sale.totalDiscount).toFixed(2)} ر.س` : '-'}
+                                            {sale.totalDiscount > 0 ? `-${Number(sale.totalDiscount).toFixed(2)} ج.م` : '-'}
                                         </td>
                                         <td style={{ padding: '12px 16px', borderBottom: '1px solid #e5e7eb' }}>
-                                            +{Number(sale.totalTax || 0).toFixed(2)} ر.س
+                                            +{Number(sale.totalTax || 0).toFixed(2)} ج.م
                                         </td>
                                         <td style={{ padding: '12px 16px', borderBottom: '1px solid #e5e7eb' }}>
-                                            {sale.platformCommission > 0 ? `+${Number(sale.platformCommission).toFixed(2)} ر.س` : '-'}
+                                            {sale.platformCommission > 0 ? `+${Number(sale.platformCommission).toFixed(2)} ج.م` : '-'}
                                         </td>
                                         <td style={{ padding: '12px 16px', borderBottom: '1px solid #e5e7eb' }}>
-                                            {sale.shippingFee && sale.shippingFee > 0 ? `${Number(sale.shippingFee).toFixed(2)} ر.س` : '-'}
+                                            {sale.shippingFee && sale.shippingFee > 0 ? `${Number(sale.shippingFee).toFixed(2)} ج.م` : '-'}
                                         </td>
 
                                         <td style={{ padding: '12px 16px', borderBottom: '1px solid #e5e7eb', fontWeight: '700', fontSize: '15px' }}>
-                                            {Number(sale.total).toFixed(2)} ر.س
+                                            {Number(sale.total).toFixed(2)} ج.م
                                         </td>
 
                                         {/* After Total cell */}
@@ -487,12 +487,12 @@ export default function Sales() {
                                             fontWeight: '600',
                                             color: sale.remainingAmount > 0 ? '#dc2626' : '#16a34a'
                                         }}>
-                                            {sale.remainingAmount > 0 ? `${Number(sale.remainingAmount).toFixed(2)} ر.س` : '-'}
+                                            {sale.remainingAmount > 0 ? `${Number(sale.remainingAmount).toFixed(2)} ج.م` : '-'}
                                         </td>
 
                                         {/* Profit Cells */}
                                         <td style={{ padding: '12px 16px', borderBottom: '1px solid #e5e7eb' }}>
-                                            {sale.costOfGoods !== undefined ? `${sale.costOfGoods.toFixed(2)} ر.س` : '-'}
+                                            {sale.costOfGoods !== undefined ? `${sale.costOfGoods.toFixed(2)} ج.م` : '-'}
                                         </td>
                                         <td style={{
                                             padding: '12px 16px',
@@ -500,7 +500,7 @@ export default function Sales() {
                                             color: (sale.netProfit || 0) >= 0 ? '#16a34a' : '#dc2626',
                                             fontWeight: 'bold'
                                         }}>
-                                            {sale.netProfit !== undefined ? `${sale.netProfit.toFixed(2)} ر.س` : '-'}
+                                            {sale.netProfit !== undefined ? `${sale.netProfit.toFixed(2)} ج.م` : '-'}
                                         </td>
                                         <td style={{
                                             padding: '12px 16px',
@@ -556,7 +556,7 @@ export default function Sales() {
                     </div>
                     <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#2563eb' }}>
                         {/* ✅ CHANGED: From sale.total to sale.netRevenue */}
-                        صافي الإيرادات: {sales.reduce((sum, sale) => sum + Number((sale.netRevenue !== null && sale.netRevenue !== undefined) ? sale.netRevenue : sale.total), 0).toFixed(2)} ر.س
+                        صافي الإيرادات: {sales.reduce((sum, sale) => sum + Number((sale.netRevenue !== null && sale.netRevenue !== undefined) ? sale.netRevenue : sale.total), 0).toFixed(2)} ج.م
                     </div>
                 </div>
             )}

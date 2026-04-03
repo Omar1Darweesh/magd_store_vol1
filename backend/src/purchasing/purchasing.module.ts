@@ -4,8 +4,9 @@ import { PurchasingController } from './purchasing.controller';
 import { PrismaService } from '../prisma.service';
 import { StockModule } from '../stock/stock.module';
 import { CostAccountingService } from '../stock/cost-accounting.service';
-import { ProfitMarginService } from '../products/profit-margin.service'; // ✅ ADD THIS
-import { ProductAuditService } from '../products/product-audit.service'; // ✅ ADD THIS
+import { ProfitMarginService } from '../products/profit-margin.service';
+import { ProductAuditService } from '../products/product-audit.service';
+import { SupplierAuditService } from './supplier-audit.service';
 
 @Module({
   imports: [StockModule],
@@ -14,8 +15,9 @@ import { ProductAuditService } from '../products/product-audit.service'; // ✅ 
     PurchasingService,
     PrismaService,
     CostAccountingService,
-    ProfitMarginService, // ✅ ADD THIS
-    ProductAuditService, // ✅ ADD THIS (needed by ProfitMarginService)
+    ProfitMarginService,
+    ProductAuditService,
+    SupplierAuditService,
   ],
 })
-export class PurchasingModule {}
+export class PurchasingModule { }

@@ -4,7 +4,7 @@ import { AuditAction, Prisma } from '@prisma/client';
 
 @Injectable()
 export class ProductAuditService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async getProductAuditHistory(productId: number) {
     return this.prisma.productAudit.findMany({
@@ -61,7 +61,10 @@ export class ProductAuditService {
       'priceWholesale',
       'cost',
       'costAvg',
+      'costMethod',
       'brand',
+      'size',
+      'color',
       'unit',
       'active',
       'minQty',
@@ -183,9 +186,12 @@ export class ProductAuditService {
       nameEn: data.nameEn,
       nameAr: data.nameAr,
       brand: data.brand,
+      size: data.size,
+      color: data.color,
       unit: data.unit,
       cost: Number(data.cost),
       costAvg: Number(data.costAvg),
+      costMethod: data.costMethod,
       priceRetail: Number(data.priceRetail),
       priceWholesale: Number(data.priceWholesale),
       minQty: data.minQty,

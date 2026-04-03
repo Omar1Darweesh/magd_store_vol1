@@ -182,7 +182,7 @@ function PlatformSettings() {
                 .replace(/\s/g, '_')
                 .replace(/[^a-zA-Z0-9_\u0600-\u06FF]/g, '') // Allow Arabic Unicode range
                 .substring(0, 50); // Limit length
-            
+
             // If name is all Arabic, use transliteration or fallback
             if (!platformCode || !/[a-zA-Z0-9]/.test(platformCode)) {
                 // Create a code from timestamp and first letters
@@ -384,7 +384,7 @@ function PlatformSettings() {
 
                                 {/* ✅ NEW: Shipping Fee */}
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 600, color: '#475569' }}>شحن (ر.س)</label>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 600, color: '#475569' }}>شحن (ج.م)</label>
                                     <input
                                         type="number"
                                         value={newPlatform.shippingFee}
@@ -532,7 +532,7 @@ function PlatformSettings() {
                             <th style={{ padding: '16px', textAlign: 'right', fontWeight: 600, color: '#475569', fontSize: '14px', width: '25%' }}>اسم المنصة</th>
                             <th style={{ padding: '16px', textAlign: 'center', fontWeight: 600, color: '#475569', fontSize: '14px', width: '12%' }}>الضريبة (%)</th>
                             <th style={{ padding: '16px', textAlign: 'center', fontWeight: 600, color: '#475569', fontSize: '14px', width: '12%' }}>العمولة (%)</th>
-                            <th style={{ padding: '16px', textAlign: 'center', fontWeight: 600, color: '#475569', fontSize: '14px', width: '12%' }}>شحن المنصة (ر.س)</th>
+                            <th style={{ padding: '16px', textAlign: 'center', fontWeight: 600, color: '#475569', fontSize: '14px', width: '12%' }}>شحن المنصة (ج.م)</th>
                             <th style={{ padding: '16px', textAlign: 'center', fontWeight: 600, color: '#475569', fontSize: '14px', width: '12%' }}>الحالة</th>
                             <th style={{ padding: '16px', textAlign: 'center', fontWeight: 600, color: '#475569', fontSize: '14px', width: '27%' }}>إجراءات</th>
                         </tr>
@@ -820,7 +820,7 @@ function PlatformSettings() {
 
                             {/* ✅ NEW: Shipping Fee */}
                             <div>
-                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 600, color: '#475569' }}>شحن (ر.س)</label>
+                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 600, color: '#475569' }}>شحن (ج.م)</label>
                                 <input
                                     type="number"
                                     value={newPlatform.shippingFee}

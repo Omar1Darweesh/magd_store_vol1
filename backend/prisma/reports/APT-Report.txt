@@ -1,6 +1,6 @@
 ════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 APT - COMPREHENSIVE DATA REPORT
-Generated: 2/13/2026, 3:22:06 AM
+Generated: 3/17/2026, 1:29:08 AM
 ════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 
 📊 SUMMARY
@@ -164,7 +164,7 @@ NOTE: These products had NO CODE in Excel. Test codes were auto-generated.
 1. Row 108: دقماق
   ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
   Original Code: EMPTY
-  Generated Code: TEST-1770945725951-LH1EM6
+  Generated Code: TEST-1773703747886-15C5UX
   Barcode: 6221257000023
   Location: يدوي / شاكوش ومطرقة
   ✅ STATUS: INSERTED WITH AUTO-GENERATED CODE
@@ -172,7 +172,7 @@ NOTE: These products had NO CODE in Excel. Test codes were auto-generated.
 2. Row 109: مطرقه 1000
   ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
   Original Code: EMPTY
-  Generated Code: TEST-1770945725951-GRL6UC
+  Generated Code: TEST-1773703747886-B6JZ5U
   Barcode: 6223007702263
   Location: يدوي / شاكوش ومطرقة
   ✅ STATUS: INSERTED WITH AUTO-GENERATED CODE
@@ -180,7 +180,7 @@ NOTE: These products had NO CODE in Excel. Test codes were auto-generated.
 3. Row 196: خرطوم مياه 25 متر 2/1 بوصه
   ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
   Original Code: EMPTY
-  Generated Code: TEST-1770945725951-ZVF8IT
+  Generated Code: TEST-1773703747886-0L76FV
   Barcode: 6221257483994
   Location: جاردن / خراطيم
   ✅ STATUS: INSERTED WITH AUTO-GENERATED CODE
@@ -556,11 +556,11 @@ NOTE: These products had NO barcode in Excel. Barcode was auto-generated from hi
   Location: يدوي / بنس كماشة فرنساوي انجليزي
 
 5. Row 108: دقماق
-  Code: TEST-1770945725951-LH1EM6
+  Code: TEST-1773703747886-15C5UX
   Location: يدوي / شاكوش ومطرقة
 
 6. Row 109: مطرقه 1000
-  Code: TEST-1770945725951-GRL6UC
+  Code: TEST-1773703747886-B6JZ5U
   Location: يدوي / شاكوش ومطرقة
 
 7. Row 121: طقم الانكيه طويل عاده

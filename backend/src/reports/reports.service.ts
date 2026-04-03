@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma.service';
 
 @Injectable()
 export class ReportsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   /**
    * ✅ Date Helper: Normalize end date to include full day (23:59:59.999)
@@ -197,20 +197,21 @@ export class ReportsService {
         salesInvoice: where,
       },
       include: {
-        product: {
-          select: {
-            costAvg: true,
-          },
-        },
         salesInvoice: {
           select: {
             channel: true,
+            costOfGoods: true,
+            lines: {
+              select: {
+                qty: true,
+              },
+            },
           },
         },
       },
     });
 
-    // Group sales lines by channel for accurate cost calculation
+    // Group sales lines by channel for accurate cost calculation using historical costs
     const channelCostsMap = new Map<
       string,
       { cost: number; revenue: number }
@@ -220,7 +221,11 @@ export class ReportsService {
       const channel = line.salesInvoice.channel || 'NORMAL';
       const current = channelCostsMap.get(channel) || { cost: 0, revenue: 0 };
 
-      const lineCost = Number(line.product?.costAvg || 0) * line.qty;
+      // ✅ FIX: Calculate cost using historical costOfGoods from invoice
+      const invoiceTotalQty = line.salesInvoice.lines.reduce((sum, l) => sum + l.qty, 0);
+      const invoiceCost = Number(line.salesInvoice.costOfGoods || 0);
+      const lineCostProportion = invoiceTotalQty > 0 ? (line.qty / invoiceTotalQty) : 0;
+      const lineCost = invoiceCost * lineCostProportion;
       const lineRevenue = Number(line.lineTotal || 0);
 
       current.cost += lineCost;
@@ -396,8 +401,8 @@ export class ReportsService {
         const revenueChange =
           previous.grossRevenue > 0
             ? ((current.grossRevenue - previous.grossRevenue) /
-                previous.grossRevenue) *
-              100
+              previous.grossRevenue) *
+            100
             : current.grossRevenue > 0
               ? 100
               : 0;
@@ -405,8 +410,8 @@ export class ReportsService {
         const profitChange =
           previous.grossProfit > 0
             ? ((current.grossProfit - previous.grossProfit) /
-                previous.grossProfit) *
-              100
+              previous.grossProfit) *
+            100
             : current.grossProfit > 0
               ? 100
               : 0;
@@ -414,8 +419,8 @@ export class ReportsService {
         const orderChange =
           previous.orderCount > 0
             ? ((current.orderCount - previous.orderCount) /
-                previous.orderCount) *
-              100
+              previous.orderCount) *
+            100
             : current.orderCount > 0
               ? 100
               : 0;
@@ -486,35 +491,71 @@ export class ReportsService {
       };
     }
 
-    const topProducts = await this.prisma.salesLine.groupBy({
-      by: ['productId'],
+    // ✅ FIX: Get sales lines with invoice costOfGoods to calculate historical cost
+    const salesLines = await this.prisma.salesLine.findMany({
       where,
-      _sum: { qty: true, lineTotal: true },
-      orderBy: { _sum: { lineTotal: 'desc' } },
-      take: limit,
+      include: {
+        product: {
+          select: {
+            id: true,
+            nameEn: true,
+            nameAr: true,
+          },
+        },
+        salesInvoice: {
+          select: {
+            costOfGoods: true,
+            lines: {
+              select: {
+                qty: true,
+              },
+            },
+          },
+        },
+      },
     });
 
-    const productIds = topProducts.map((item) => item.productId);
-    const products = await this.prisma.product.findMany({
-      where: { id: { in: productIds } },
-    });
+    // Group by product and calculate totals using historical costs
+    const productMap = new Map<number, {
+      product: any;
+      quantity: number;
+      revenue: number;
+      cost: number;
+    }>();
 
-    const productsWithDetails = topProducts.map((item) => {
-      const product = products.find((p) => p.id === item.productId);
-
-      const totalRevenue = Number(item._sum.lineTotal || 0);
-      const totalQty = item._sum.qty || 0;
-      const cost = product ? Number(product.costAvg) * totalQty : 0;
-      const profit = totalRevenue - cost;
-
-      return {
-        productId: item.productId,
-        productName: product?.nameAr || product?.nameEn || 'Unknown',
-        quantity: totalQty,
-        revenue: totalRevenue,
-        profit: profit,
+    for (const line of salesLines) {
+      const productId = line.productId;
+      const current = productMap.get(productId) || {
+        product: line.product,
+        quantity: 0,
+        revenue: 0,
+        cost: 0,
       };
-    });
+
+      // Calculate this line's proportional cost from invoice
+      const invoiceTotalQty = line.salesInvoice.lines.reduce((sum, l) => sum + l.qty, 0);
+      const invoiceCost = Number(line.salesInvoice.costOfGoods || 0);
+      const lineCostProportion = invoiceTotalQty > 0 ? (line.qty / invoiceTotalQty) : 0;
+      const lineCost = invoiceCost * lineCostProportion;
+
+      current.quantity += line.qty;
+      current.revenue += Number(line.lineTotal || 0);
+      current.cost += lineCost;
+
+      productMap.set(productId, current);
+    }
+
+    // Convert to array and sort by revenue
+    const productsWithDetails = Array.from(productMap.entries())
+      .map(([productId, data]) => ({
+        productId,
+        productName: data.product?.nameAr || data.product?.nameEn || 'Unknown',
+        quantity: data.quantity,
+        revenue: data.revenue,
+        profit: data.revenue - data.cost,
+      }))
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, limit);
 
     return productsWithDetails;
   }
@@ -600,8 +641,9 @@ export class ReportsService {
     // ✅ FIXED: Distinguish between Gross and Net revenue
     const totalRevenue = salesSummary.totalSales; // Gross
     const netSales = salesSummary.netSales; // Net
+    // ✅ FIX: line.cost now contains total cost (not unit cost * qty)
     const totalCost = salesLines.reduce(
-      (sum, line) => sum + line.cost * line.qty,
+      (sum, line) => sum + line.cost,
       0,
     );
     const grossProfit = netSales - totalCost;
@@ -795,30 +837,46 @@ export class ReportsService {
     const { branchId, startDate, endDate } = params || {};
     const where: any = {};
 
-    if (branchId) where.salesInvoice = { branchId };
+    if (branchId) where.branchId = branchId;
     if (startDate || endDate) {
-      where.salesInvoice = {
-        ...where.salesInvoice,
-        createdAt: {},
-      };
-      if (startDate) where.salesInvoice.createdAt.gte = startDate;
+      where.createdAt = {};
+      if (startDate) where.createdAt.gte = startDate;
       if (endDate) {
         const endOfDay = new Date(endDate);
         endOfDay.setHours(23, 59, 59, 999);
-        where.salesInvoice.createdAt.lte = endOfDay;
+        where.createdAt.lte = endOfDay;
       }
     }
 
-    const salesLines = await this.prisma.salesLine.findMany({
+    // ✅ FIX: Get cost from invoice.costOfGoods (historical cost at time of sale)
+    // instead of current product.costAvg which changes over time
+    const invoices = await this.prisma.salesInvoice.findMany({
       where,
-      include: { product: true },
+      select: {
+        costOfGoods: true,
+        lines: {
+          select: {
+            qty: true,
+            lineTotal: true,
+          },
+        },
+      },
     });
 
-    return salesLines.map((line) => ({
-      qty: line.qty,
-      cost: Number(line.product.costAvg),
-      revenue: Number(line.lineTotal),
-    }));
+    return invoices.flatMap((invoice) =>
+      invoice.lines.map((line) => {
+        // Use the invoice's costOfGoods proportionally per line
+        const invoiceTotalQty = invoice.lines.reduce((sum, l) => sum + l.qty, 0);
+        const invoiceCost = Number(invoice.costOfGoods || 0);
+        const lineCostProportion = invoiceTotalQty > 0 ? (line.qty / invoiceTotalQty) : 0;
+
+        return {
+          qty: line.qty,
+          cost: invoiceCost * lineCostProportion,
+          revenue: Number(line.lineTotal),
+        };
+      })
+    );
   }
 
   private async getPaymentMethodBreakdown(params?: {
@@ -874,7 +932,7 @@ export class ReportsService {
       const [
         todaySales,
         yesterdaySales,
-        todaySalesLines,
+        todayInvoices,
         topProductsToday,
         lowStockProducts,
         recentSales,
@@ -885,7 +943,7 @@ export class ReportsService {
       ] = await Promise.all([
         this.prisma.salesInvoice.aggregate({
           where: whereToday,
-          _sum: { total: true, totalRefunded: true, netRevenue: true },
+          _sum: { total: true, totalRefunded: true, netRevenue: true, costOfGoods: true },
           _count: true,
         }),
         this.prisma.salesInvoice.aggregate({
@@ -893,9 +951,9 @@ export class ReportsService {
           _sum: { total: true, totalRefunded: true, netRevenue: true },
           _count: true,
         }),
-        this.prisma.salesLine.findMany({
-          where: { salesInvoice: whereToday },
-          include: { product: true },
+        this.prisma.salesInvoice.findMany({
+          where: whereToday,
+          select: { costOfGoods: true },
         }),
         this.getTopProducts({
           limit: 10,
@@ -928,11 +986,8 @@ export class ReportsService {
         this.prisma.customer.count(),
       ]);
 
-      const todayCost = todaySalesLines.reduce(
-        (sum, line) =>
-          sum + Number(line.product?.costAvg || 0) * (line.qty || 0),
-        0,
-      );
+      // ✅ FIX: Use historical costOfGoods from invoices instead of current product.costAvg
+      const todayCost = Number(todaySales._sum.costOfGoods || 0);
 
       const todayGrossRevenue = Number(todaySales._sum.total || 0);
       const todayReturnsVal = Number(todaySales._sum.totalRefunded || 0);
@@ -949,7 +1004,7 @@ export class ReportsService {
       );
       const yesterdayRevenue = Number(
         yesterdaySales._sum.netRevenue ||
-          yesterdayGrossRevenue - yesterdayReturnsVal,
+        yesterdayGrossRevenue - yesterdayReturnsVal,
       );
 
       const allProducts = await this.prisma.product.findMany({
@@ -1309,6 +1364,16 @@ export class ReportsService {
         product: {
           include: { category: true },
         },
+        salesInvoice: {
+          select: {
+            costOfGoods: true,
+            lines: {
+              select: {
+                qty: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -1330,7 +1395,12 @@ export class ReportsService {
       };
 
       const lineRevenue = Number(line.lineTotal || 0);
-      const lineCost = Number(line.product.costAvg || 0) * line.qty;
+
+      // ✅ FIX: Calculate cost using historical costOfGoods from invoice
+      const invoiceTotalQty = line.salesInvoice.lines.reduce((sum, l) => sum + l.qty, 0);
+      const invoiceCost = Number(line.salesInvoice.costOfGoods || 0);
+      const lineCostProportion = invoiceTotalQty > 0 ? (line.qty / invoiceTotalQty) : 0;
+      const lineCost = invoiceCost * lineCostProportion;
       const lineProfit = lineRevenue - lineCost;
 
       current.revenue += lineRevenue;
@@ -1423,8 +1493,8 @@ export class ReportsService {
     const orderChange =
       previousPeriod._count > 0
         ? ((currentPeriod._count - previousPeriod._count) /
-            previousPeriod._count) *
-          100
+          previousPeriod._count) *
+        100
         : currentPeriod._count > 0
           ? 100
           : 0;

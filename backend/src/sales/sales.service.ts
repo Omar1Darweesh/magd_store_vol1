@@ -14,7 +14,7 @@ import {
 
 @Injectable()
 export class SalesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async createSale(createSaleDto: CreateSaleDto, userId: number) {
     const {
@@ -107,44 +107,43 @@ export class SalesService {
       }
     }
 
-    // CORRECTED PROFIT CALCULATION
-    // Customer pays: (Subtotal - Discount) + Tax + Shipping = Total
-    const customerPayment = total;
+    // ===== ✅ CORRECTED PROFIT CALCULATION =====
+    // Formula: Total Received - All Expenses
+    // Expenses include: Discount, COGS, Tax, Shipping, Commission
 
-    // Net Profit = Revenue - ALL COSTS (including tax & shipping)
-    // Revenue = Subtotal after discount (what you actually earned from selling)
-    const revenue = subtotalAfterDiscount;
+    const customerPayment = total; // What customer paid
 
-    // All costs
-    const totalCosts =
-      costOfGoods + platformCommission + totalTax + shippingFee;
-
-    // Net Profit
-    const netProfit = revenue - totalCosts;
+    // Calculate profit
+    const netProfit =
+      customerPayment
+      - totalDiscount      // Discount given to customer
+      - costOfGoods        // Product cost
+      - platformCommission // Platform fee
+      - totalTax           // Tax paid to government
+      - shippingFee;       // Shipping cost
 
     // Gross Profit (before commission, tax, shipping)
-    const grossProfit = revenue - costOfGoods;
+    const grossProfit = subtotalAfterDiscount - costOfGoods;
 
-    // Profit Margin = (Net Profit / Revenue) × 100
-    const profitMargin = revenue > 0 ? (netProfit / revenue) * 100 : 0;
+    // Profit Margin = (Net Profit / Total Received) × 100
+    const profitMargin = customerPayment > 0 ? (netProfit / customerPayment) * 100 : 0;
 
     console.log('💰 Profit Calculation:');
     console.log(`Customer Paid (Total): ${customerPayment.toFixed(2)}`);
-    console.log(`Revenue (Subtotal after discount): ${revenue.toFixed(2)}`);
+    console.log(`Discount Given: -${totalDiscount.toFixed(2)}`);
     console.log(`Cost of Goods: -${costOfGoods.toFixed(2)}`);
     console.log(`Platform Commission: -${platformCommission.toFixed(2)}`);
     console.log(`Tax: -${totalTax.toFixed(2)}`);
     console.log(`Shipping Fee: -${shippingFee.toFixed(2)}`);
-    console.log(`Total Costs: -${totalCosts.toFixed(2)}`);
     console.log(`Gross Profit: ${grossProfit.toFixed(2)}`);
     console.log(`Net Profit: ${netProfit.toFixed(2)}`);
     console.log(`Profit Margin: ${profitMargin.toFixed(2)}%`);
     console.log(
       ' ^ Calculated as: (' +
-        netProfit.toFixed(2) +
-        ' / ' +
-        customerPayment.toFixed(2) +
-        ') × 100',
+      netProfit.toFixed(2) +
+      ' / ' +
+      customerPayment.toFixed(2) +
+      ') × 100',
     );
 
     // ✅ NEW: Determine payment status

@@ -103,7 +103,7 @@ export default function ProductAuditHistory({ productId, productName, onClose }:
         if (value === null || value === undefined) return 'غير محدد';
         if (field === 'active') return value ? 'نشط' : 'غير نشط';
         if (field === 'priceRetail' || field === 'priceWholesale' || field === 'cost') {
-            return `${Number(value).toFixed(2)} ر.س`;
+            return `${Number(value).toFixed(2)} ج.م`;
         }
         return String(value);
     };

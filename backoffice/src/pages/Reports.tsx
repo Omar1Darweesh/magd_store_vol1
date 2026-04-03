@@ -400,7 +400,7 @@ export default function Reports() {
                         </tr>
                         <tr>
                             <td style="padding: 10px; border: 1px solid #e2e8f0;">إجمالي الإيرادات</td>
-                            <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: bold;">${metrics.sales.totalRevenue.toFixed(2)} ر.س</td>
+                            <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: bold;">${metrics.sales.totalRevenue.toFixed(2)} ج.م</td>
                         </tr>
                         <tr>
                             <td style="padding: 10px; border: 1px solid #e2e8f0;">عدد الفواتير</td>
@@ -408,15 +408,15 @@ export default function Reports() {
                         </tr>
                         <tr>
                             <td style="padding: 10px; border: 1px solid #e2e8f0;">المرتجعات</td>
-                            <td style="padding: 10px; border: 1px solid #e2e8f0; color: #ef4444;">${metrics.sales.totalReturns.toFixed(2)} ر.س</td>
+                            <td style="padding: 10px; border: 1px solid #e2e8f0; color: #ef4444;">${metrics.sales.totalReturns.toFixed(2)} ج.م</td>
                         </tr>
                         <tr style="background: #f8fafc;">
                             <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: 600;">صافي المبيعات</td>
-                            <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: bold;">${metrics.sales.netSales.toFixed(2)} ر.س</td>
+                            <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: bold;">${metrics.sales.netSales.toFixed(2)} ج.م</td>
                         </tr>
                         <tr>
                             <td style="padding: 10px; border: 1px solid #e2e8f0;">إجمالي الربح</td>
-                            <td style="padding: 10px; border: 1px solid #e2e8f0;">${metrics.financial.grossProfit.toFixed(2)} ر.س</td>
+                            <td style="padding: 10px; border: 1px solid #e2e8f0;">${metrics.financial.grossProfit.toFixed(2)} ج.م</td>
                         </tr>
                         <tr>
                             <td style="padding: 10px; border: 1px solid #e2e8f0;">هامش الربح</td>
@@ -424,7 +424,7 @@ export default function Reports() {
                         </tr>
                         <tr style="background: #f0fdf4;">
                             <td style="padding: 12px; border: 1px solid #e2e8f0; font-weight: 800;">صافي الربح النهائي</td>
-                            <td style="padding: 12px; border: 1px solid #e2e8f0; color: #15803d; font-weight: 800; font-size: 16px;">${metrics.financial.netProfit.toFixed(2)} ر.س</td>
+                            <td style="padding: 12px; border: 1px solid #e2e8f0; color: #15803d; font-weight: 800; font-size: 16px;">${metrics.financial.netProfit.toFixed(2)} ج.م</td>
                         </tr>
                     </table>
                 </div>
@@ -440,17 +440,17 @@ export default function Reports() {
                         </tr>
                         <tr>
                             <td style="padding: 10px; border: 1px solid #e2e8f0;">تكلفة البضاعة</td>
-                            <td style="padding: 10px; border: 1px solid #e2e8f0;">${metrics.financial.totalCost.toFixed(2)} ر.س</td>
+                            <td style="padding: 10px; border: 1px solid #e2e8f0;">${metrics.financial.totalCost.toFixed(2)} ج.م</td>
                             <td style="padding: 10px; border: 1px solid #e2e8f0;">${((metrics.financial.totalCost / metrics.sales.totalRevenue) * 100 || 0).toFixed(1)}%</td>
                         </tr>
                         <tr>
                             <td style="padding: 10px; border: 1px solid #e2e8f0;">الضرائب</td>
-                            <td style="padding: 10px; border: 1px solid #e2e8f0;">${metrics.financial.totalTax.toFixed(2)} ر.س</td>
+                            <td style="padding: 10px; border: 1px solid #e2e8f0;">${metrics.financial.totalTax.toFixed(2)} ج.م</td>
                             <td style="padding: 10px; border: 1px solid #e2e8f0;">${((metrics.financial.totalTax / metrics.sales.totalRevenue) * 100 || 0).toFixed(1)}%</td>
                         </tr>
                         <tr>
                             <td style="padding: 10px; border: 1px solid #e2e8f0;">العمولات والرسوم</td>
-                            <td style="padding: 10px; border: 1px solid #e2e8f0;">${metrics.financial.totalCommission.toFixed(2)} ر.س</td>
+                            <td style="padding: 10px; border: 1px solid #e2e8f0;">${metrics.financial.totalCommission.toFixed(2)} ج.م</td>
                             <td style="padding: 10px; border: 1px solid #e2e8f0;">${((metrics.financial.totalCommission / metrics.sales.totalRevenue) * 100 || 0).toFixed(1)}%</td>
                         </tr>
                     </table>
@@ -470,7 +470,7 @@ export default function Reports() {
                             <tr>
                                 <td style="padding: 10px; border: 1px solid #e2e8f0;">${ch.channelName || ch.channel}</td>
                                 <td style="padding: 10px; border: 1px solid #e2e8f0; text-align: center;">${ch.count}</td>
-                                <td style="padding: 10px; border: 1px solid #e2e8f0;">${ch.total.toFixed(2)} ر.س</td>
+                                <td style="padding: 10px; border: 1px solid #e2e8f0;">${ch.total.toFixed(2)} ج.م</td>
                                 <td style="padding: 10px; border: 1px solid #e2e8f0;">${ch.percentage.toFixed(1)}%</td>
                             </tr>
                         `).join('')}
@@ -511,7 +511,7 @@ export default function Reports() {
                             <tr>
                                 <td style="padding: 10px; border: 1px solid #e2e8f0;">${pm.method}</td>
                                 <td style="padding: 10px; border: 1px solid #e2e8f0; text-align: center;">${pm.count}</td>
-                                <td style="padding: 10px; border: 1px solid #e2e8f0;">${pm.total.toFixed(2)} ر.س</td>
+                                <td style="padding: 10px; border: 1px solid #e2e8f0;">${pm.total.toFixed(2)} ج.م</td>
                             </tr>
                         `).join('')}
                     </table>
@@ -527,7 +527,7 @@ export default function Reports() {
                         </tr>
                         <tr>
                             <td style="padding: 10px; border: 1px solid #e2e8f0;">إجمالي قيمة المخزون</td>
-                            <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: bold;">${metrics.inventory.totalStockValue.toFixed(2)} ر.س</td>
+                            <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: bold;">${metrics.inventory.totalStockValue.toFixed(2)} ج.م</td>
                         </tr>
                         <tr>
                             <td style="padding: 10px; border: 1px solid #e2e8f0;">إجمالي عدد المنتجات</td>
@@ -586,22 +586,22 @@ export default function Reports() {
                 [`تاريخ الإنشاء: ${new Date().toLocaleString('ar-EG')}`],
                 [],
                 ['البيان', 'القيمة', 'ملاحظات'],
-                ['إجمالي الإيرادات', metrics.sales.totalRevenue.toFixed(2), 'ر.س'],
+                ['إجمالي الإيرادات', metrics.sales.totalRevenue.toFixed(2), 'ج.م'],
                 ['عدد الفواتير', metrics.sales.orderCount, 'فاتورة'],
-                ['متوسط الفاتورة', metrics.sales.averageOrderValue.toFixed(2), 'ر.س'],
-                ['المرتجعات', metrics.sales.totalReturns.toFixed(2), 'ر.س'],
-                ['صافي المبيعات', metrics.sales.netSales.toFixed(2), 'ر.س'],
+                ['متوسط الفاتورة', metrics.sales.averageOrderValue.toFixed(2), 'ج.م'],
+                ['المرتجعات', metrics.sales.totalReturns.toFixed(2), 'ج.م'],
+                ['صافي المبيعات', metrics.sales.netSales.toFixed(2), 'ج.م'],
                 [],
                 ['البيانات المالية', '', ''],
                 ['التكلفة الإجمالية', metrics.financial.totalCost.toFixed(2), `${((metrics.financial.totalCost / metrics.sales.totalRevenue) * 100).toFixed(1)}% من الإيرادات`],
-                ['إجمالي الربح', metrics.financial.grossProfit.toFixed(2), 'ر.س'],
+                ['إجمالي الربح', metrics.financial.grossProfit.toFixed(2), 'ج.م'],
                 ['هامش الربح', `${metrics.financial.profitMargin.toFixed(1)}%`, 'نسبة مئوية'],
                 ['الضرائب المحصلة', metrics.financial.totalTax.toFixed(2), `${((metrics.financial.totalTax / metrics.sales.totalRevenue) * 100).toFixed(1)}%`],
                 ['العمولات والرسوم', metrics.financial.totalCommission.toFixed(2), `${((metrics.financial.totalCommission / metrics.sales.totalRevenue) * 100).toFixed(1)}%`],
-                ['صافي الربح النهائي', metrics.financial.netProfit.toFixed(2), 'ر.س'],
+                ['صافي الربح النهائي', metrics.financial.netProfit.toFixed(2), 'ج.م'],
                 [],
                 ['المخزون', '', ''],
-                ['قيمة المخزون الإجمالية', metrics.inventory.totalStockValue.toFixed(2), 'ر.س'],
+                ['قيمة المخزون الإجمالية', metrics.inventory.totalStockValue.toFixed(2), 'ج.م'],
                 ['عدد المنتجات', metrics.inventory.totalProducts, 'منتج'],
             ];
             const ws1 = XLSX.utils.aoa_to_sheet(summaryData);
@@ -613,7 +613,7 @@ export default function Reports() {
                 ['تفصيل المصروفات والضرائب'],
                 [`الفترة: ${dateRange.startDate} إلى ${dateRange.endDate}`],
                 [],
-                ['نوع المصروف', 'المبلغ (ر.س)', '% من الإيرادات', '% من الربح الإجمالي', 'تفاصيل'],
+                ['نوع المصروف', 'المبلغ (ج.م)', '% من الإيرادات', '% من الربح الإجمالي', 'تفاصيل'],
                 [
                     'تكلفة البضاعة المباعة (COGS)',
                     metrics.financial.totalCost.toFixed(2),
@@ -648,7 +648,7 @@ export default function Reports() {
                 ['تحليل المبيعات حسب القناة'],
                 [`الفترة: ${dateRange.startDate} إلى ${dateRange.endDate}`],
                 [],
-                ['القناة', 'عدد الفواتير', 'إجمالي المبيعات (ر.س)', 'النسبة %', 'متوسط الفاتورة', 'أعلى فاتورة', 'أقل فاتورة'],
+                ['القناة', 'عدد الفواتير', 'إجمالي المبيعات (ج.م)', 'النسبة %', 'متوسط الفاتورة', 'أعلى فاتورة', 'أقل فاتورة'],
                 ...metrics.performance.salesByChannel.map(ch => [
                     ch.channelName || ch.channel,
                     ch.count,
@@ -670,7 +670,7 @@ export default function Reports() {
                 ['تحليل أفضل المنتجات'],
                 [`الفترة: ${dateRange.startDate} إلى ${dateRange.endDate}`],
                 [],
-                ['المنتج', 'الكمية المباعة', 'الإيرادات (ر.س)', 'التكلفة المتوقعة', 'الربح (ر.س)', 'هامش الربح %', 'سعر الوحدة', 'تصنيف الأداء'],
+                ['المنتج', 'الكمية المباعة', 'الإيرادات (ج.م)', 'التكلفة المتوقعة', 'الربح (ج.م)', 'هامش الربح %', 'سعر الوحدة', 'تصنيف الأداء'],
                 ...metrics.performance.topProducts.map((p, idx) => [
                     p.productName,
                     p.quantity,
@@ -693,7 +693,7 @@ export default function Reports() {
                 ['تفصيل طرق الدفع'],
                 [`الفترة: ${dateRange.startDate} إلى ${dateRange.endDate}`],
                 [],
-                ['طريقة الدفع', 'عدد العمليات', 'إجمالي المبلغ (ر.س)', 'النسبة من الإجمالي %', 'متوسط العملية', 'الحد الأقصى', 'الحد الأدنى'],
+                ['طريقة الدفع', 'عدد العمليات', 'إجمالي المبلغ (ج.م)', 'النسبة من الإجمالي %', 'متوسط العملية', 'الحد الأقصى', 'الحد الأدنى'],
                 ...metrics.performance.salesByPayment.map(pm => [
                     pm.method,
                     pm.count,
@@ -715,7 +715,7 @@ export default function Reports() {
                 ['مبيعات الأقسام (التصنيفات)'],
                 [`الفترة: ${dateRange.startDate} إلى ${dateRange.endDate}`],
                 [],
-                ['القسم', 'عدد القطع المباعة', 'إجمالي المبيعات (ر.س)', 'متوسط سعر القطعة', 'النسبة من الإجمالي %'],
+                ['القسم', 'عدد القطع المباعة', 'إجمالي المبيعات (ج.م)', 'متوسط سعر القطعة', 'النسبة من الإجمالي %'],
                 ...(metrics.performance.salesByCategory || []).map(cat => [
                     cat.name,
                     cat.count,
@@ -735,7 +735,7 @@ export default function Reports() {
                 ['تحليل المبيعات بالساعة'],
                 [`الفترة: ${dateRange.startDate} إلى ${dateRange.endDate}`],
                 [],
-                ['الساعة', 'عدد الفواتير', 'إجمالي المبيعات (ر.س)', 'متوسط الفاتورة', 'نشاط الساعة'],
+                ['الساعة', 'عدد الفواتير', 'إجمالي المبيعات (ج.م)', 'متوسط الفاتورة', 'نشاط الساعة'],
                 ...(metrics.performance.hourlyStats || []).map(h => [
                     h.hour,
                     h.count,
@@ -756,7 +756,7 @@ export default function Reports() {
                 [`تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}`],
                 [],
                 ['بيان المخزون', 'القيمة', 'النسبة %', 'ملاحظات'],
-                ['إجمالي قيمة المخزون', `${metrics.inventory.totalStockValue.toFixed(2)} ر.س`, '100%', 'القيمة الإجمالية للمخزون الحالي'],
+                ['إجمالي قيمة المخزون', `${metrics.inventory.totalStockValue.toFixed(2)} ج.م`, '100%', 'القيمة الإجمالية للمخزون الحالي'],
                 ['إجمالي عدد المنتجات', metrics.inventory.totalProducts.toString(), '100%', 'عدد المنتجات المختلفة'],
                 [],
                 ['حالة المخزون', '', '', ''],
@@ -783,7 +783,7 @@ export default function Reports() {
                 ['نسبة التكلفة إلى الإيرادات', `${((metrics.financial.totalCost / metrics.sales.totalRevenue) * 100).toFixed(1)}%`, '< 70%', ((metrics.financial.totalCost / metrics.sales.totalRevenue) * 100) < 70 ? 'جيد ✓' : 'مرتفع'],
                 ['نسبة الضرائب', `${((metrics.financial.totalTax / metrics.sales.totalRevenue) * 100).toFixed(1)}%`, '', 'معلومات'],
                 ['نسبة العمولات', `${((metrics.financial.totalCommission / metrics.sales.totalRevenue) * 100).toFixed(1)}%`, '< 10%', ((metrics.financial.totalCommission / metrics.sales.totalRevenue) * 100) < 10 ? 'جيد ✓' : 'مرتفع'],
-                ['متوسط قيمة الفاتورة', `${metrics.sales.averageOrderValue.toFixed(2)} ر.س`, '', 'معلومات'],
+                ['متوسط قيمة الفاتورة', `${metrics.sales.averageOrderValue.toFixed(2)} ج.م`, '', 'معلومات'],
                 ['معدل دوران المخزون', `${((metrics.sales.totalRevenue / metrics.inventory.totalStockValue) || 0).toFixed(2)} مرة`, '> 4', 'معلومات'],
             ];
             const ws6 = XLSX.utils.aoa_to_sheet(ratiosData);
@@ -1143,7 +1143,7 @@ export default function Reports() {
                     }}>
                         <StatCard
                             title="إجمالي المبيعات"
-                            value={`${metrics.sales.totalRevenue.toFixed(2)} ر.س`}
+                            value={`${metrics.sales.totalRevenue.toFixed(2)} ج.م`}
                             subtitle={`${metrics.sales.orderCount} فاتورة`}
                             icon={DollarSign}
                             color="#10b981"
@@ -1151,7 +1151,7 @@ export default function Reports() {
                         />
                         <StatCard
                             title="صافي الربح"
-                            value={`${metrics.financial.netProfit.toFixed(2)} ر.س`}
+                            value={`${metrics.financial.netProfit.toFixed(2)} ج.م`}
                             subtitle={`هامش ${metrics.financial.profitMargin.toFixed(1)}%`}
                             icon={TrendingUp}
                             color="#6366f1"
@@ -1159,14 +1159,14 @@ export default function Reports() {
                         />
                         <StatCard
                             title="قيمة المخزون"
-                            value={`${metrics.inventory.totalStockValue.toFixed(2)} ر.س`}
+                            value={`${metrics.inventory.totalStockValue.toFixed(2)} ج.م`}
                             subtitle={`${metrics.inventory.totalProducts} منتج`}
                             icon={Package}
                             color="#f59e0b"
                         />
                         <StatCard
                             title="متوسط الفاتورة"
-                            value={`${metrics.sales.averageOrderValue.toFixed(2)} ر.س`}
+                            value={`${metrics.sales.averageOrderValue.toFixed(2)} ج.م`}
                             subtitle="لكل عملية بيع"
                             icon={Target}
                             color="#8b5cf6"
@@ -1209,7 +1209,7 @@ export default function Reports() {
                                         </div>
                                         <div style={{ textAlign: 'left' }}>
                                             <div style={{ fontWeight: '700', color: '#10b981', fontSize: '15px' }}>
-                                                {product.revenue.toFixed(2)} ر.س
+                                                {product.revenue.toFixed(2)} ج.م
                                             </div>
                                             <div style={{ fontSize: '12px', color: '#6366f1' }}>
                                                 ربح: {product.profit.toFixed(2)}
@@ -1238,7 +1238,7 @@ export default function Reports() {
                                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                                             <span style={{ fontWeight: '600', color: '#0f172a' }}>{channel.channelName || channel.channel}</span>
                                             <span style={{ fontWeight: '700', color: '#6366f1' }}>
-                                                {channel.total.toFixed(2)} ر.س ({channel.percentage.toFixed(1)}%)
+                                                {channel.total.toFixed(2)} ج.م ({channel.percentage.toFixed(1)}%)
                                             </span>
                                         </div>
                                         <div style={{
@@ -1287,7 +1287,7 @@ export default function Reports() {
                                     </div>
                                     <div style={{ textAlign: 'left' }}>
                                         <div style={{ fontSize: '28px', fontWeight: '800', marginBottom: '4px' }}>
-                                            {platformSales.summary.netRevenue.toFixed(2)} ر.س
+                                            {platformSales.summary.netRevenue.toFixed(2)} ج.م
                                         </div>
                                         <div style={{ fontSize: '13px', opacity: 0.9 }}>صافي الإيرادات</div>
                                     </div>
@@ -1310,7 +1310,7 @@ export default function Reports() {
                                 }}>
                                     <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '8px' }}>إجمالي الربح</div>
                                     <div style={{ fontSize: '24px', fontWeight: '700', color: '#10b981' }}>
-                                        {platformSales.summary.grossProfit.toFixed(2)} ر.س
+                                        {platformSales.summary.grossProfit.toFixed(2)} ج.م
                                     </div>
                                     <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
                                         هامش {platformSales.summary.avgProfitMargin.toFixed(1)}%
@@ -1325,7 +1325,7 @@ export default function Reports() {
                                 }}>
                                     <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '8px' }}>صافي الربح</div>
                                     <div style={{ fontSize: '24px', fontWeight: '700', color: '#6366f1' }}>
-                                        {platformSales.summary.netProfit.toFixed(2)} ر.س
+                                        {platformSales.summary.netProfit.toFixed(2)} ج.م
                                     </div>
                                     <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
                                         بعد العمولات والضرائب
@@ -1340,7 +1340,7 @@ export default function Reports() {
                                 }}>
                                     <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '8px' }}>إجمالي العمولات</div>
                                     <div style={{ fontSize: '24px', fontWeight: '700', color: '#f59e0b' }}>
-                                        {platformSales.summary.commission.toFixed(2)} ر.س
+                                        {platformSales.summary.commission.toFixed(2)} ج.م
                                     </div>
                                     <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
                                         رسوم المنصات
@@ -1355,10 +1355,10 @@ export default function Reports() {
                                 }}>
                                     <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '8px' }}>المرتجعات</div>
                                     <div style={{ fontSize: '24px', fontWeight: '700', color: '#ef4444' }}>
-                                        {platformSales.summary.refunded.toFixed(2)} ر.س
+                                        {platformSales.summary.refunded.toFixed(2)} ج.م
                                     </div>
                                     <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
-                                        من {platformSales.summary.grossRevenue.toFixed(2)} ر.س
+                                        من {platformSales.summary.grossRevenue.toFixed(2)} ج.م
                                     </div>
                                 </div>
                             </div>
@@ -1369,7 +1369,7 @@ export default function Reports() {
                                     const change = platformSales.comparison?.platformChanges.find(
                                         c => c.platform === platform.platform
                                     );
-                                    
+
                                     return (
                                         <div key={platform.platform} style={{
                                             background: 'white',
@@ -1443,7 +1443,7 @@ export default function Reports() {
                                                 </div>
                                                 <div style={{ textAlign: 'left' }}>
                                                     <div style={{ fontSize: '28px', fontWeight: '800', color: '#667eea', marginBottom: '4px' }}>
-                                                        {platform.netRevenue.toFixed(2)} ر.س
+                                                        {platform.netRevenue.toFixed(2)} ج.م
                                                     </div>
                                                     <div style={{ fontSize: '13px', color: '#64748b' }}>
                                                         {platform.revenuePercentage.toFixed(1)}% من الإجمالي
@@ -1461,13 +1461,13 @@ export default function Reports() {
                                                 <div style={{ padding: '16px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
                                                     <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '6px' }}>إجمالي الإيرادات</div>
                                                     <div style={{ fontSize: '20px', fontWeight: '700', color: '#0f172a' }}>
-                                                        {platform.grossRevenue.toFixed(2)} ر.س
+                                                        {platform.grossRevenue.toFixed(2)} ج.م
                                                     </div>
                                                 </div>
                                                 <div style={{ padding: '16px', background: '#f0fdf4', borderRadius: '12px', border: '1px solid #bbf7d0' }}>
                                                     <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '6px' }}>إجمالي الربح</div>
                                                     <div style={{ fontSize: '20px', fontWeight: '700', color: '#10b981' }}>
-                                                        {platform.grossProfit.toFixed(2)} ر.س
+                                                        {platform.grossProfit.toFixed(2)} ج.م
                                                     </div>
                                                     <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '2px' }}>
                                                         هامش {platform.profitMargin.toFixed(1)}%
@@ -1476,7 +1476,7 @@ export default function Reports() {
                                                 <div style={{ padding: '16px', background: '#eff6ff', borderRadius: '12px', border: '1px solid #bfdbfe' }}>
                                                     <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '6px' }}>صافي الربح</div>
                                                     <div style={{ fontSize: '20px', fontWeight: '700', color: '#6366f1' }}>
-                                                        {platform.netProfit.toFixed(2)} ر.س
+                                                        {platform.netProfit.toFixed(2)} ج.م
                                                     </div>
                                                     <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '2px' }}>
                                                         هامش {platform.netProfitMargin.toFixed(1)}%
@@ -1485,7 +1485,7 @@ export default function Reports() {
                                                 <div style={{ padding: '16px', background: '#fef3c7', borderRadius: '12px', border: '1px solid #fde68a' }}>
                                                     <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '6px' }}>متوسط الفاتورة</div>
                                                     <div style={{ fontSize: '20px', fontWeight: '700', color: '#d97706' }}>
-                                                        {platform.avgOrderValue.toFixed(2)} ر.س
+                                                        {platform.avgOrderValue.toFixed(2)} ج.م
                                                     </div>
                                                     <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '2px' }}>
                                                         ربح: {platform.avgProfit.toFixed(2)}
@@ -1506,13 +1506,13 @@ export default function Reports() {
                                                 <div>
                                                     <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '4px' }}>تكلفة البضاعة</div>
                                                     <div style={{ fontSize: '16px', fontWeight: '700', color: '#0f172a' }}>
-                                                        {platform.costOfGoods.toFixed(2)} ر.س
+                                                        {platform.costOfGoods.toFixed(2)} ج.م
                                                     </div>
                                                 </div>
                                                 <div>
                                                     <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '4px' }}>العمولة</div>
                                                     <div style={{ fontSize: '16px', fontWeight: '700', color: '#f59e0b' }}>
-                                                        {platform.commission.toFixed(2)} ر.س
+                                                        {platform.commission.toFixed(2)} ج.م
                                                     </div>
                                                     <div style={{ fontSize: '10px', color: '#6b7280' }}>
                                                         {platform.actualCommissionRate.toFixed(2)}% (قياسي: {platform.configuredCommissionRate.toFixed(2)}%)
@@ -1521,7 +1521,7 @@ export default function Reports() {
                                                 <div>
                                                     <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '4px' }}>الضريبة</div>
                                                     <div style={{ fontSize: '16px', fontWeight: '700', color: '#ef4444' }}>
-                                                        {platform.tax.toFixed(2)} ر.س
+                                                        {platform.tax.toFixed(2)} ج.م
                                                     </div>
                                                     <div style={{ fontSize: '10px', color: '#6b7280' }}>
                                                         {platform.actualTaxRate.toFixed(2)}% (قياسي: {platform.configuredTaxRate.toFixed(2)}%)
@@ -1530,7 +1530,7 @@ export default function Reports() {
                                                 <div>
                                                     <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '4px' }}>المرتجعات</div>
                                                     <div style={{ fontSize: '16px', fontWeight: '700', color: '#dc2626' }}>
-                                                        {platform.refunded.toFixed(2)} ر.س
+                                                        {platform.refunded.toFixed(2)} ج.م
                                                     </div>
                                                     <div style={{ fontSize: '10px', color: '#6b7280' }}>
                                                         معدل {platform.refundRate.toFixed(2)}%
@@ -1648,7 +1648,7 @@ export default function Reports() {
                                             <span style={{ fontWeight: '600', color: '#0f172a' }}>{customer.name}</span>
                                             <span style={{ fontSize: '12px', color: '#64748b', marginRight: '8px' }}>({customer.orderCount} طلب)</span>
                                         </div>
-                                        <div style={{ fontWeight: '700', color: '#10b981' }}>{customer.totalRevenue.toFixed(0)} ر.س</div>
+                                        <div style={{ fontWeight: '700', color: '#10b981' }}>{customer.totalRevenue.toFixed(0)} ج.م</div>
                                     </div>
                                 ))}
                             </div>
@@ -1700,7 +1700,7 @@ export default function Reports() {
                                                 </span>
                                                 <div>
                                                     <span style={{ fontWeight: '600', color: '#64748b' }}>{rt.qty} قطعة</span>
-                                                    <span style={{ marginRight: '12px', fontWeight: '700', color: '#dc2626' }}>{rt.value.toFixed(0)} ر.س</span>
+                                                    <span style={{ marginRight: '12px', fontWeight: '700', color: '#dc2626' }}>{rt.value.toFixed(0)} ج.م</span>
                                                 </div>
                                             </div>
                                         ))}
@@ -1759,26 +1759,26 @@ export default function Reports() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
                     <StatCard
                         title="إجمالي الإيرادات"
-                        value={`${metrics.sales.totalRevenue.toFixed(2)} ر.س`}
+                        value={`${metrics.sales.totalRevenue.toFixed(2)} ج.م`}
                         subtitle={`${metrics.sales.orderCount} فاتورة`}
                         icon={DollarSign}
                         color="#10b981"
                     />
                     <StatCard
                         title="متوسط الفاتورة"
-                        value={`${metrics.sales.averageOrderValue.toFixed(2)} ر.س`}
+                        value={`${metrics.sales.averageOrderValue.toFixed(2)} ج.م`}
                         icon={Target}
                         color="#8b5cf6"
                     />
                     <StatCard
                         title="المرتجعات"
-                        value={`${metrics.sales.totalReturns.toFixed(2)} ر.س`}
+                        value={`${metrics.sales.totalReturns.toFixed(2)} ج.م`}
                         icon={TrendingDown}
                         color="#ef4444"
                     />
                     <StatCard
                         title="صافي المبيعات"
-                        value={`${metrics.sales.netSales.toFixed(2)} ر.س`}
+                        value={`${metrics.sales.netSales.toFixed(2)} ج.م`}
                         icon={TrendingUp}
                         color="#6366f1"
                     />
@@ -1790,32 +1790,32 @@ export default function Reports() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
                     <StatCard
                         title="إجمالي الربح"
-                        value={`${metrics.financial.grossProfit.toFixed(2)} ر.س`}
+                        value={`${metrics.financial.grossProfit.toFixed(2)} ج.م`}
                         subtitle={`هامش ${metrics.financial.profitMargin.toFixed(1)}%`}
                         icon={TrendingUp}
                         color="#10b981"
                     />
                     <StatCard
                         title="التكلفة الإجمالية"
-                        value={`${metrics.financial.totalCost.toFixed(2)} ر.س`}
+                        value={`${metrics.financial.totalCost.toFixed(2)} ج.م`}
                         icon={DollarSign}
                         color="#ef4444"
                     />
                     <StatCard
                         title="الضرائب"
-                        value={`${metrics.financial.totalTax.toFixed(2)} ر.س`}
+                        value={`${metrics.financial.totalTax.toFixed(2)} ج.م`}
                         icon={FileText}
                         color="#f59e0b"
                     />
                     <StatCard
                         title="العمولات"
-                        value={`${metrics.financial.totalCommission.toFixed(2)} ر.س`}
+                        value={`${metrics.financial.totalCommission.toFixed(2)} ج.م`}
                         icon={Users}
                         color="#8b5cf6"
                     />
                     <StatCard
                         title="صافي الربح"
-                        value={`${metrics.financial.netProfit.toFixed(2)} ر.س`}
+                        value={`${metrics.financial.netProfit.toFixed(2)} ج.م`}
                         icon={TrendingUp}
                         color="#6366f1"
                     />
@@ -1827,7 +1827,7 @@ export default function Reports() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
                     <StatCard
                         title="قيمة المخزون"
-                        value={`${metrics.inventory.totalStockValue.toFixed(2)} ر.س`}
+                        value={`${metrics.inventory.totalStockValue.toFixed(2)} ج.م`}
                         icon={Package}
                         color="#6366f1"
                     />

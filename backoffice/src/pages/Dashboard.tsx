@@ -278,7 +278,7 @@ export default function Dashboard() {
                     <KPICard
                         icon={DollarSign}
                         title="مبيعات اليوم"
-                        value={`${data.today.sales.toFixed(2)} ر.س`}
+                        value={`${data.today.sales.toFixed(2)} ج.م`}
                         subtitle={`${data.today.orders} فاتورة`}
                         color="#10b981"
                         change={salesChange}
@@ -286,7 +286,7 @@ export default function Dashboard() {
                     <KPICard
                         icon={TrendingUp}
                         title="الربح اليوم"
-                        value={`${data.today.profit.toFixed(2)} ر.س`}
+                        value={`${data.today.profit.toFixed(2)} ج.م`}
                         subtitle="صافي الربح"
                         color="#6366f1"
                         change={15.3}
@@ -294,7 +294,7 @@ export default function Dashboard() {
                     <KPICard
                         icon={Target}
                         title="متوسط الفاتورة"
-                        value={`${data.today.avgOrderValue.toFixed(2)} ر.س`}
+                        value={`${data.today.avgOrderValue.toFixed(2)} ج.م`}
                         subtitle="لكل عملية بيع"
                         color="#8b5cf6"
                     />
@@ -407,7 +407,7 @@ export default function Dashboard() {
                             }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                                     <span style={{ fontWeight: '700', color: '#6366f1', fontSize: '14px' }}>#{sale.invoiceNo}</span>
-                                    <span style={{ fontWeight: '700', color: '#10b981', fontSize: '15px' }}>{sale.total} ر.س</span>
+                                    <span style={{ fontWeight: '700', color: '#10b981', fontSize: '15px' }}>{sale.total} ج.م</span>
                                 </div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#64748b' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -465,7 +465,7 @@ export default function Dashboard() {
                                     </div>
                                 </div>
                                 <div style={{ fontWeight: '700', color: '#10b981', fontSize: '15px' }}>
-                                    {product.revenue.toFixed(2)} ر.س
+                                    {product.revenue.toFixed(2)} ج.م
                                 </div>
                             </div>
                         )) : (

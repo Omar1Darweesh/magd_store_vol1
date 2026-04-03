@@ -266,7 +266,7 @@ export default function CustomerPayments() {
                                 }}>
                                     <div style={{ fontSize: '14px', color: '#6b7280', marginBottom: '8px' }}>إجمالي الديون</div>
                                     <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#dc2626' }}>
-                                        {getTotalDebt().toFixed(2)} ر.س
+                                        {getTotalDebt().toFixed(2)} ج.م
                                     </div>
                                 </div>
 
@@ -329,13 +329,13 @@ export default function CustomerPayments() {
                                                         {new Date(invoice.createdAt).toLocaleDateString('ar-EG')}
                                                     </td>
                                                     <td style={{ padding: '12px', fontWeight: '600' }}>
-                                                        {invoice.total.toFixed(2)} ر.س
+                                                        {invoice.total.toFixed(2)} ج.م
                                                     </td>
                                                     <td style={{ padding: '12px', color: '#16a34a' }}>
-                                                        {invoice.paidAmount.toFixed(2)} ر.س
+                                                        {invoice.paidAmount.toFixed(2)} ج.م
                                                     </td>
                                                     <td style={{ padding: '12px', color: '#dc2626', fontWeight: '600' }}>
-                                                        {invoice.remainingAmount.toFixed(2)} ر.س
+                                                        {invoice.remainingAmount.toFixed(2)} ج.م
                                                     </td>
                                                     <td style={{ padding: '12px' }}>
                                                         {getPaymentStatusBadge(invoice.paymentStatus)}
@@ -420,8 +420,8 @@ export default function CustomerPayments() {
                                                                                 <tr key={line.id}>
                                                                                     <td style={{ padding: '10px 12px', borderBottom: '1px solid #f1f5f9' }}>{line.productName}</td>
                                                                                     <td style={{ padding: '10px 12px', textAlign: 'center', borderBottom: '1px solid #f1f5f9' }}>{line.qty}</td>
-                                                                                    <td style={{ padding: '10px 12px', textAlign: 'center', borderBottom: '1px solid #f1f5f9' }}>{line.unitPrice.toFixed(2)} ر.س</td>
-                                                                                    <td style={{ padding: '10px 12px', textAlign: 'center', fontWeight: '600', borderBottom: '1px solid #f1f5f9' }}>{line.lineTotal.toFixed(2)} ر.س</td>
+                                                                                    <td style={{ padding: '10px 12px', textAlign: 'center', borderBottom: '1px solid #f1f5f9' }}>{line.unitPrice.toFixed(2)} ج.م</td>
+                                                                                    <td style={{ padding: '10px 12px', textAlign: 'center', fontWeight: '600', borderBottom: '1px solid #f1f5f9' }}>{line.lineTotal.toFixed(2)} ج.م</td>
                                                                                 </tr>
                                                                             ))}
                                                                         </tbody>
@@ -440,7 +440,7 @@ export default function CustomerPayments() {
                                                                             <div key={payment.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', background: 'white', borderRadius: '6px', fontSize: '13px', border: '1px solid #f1f5f9' }}>
                                                                                 <span>
                                                                                     <strong>{new Date(payment.paymentDate).toLocaleString('ar-EG')}</strong> -
-                                                                                    <span style={{ color: '#16a34a', fontWeight: '600' }}> {payment.amount.toFixed(2)} ر.س </span>
+                                                                                    <span style={{ color: '#16a34a', fontWeight: '600' }}> {payment.amount.toFixed(2)} ج.م </span>
                                                                                     ({payment.paymentMethod})
                                                                                 </span>
                                                                                 <span style={{ color: '#64748b' }}>
@@ -501,13 +501,13 @@ export default function CustomerPayments() {
 
                         <div style={{ marginBottom: '16px', padding: '12px', background: '#f9fafb', borderRadius: '8px' }}>
                             <div style={{ marginBottom: '8px' }}>
-                                <strong>إجمالي الفاتورة:</strong> {selectedInvoice.total.toFixed(2)} ر.س
+                                <strong>إجمالي الفاتورة:</strong> {selectedInvoice.total.toFixed(2)} ج.م
                             </div>
                             <div style={{ marginBottom: '8px', color: '#16a34a' }}>
-                                <strong>المدفوع:</strong> {selectedInvoice.paidAmount.toFixed(2)} ر.س
+                                <strong>المدفوع:</strong> {selectedInvoice.paidAmount.toFixed(2)} ج.م
                             </div>
                             <div style={{ color: '#dc2626', fontSize: '18px', fontWeight: 'bold' }}>
-                                <strong>المتبقي:</strong> {selectedInvoice.remainingAmount.toFixed(2)} ر.س
+                                <strong>المتبقي:</strong> {selectedInvoice.remainingAmount.toFixed(2)} ج.م
                             </div>
                         </div>
 
@@ -642,7 +642,7 @@ export default function CustomerPayments() {
                         <div style={{ marginBottom: '20px', padding: '16px', background: '#dcfce7', borderRadius: '8px', border: '1px solid #16a34a' }}>
                             <CheckCircle size={24} color="#16a34a" style={{ marginBottom: '8px' }} />
                             <p style={{ color: '#166534', marginBottom: '8px' }}>
-                                الفاتورة مدفوعة بالكامل ({selectedInvoice.total.toFixed(2)} ر.س)
+                                الفاتورة مدفوعة بالكامل ({selectedInvoice.total.toFixed(2)} ج.م)
                             </p>
                             <p style={{ fontSize: '14px', color: '#166534' }}>
                                 سيتم خصم المنتجات من المخزون عند التأكيد

@@ -1,6 +1,6 @@
 ════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 TOTAL - COMPREHENSIVE DATA REPORT
-Generated: 2/13/2026, 3:22:05 AM
+Generated: 3/17/2026, 1:29:07 AM
 ════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 
 📊 SUMMARY
@@ -145,7 +145,7 @@ NOTE: These products had NO CODE in Excel. Test codes were auto-generated.
 1. Row 71: صنفره دائري 5 بوصه 320وات
   ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
   Original Code: EMPTY
-  Generated Code: TEST-1770945724883-P97QER
+  Generated Code: TEST-1773703746805-DUT3HH
   Barcode: NULL
   Location: كهرباء / صنفرة
   ✅ STATUS: INSERTED WITH AUTO-GENERATED CODE
@@ -153,7 +153,7 @@ NOTE: These products had NO CODE in Excel. Test codes were auto-generated.
 2. Row 498: حجر قلم
   ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
   Original Code: EMPTY
-  Generated Code: TEST-1770945724884-5PC6D3
+  Generated Code: TEST-1773703746806-ZH1PBP
   Barcode: NULL
   Location: هواء / بطاريات حجر
   ✅ STATUS: INSERTED WITH AUTO-GENERATED CODE
@@ -592,7 +592,7 @@ NOTE: These products had NO barcode in Excel. Barcode was auto-generated from hi
   Location: هواء / بطاريات حجر
 
 8. Row 498: حجر قلم
-  Code: TEST-1770945724884-5PC6D3
+  Code: TEST-1773703746806-ZH1PBP
   Location: هواء / بطاريات حجر
 
 9. Row 501: مكبس كابلات هيدوليك 300

@@ -13,7 +13,7 @@ export class ProfitMarginService {
   constructor(
     private prisma: PrismaService,
     private productAudit: ProductAuditService,
-  ) {}
+  ) { }
 
   /**
    * Calculate selling price from cost and margin
@@ -133,9 +133,13 @@ export class ProfitMarginService {
       throw new BadRequestException(`Product with ID ${productId} not found`);
     }
 
-    const costAvg = Number(product.costAvg);
+    // Use cost based on the product's costMethod setting
+    const baseCost =
+      product.costMethod === 'LAST_PRICE'
+        ? Number(product.cost)
+        : Number(product.costAvg);
 
-    if (costAvg <= 0) {
+    if (baseCost <= 0) {
       console.log(
         `⚠️ Product ${productId} has zero or negative cost. Skipping price update.`,
       );
@@ -145,8 +149,8 @@ export class ProfitMarginService {
     const { retailMargin, wholesaleMargin, source } =
       await this.getEffectiveMargins(productId);
 
-    const newRetailPrice = this.calculatePrice(costAvg, retailMargin);
-    const newWholesalePrice = this.calculatePrice(costAvg, wholesaleMargin);
+    const newRetailPrice = this.calculatePrice(baseCost, retailMargin);
+    const newWholesalePrice = this.calculatePrice(baseCost, wholesaleMargin);
 
     const oldRetailPrice = Number(product.priceRetail);
     const oldWholesalePrice = Number(product.priceWholesale);
@@ -184,9 +188,9 @@ export class ProfitMarginService {
 
       console.log(
         `✅ Updated prices for product ${productId} (${product.nameEn}): ` +
-          `Retail: ${oldRetailPrice.toFixed(2)} → ${newRetailPrice.toFixed(2)} | ` +
-          `Wholesale: ${oldWholesalePrice.toFixed(2)} → ${newWholesalePrice.toFixed(2)} ` +
-          `(Margin source: ${source})`,
+        `Retail: ${oldRetailPrice.toFixed(2)} → ${newRetailPrice.toFixed(2)} | ` +
+        `Wholesale: ${oldWholesalePrice.toFixed(2)} → ${newWholesalePrice.toFixed(2)} ` +
+        `(Margin source: ${source})`,
       );
     }
 

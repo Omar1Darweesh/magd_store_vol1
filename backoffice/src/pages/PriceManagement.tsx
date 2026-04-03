@@ -318,7 +318,7 @@ export default function PriceManagement() {
         setShowPreview(false);
 
         const itemType = marginItemTypes.find(it => it.id === itemTypeId);
-        
+
         // ✅ FIX: Always set margins, defaulting to 0 if not present
         const retailMargin = itemType?.defaultRetailMargin ?? 0;
         const wholesaleMargin = itemType?.defaultWholesaleMargin ?? 0;
@@ -335,12 +335,12 @@ export default function PriceManagement() {
         // ✅ FIX: Proper validation and conversion
         const retailValue = marginRetail.trim() === '' ? 0 : parseFloat(marginRetail);
         const wholesaleValue = marginWholesale.trim() === '' ? 0 : parseFloat(marginWholesale);
-        
+
         if (isNaN(retailValue) || isNaN(wholesaleValue)) {
             alert('الرجاء إدخال أرقام صحيحة فقط');
             return;
         }
-        
+
         if (retailValue < 0 || wholesaleValue < 0) {
             alert('نسب الربح لا يمكن أن تكون سالبة');
             return;
@@ -353,7 +353,7 @@ export default function PriceManagement() {
         try {
             let endpoint = '';
             let params: any = { active: true, take: 2000 }; // ✅ FIX: Explicitly request up to 2000 products
-            
+
             if (selectedHierarchyType === 'category') {
                 // ✅ FIX: For category, fetch all products in that category
                 params.categoryId = selectedHierarchyId;
@@ -413,12 +413,12 @@ export default function PriceManagement() {
         // ✅ FIX: Proper validation and conversion
         const retailValue = marginRetail.trim() === '' ? 0 : parseFloat(marginRetail);
         const wholesaleValue = marginWholesale.trim() === '' ? 0 : parseFloat(marginWholesale);
-        
+
         if (isNaN(retailValue) || isNaN(wholesaleValue)) {
             alert('الرجاء إدخال أرقام صحيحة فقط');
             return;
         }
-        
+
         if (retailValue < 0 || wholesaleValue < 0) {
             alert('نسب الربح لا يمكن أن تكون سالبة');
             return;
@@ -1189,7 +1189,7 @@ export default function PriceManagement() {
                                                 {priceType === 'BOTH' ? (
                                                     <>
                                                         <td style={{ padding: '16px', textAlign: 'center', fontSize: '14px', fontWeight: '600', color: '#374151' }}>
-                                                            {retailPrice.toFixed(2)} ر.س
+                                                            {retailPrice.toFixed(2)} ج.م
                                                         </td>
                                                         <td style={{
                                                             padding: '16px',
@@ -1198,7 +1198,7 @@ export default function PriceManagement() {
                                                             fontWeight: '700',
                                                             color: isSelected ? (retailChange > 0 ? '#10b981' : retailChange < 0 ? '#ef4444' : '#374151') : '#374151'
                                                         }}>
-                                                            <div>{newRetailPrice.toFixed(2)} ر.س</div>
+                                                            <div>{newRetailPrice.toFixed(2)} ج.م</div>
                                                             {isSelected && Math.abs(retailChange) > 0.01 && (
                                                                 <div style={{
                                                                     fontSize: '11px',
@@ -1211,7 +1211,7 @@ export default function PriceManagement() {
                                                             )}
                                                         </td>
                                                         <td style={{ padding: '16px', textAlign: 'center', fontSize: '14px', fontWeight: '600', color: '#374151' }}>
-                                                            {wholesalePrice.toFixed(2)} ر.س
+                                                            {wholesalePrice.toFixed(2)} ج.م
                                                         </td>
                                                         <td style={{
                                                             padding: '16px',
@@ -1220,7 +1220,7 @@ export default function PriceManagement() {
                                                             fontWeight: '700',
                                                             color: isSelected ? (wholesaleChange > 0 ? '#10b981' : wholesaleChange < 0 ? '#ef4444' : '#374151') : '#374151'
                                                         }}>
-                                                            <div>{newWholesalePrice.toFixed(2)} ر.س</div>
+                                                            <div>{newWholesalePrice.toFixed(2)} ج.م</div>
                                                             {isSelected && Math.abs(wholesaleChange) > 0.01 && (
                                                                 <div style={{
                                                                     fontSize: '11px',
@@ -1236,7 +1236,7 @@ export default function PriceManagement() {
                                                 ) : (
                                                     <>
                                                         <td style={{ padding: '16px', textAlign: 'center', fontSize: '14px', fontWeight: '600', color: '#374151' }}>
-                                                            {currentPrice.toFixed(2)} ر.س
+                                                            {currentPrice.toFixed(2)} ج.م
                                                         </td>
                                                         <td style={{
                                                             padding: '16px',
@@ -1245,7 +1245,7 @@ export default function PriceManagement() {
                                                             fontWeight: '700',
                                                             color: isSelected ? (change > 0 ? '#10b981' : change < 0 ? '#ef4444' : '#374151') : '#374151'
                                                         }}>
-                                                            {newPrice.toFixed(2)} ر.س
+                                                            {newPrice.toFixed(2)} ج.م
                                                         </td>
                                                         <td style={{ padding: '16px', textAlign: 'center' }}>
                                                             {isSelected && Math.abs(change) > 0.01 && (
@@ -1404,7 +1404,7 @@ export default function PriceManagement() {
                                     }}
                                 >
                                     <option value="PERCENTAGE">%</option>
-                                    <option value="FIXED">ر.س</option>
+                                    <option value="FIXED">ج.م</option>
                                 </select>
                             </div>
                         </div>
@@ -1442,7 +1442,7 @@ export default function PriceManagement() {
                                 </div>
                                 <div style={{ fontSize: '13px', color: '#6b7280' }}>
                                     {operation === 'INCREASE' ? 'زيادة' : 'تخفيض'} بقيمة {adjustmentValue}
-                                    {adjustmentType === 'PERCENTAGE' ? '%' : ' ر.س'}
+                                    {adjustmentType === 'PERCENTAGE' ? '%' : ' ج.م'}
                                     {' '}على {priceType === 'RETAIL' ? 'سعر التجزئة' : priceType === 'WHOLESALE' ? 'سعر الجملة' : 'كلا السعرين'}
                                 </div>
                             </div>

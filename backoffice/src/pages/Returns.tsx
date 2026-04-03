@@ -796,17 +796,17 @@ export default function Returns() {
                                                 return returnAmount > 0 ? (
                                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                                                         <div style={{ fontSize: '12px', color: '#94a3b8', textDecoration: 'line-through' }}>
-                                                            {invoiceTotal.toFixed(2)} ر.س
+                                                            {invoiceTotal.toFixed(2)} ج.م
                                                         </div>
                                                         <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#16a34a' }}>
-                                                            {(invoiceTotal - returnAmount).toFixed(2)} ر.س
+                                                            {(invoiceTotal - returnAmount).toFixed(2)} ج.م
                                                         </div>
                                                         <div style={{ fontSize: '11px', color: '#ef4444' }}>
                                                             - {returnAmount.toFixed(2)} مرتجع
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                    <div>{invoiceTotal.toFixed(2)} ر.س</div>
+                                                    <div>{invoiceTotal.toFixed(2)} ج.م</div>
                                                 );
                                             })()}
                                         </td>

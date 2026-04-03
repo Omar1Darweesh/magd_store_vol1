@@ -175,7 +175,7 @@ export default function ProductTransactions({ product, onClose }: Props) {
                                         {summary.currentStock}
                                     </div>
                                     <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '4px' }}>
-                                        القيمة: {summary.totalValue.toFixed(2)} ر.س
+                                        القيمة: {summary.totalValue.toFixed(2)} ج.م
                                     </div>
                                 </div>
 
