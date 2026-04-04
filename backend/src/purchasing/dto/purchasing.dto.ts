@@ -24,7 +24,7 @@ export class GRNLineDto {
 }
 
 import { PaymentTerm } from '@prisma/client';
-import { IsEnum } from 'class-validator';
+import { IsEnum, IsString } from 'class-validator';
 
 export class CreateGRNDto {
   @IsInt()
@@ -46,6 +46,10 @@ export class CreateGRNDto {
   @IsEnum(PaymentTerm)
   @IsOptional()
   paymentTerm?: PaymentTerm;
+
+  @IsString()
+  @IsOptional()
+  paymentMethod?: string;
 
   @IsNumber()
   @IsOptional()

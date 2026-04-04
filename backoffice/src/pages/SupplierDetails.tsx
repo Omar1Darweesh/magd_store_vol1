@@ -29,7 +29,14 @@ interface Financials { summary: Summary; grns: GRN[]; payments: Payment[]; }
 const PAYMENT_TERM_LABELS: Record<string, string> = {
     CASH: 'نقدي', DAYS_15: 'آجل 15 يوم', DAYS_30: 'آجل 30 يوم', DAYS_60: 'آجل 60 يوم',
 };
-const PAYMENT_METHODS = ['نقدي', 'تحويل بنكي', 'شيك', 'بطاقة', 'أخرى'];
+const PAYMENT_METHODS = [
+    { value: 'CASH', label: 'كاش' },
+    { value: 'TRANSFER', label: 'تحويل بنكي' },
+    { value: 'CARD', label: 'بطاقة' },
+    { value: 'WALLET', label: 'محفظة' },
+    { value: 'INSTAPAY', label: 'انستاباي' },
+    { value: 'FAWRY', label: 'فوري' },
+];
 
 type Tab = 'grns' | 'payments';
 
@@ -41,7 +48,11 @@ export default function SupplierDetails({ supplier, onClose }: { supplier: any; 
 
     // Add payment modal state
     const [showPayModal, setShowPayModal] = useState(false);
-    const [payForm, setPayForm] = useState({ amount: '', grnId: '', method: 'نقدي', notes: '', paymentDate: new Date().toISOString().slice(0, 10) });
+    const [payForm, setPayForm] = useState(() => {
+        const now = new Date();
+        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        return { amount: '', grnId: '', method: 'CASH', notes: '', paymentDate: today };
+    });
     const [paying, setPaying] = useState(false);
     const [deletingPayment, setDeletingPayment] = useState<number | null>(null);
 
@@ -68,7 +79,7 @@ export default function SupplierDetails({ supplier, onClose }: { supplier: any; 
                 paymentDate: payForm.paymentDate,
             });
             setShowPayModal(false);
-            setPayForm({ amount: '', grnId: '', method: 'نقدي', notes: '', paymentDate: new Date().toISOString().slice(0, 10) });
+            setPayForm({ amount: '', grnId: '', method: 'CASH', notes: '', paymentDate: (() => { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`; })() });
             load();
         } catch { alert('فشل تسجيل الدفعة'); }
         finally { setPaying(false); }
@@ -324,7 +335,7 @@ export default function SupplierDetails({ supplier, onClose }: { supplier: any; 
                                 <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600, fontSize: '14px' }}>طريقة الدفع</label>
                                 <select value={payForm.method} onChange={e => setPayForm(f => ({ ...f, method: e.target.value }))}
                                     style={{ width: '100%', padding: '10px 14px', border: '1px solid #e5e7eb', borderRadius: '8px', fontSize: '14px', background: 'white', boxSizing: 'border-box' }}>
-                                    {PAYMENT_METHODS.map(m => <option key={m} value={m}>{m}</option>)}
+                                    {PAYMENT_METHODS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
                                 </select>
                             </div>
                             <div style={{ marginBottom: '16px' }}>

@@ -43,7 +43,8 @@ model User {
   salesInvoices    SalesInvoice[]
   salesReturns   SalesReturn[]
   stockMovements StockMovement[]
-  expenses       Expense[]
+  expenses              Expense[]
+  treasuryTransactions  TreasuryTransaction[]
   roles          UserRole[]
   branch         Branch          @relation(fields: [branchId], references: [id])
 
@@ -638,4 +639,32 @@ model Expense {
   @@index([expenseDate])
   @@index([createdBy])
   @@map("expenses")
+}
+
+// ============= Treasury Module =============
+model TreasuryTransaction {
+  id              Int           @id @default(autoincrement())
+  type            TreasuryType
+  amount          Decimal       @db.Decimal(12, 2)
+  paymentMethod   PaymentMethod @map("payment_method")
+  purpose         String        @db.VarChar(500)
+  notes           String?
+  transactionDate DateTime      @default(now()) @map("transaction_date")
+  referenceType   String?       @map("reference_type") @db.VarChar(50)
+  referenceId     Int?          @map("reference_id")
+  isManual        Boolean       @default(true) @map("is_manual")
+  createdBy       Int           @map("created_by")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+  user            User          @relation(fields: [createdBy], references: [id])
+
+  @@index([transactionDate])
+  @@index([paymentMethod])
+  @@index([type])
+  @@map("treasury_transactions")
+}
+
+enum TreasuryType {
+  INCOME
+  EXPENSE
 }

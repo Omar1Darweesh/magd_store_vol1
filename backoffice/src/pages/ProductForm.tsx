@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import apiClient from '../api/client';
-import { X, ChevronDown } from 'lucide-react';
+import { X } from 'lucide-react';
 import { COLORS_LIST, getColorHex, isLightColor } from '../utils/colors';
 
 interface Category {
@@ -35,85 +35,46 @@ interface ProductFormProps {
     onSave: () => void;
 }
 
-function ColorPickerSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-    const [open, setOpen] = useState(false);
-    const selected = COLORS_LIST.find(c => c.value === value);
-    const hex = selected ? getColorHex(selected.value) : null;
+function ColorFreeInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+    const hex = getColorHex(value);
+    const isKnown = value.trim() !== '' && hex !== '#e2e8f0';
     const isMulti = hex === 'multicolor';
-    const light = selected ? isLightColor(selected.value) : false;
+    const light = isLightColor(value);
     return (
-        <div style={{ position: 'relative' }}>
-            <div
-                onClick={() => setOpen(o => !o)}
-                style={{
-                    display: 'flex', alignItems: 'center', gap: '10px',
-                    padding: '0.75rem 1rem', cursor: 'pointer', userSelect: 'none',
-                    border: '1px solid #d1d5db', borderRadius: '0.5rem',
-                    background: 'white', fontSize: '1rem', minHeight: '50px',
-                }}
-            >
-                {selected ? (
-                    <>
-                        {isMulti ? (
-                            <span style={{ display: 'inline-block', width: '22px', height: '22px', borderRadius: '4px', flexShrink: 0, background: 'linear-gradient(135deg,#ef4444 0%,#f59e0b 25%,#22c55e 50%,#3b82f6 75%,#a855f7 100%)', border: '1px solid rgba(0,0,0,0.12)' }} />
-                        ) : (
-                            <span style={{ display: 'inline-block', width: '22px', height: '22px', borderRadius: '4px', flexShrink: 0, background: hex!, border: light ? '1px solid #d1d5db' : '1px solid rgba(0,0,0,0.18)' }} />
-                        )}
-                        <span style={{ flex: 1, fontWeight: 600 }}>{selected.labelAr}</span>
-                        <span style={{ fontSize: '13px', color: '#6b7280' }}>{selected.labelEn}</span>
-                    </>
-                ) : (
-                    <span style={{ flex: 1, color: '#6b7280' }}>بدون لون</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', border: '1px solid #d1d5db', borderRadius: '0.5rem', padding: '0.5rem 0.75rem', background: 'white', minHeight: '50px' }}>
+            {/* Live color swatch */}
+            <div style={{
+                width: '30px', height: '30px', borderRadius: '6px', flexShrink: 0,
+                background: isMulti
+                    ? 'linear-gradient(135deg,#ef4444 0%,#f59e0b 25%,#22c55e 50%,#3b82f6 75%,#a855f7 100%)'
+                    : (isKnown ? hex : '#f1f5f9'),
+                border: isKnown ? (light ? '1px solid #d1d5db' : '1px solid rgba(0,0,0,0.2)') : '2px dashed #cbd5e1',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+                {!isKnown && !isMulti && (
+                    <span style={{ fontSize: '14px', color: '#94a3b8', lineHeight: 1 }}>?</span>
                 )}
-                <ChevronDown size={16} color="#9ca3af" style={{ flexShrink: 0, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
             </div>
-
-            {open && (
-                <>
-                    <div onClick={() => setOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 199 }} />
-                    <div style={{
-                        position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, zIndex: 200,
-                        background: 'white', border: '1px solid #e5e7eb', borderRadius: '10px',
-                        boxShadow: '0 8px 24px rgba(0,0,0,0.14)', overflow: 'hidden', maxHeight: '320px', overflowY: 'auto',
-                    }}>
-                        <div
-                            onClick={() => { onChange(''); setOpen(false); }}
-                            style={{ padding: '11px 14px', cursor: 'pointer', fontSize: '0.9rem', color: '#6b7280', borderBottom: '1px solid #f3f4f6', background: !value ? '#f0f4ff' : 'white' }}
-                            onMouseEnter={e => { if (value) e.currentTarget.style.background = '#f9fafb'; }}
-                            onMouseLeave={e => { if (value) e.currentTarget.style.background = 'white'; }}
-                        >
-                            بدون لون
-                        </div>
-                        {COLORS_LIST.map(c => {
-                            const cHex = getColorHex(c.value);
-                            const cMulti = cHex === 'multicolor';
-                            const cLight = isLightColor(c.value);
-                            const isActive = value === c.value;
-                            return (
-                                <div
-                                    key={c.value}
-                                    onClick={() => { onChange(c.value); setOpen(false); }}
-                                    style={{
-                                        padding: '10px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px',
-                                        background: isActive ? '#f0f4ff' : 'white', fontSize: '0.9rem',
-                                        borderBottom: '1px solid #f9fafb',
-                                    }}
-                                    onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#f9fafb'; }}
-                                    onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'white'; }}
-                                >
-                                    {cMulti ? (
-                                        <span style={{ display: 'inline-block', width: '22px', height: '22px', borderRadius: '4px', flexShrink: 0, background: 'linear-gradient(135deg,#ef4444 0%,#f59e0b 25%,#22c55e 50%,#3b82f6 75%,#a855f7 100%)', border: '1px solid rgba(0,0,0,0.12)' }} />
-                                    ) : (
-                                        <span style={{ display: 'inline-block', width: '22px', height: '22px', borderRadius: '4px', flexShrink: 0, background: cHex, border: cLight ? '1px solid #d1d5db' : '1px solid rgba(0,0,0,0.18)' }} />
-                                    )}
-                                    <span style={{ fontWeight: isActive ? 700 : 500, color: '#111827', flex: 1 }}>{c.labelAr}</span>
-                                    <span style={{ fontSize: '13px', color: '#9ca3af' }}>{c.labelEn}</span>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </>
+            <input
+                list="color-datalist"
+                value={value}
+                onChange={e => onChange(e.target.value)}
+                placeholder="اكتب اسم اللون (مثال: أحمر، أزرق، Blue...)"
+                style={{ flex: 1, border: 'none', outline: 'none', fontSize: '1rem', background: 'transparent', minWidth: 0 }}
+            />
+            {value && (
+                <button
+                    type="button"
+                    onClick={() => onChange('')}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: '2px', flexShrink: 0, lineHeight: 1 }}
+                    title="مسح"
+                >✕</button>
             )}
+            <datalist id="color-datalist">
+                {COLORS_LIST.map(c => (
+                    <option key={c.value} value={c.value}>{c.labelEn}</option>
+                ))}
+            </datalist>
         </div>
     );
 }
@@ -747,56 +708,53 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
                         {/* Size */}
                         <div>
                             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>المقاس (Size)</label>
-                            <select
+                            <input
+                                list="size-datalist"
                                 value={formData.size}
                                 onChange={(e) => setFormData({ ...formData, size: e.target.value })}
+                                placeholder="اكتب المقاس أو اختر من القائمة (مثال: XL، 42، 6-8Y...)"
                                 style={{
                                     width: '100%',
                                     padding: '0.75rem',
                                     border: '1px solid #d1d5db',
                                     borderRadius: '0.5rem',
                                     fontSize: '1rem',
+                                    boxSizing: 'border-box',
                                 }}
-                            >
-                                <option value="">بدون مقاس</option>
-                                <optgroup label="مقاسات ملابس">
-                                    <option value="XS">XS - صغير جداً</option>
-                                    <option value="S">S - صغير</option>
-                                    <option value="M">M - وسط</option>
-                                    <option value="L">L - كبير</option>
-                                    <option value="XL">XL - كبير جداً</option>
-                                    <option value="XXL">XXL - كبير جداً ٢</option>
-                                    <option value="XXXL">XXXL - كبير جداً ٣</option>
-                                </optgroup>
-                                <optgroup label="مقاسات أحذية">
-                                    <option value="36">36</option>
-                                    <option value="37">37</option>
-                                    <option value="38">38</option>
-                                    <option value="39">39</option>
-                                    <option value="40">40</option>
-                                    <option value="41">41</option>
-                                    <option value="42">42</option>
-                                    <option value="43">43</option>
-                                    <option value="44">44</option>
-                                    <option value="45">45</option>
-                                    <option value="46">46</option>
-                                </optgroup>
-                                <optgroup label="مقاسات أطفال">
-                                    <option value="2-3Y">2-3 سنوات</option>
-                                    <option value="3-4Y">3-4 سنوات</option>
-                                    <option value="4-5Y">4-5 سنوات</option>
-                                    <option value="5-6Y">5-6 سنوات</option>
-                                    <option value="6-8Y">6-8 سنوات</option>
-                                    <option value="8-10Y">8-10 سنوات</option>
-                                    <option value="10-12Y">10-12 سنوات</option>
-                                </optgroup>
-                            </select>
+                            />
+                            <datalist id="size-datalist">
+                                <option value="XS" />
+                                <option value="S" />
+                                <option value="M" />
+                                <option value="L" />
+                                <option value="XL" />
+                                <option value="XXL" />
+                                <option value="XXXL" />
+                                <option value="36" />
+                                <option value="37" />
+                                <option value="38" />
+                                <option value="39" />
+                                <option value="40" />
+                                <option value="41" />
+                                <option value="42" />
+                                <option value="43" />
+                                <option value="44" />
+                                <option value="45" />
+                                <option value="46" />
+                                <option value="2-3Y" />
+                                <option value="3-4Y" />
+                                <option value="4-5Y" />
+                                <option value="5-6Y" />
+                                <option value="6-8Y" />
+                                <option value="8-10Y" />
+                                <option value="10-12Y" />
+                            </datalist>
                         </div>
 
                         {/* Color */}
                         <div>
                             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>اللون (Color)</label>
-                            <ColorPickerSelect
+                            <ColorFreeInput
                                 value={formData.color}
                                 onChange={(v) => setFormData({ ...formData, color: v })}
                             />

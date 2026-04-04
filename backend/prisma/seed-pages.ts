@@ -49,6 +49,15 @@ const pages = [
         route: '/expenses',
         sortOrder: 5,
     },
+    {
+        key: 'treasury',
+        nameEn: 'Treasury',
+        nameAr: 'الخزينة',
+        category: 'transactions',
+        icon: 'Landmark',
+        route: '/treasury',
+        sortOrder: 6,
+    },
 
     // Inventory Category (المخزون)
     {

@@ -20,7 +20,7 @@ export class PurchasingService {
   ) { }
 
   // ============= Suppliers =============
-  
+
   async getSuppliersStats() {
     const [
       totalSuppliers,
@@ -98,9 +98,9 @@ export class PurchasingService {
         where,
         skip: validatedSkip,
         take: validatedTake,
-        orderBy: sortBy === 'name' ? { name: sortOrder } : 
-                 sortBy === 'createdAt' ? { createdAt: sortOrder } : 
-                 { createdAt: 'desc' },
+        orderBy: sortBy === 'name' ? { name: sortOrder } :
+          sortBy === 'createdAt' ? { createdAt: sortOrder } :
+            { createdAt: 'desc' },
         include: {
           goodsReceipts: {
             select: { total: true },
@@ -120,7 +120,7 @@ export class PurchasingService {
       const totalInvoiced = s.goodsReceipts.reduce((sum, g) => sum + Number(g.total), 0);
       const totalPaid = s.payments.reduce((sum, p) => sum + Number(p.amount), 0);
       const balance = totalInvoiced - totalPaid;
-      
+
       return {
         id: s.id,
         name: s.name,
@@ -148,7 +148,7 @@ export class PurchasingService {
 
     // Sort by balance if requested
     if (sortBy === 'balance') {
-      suppliersWithBalance.sort((a, b) => 
+      suppliersWithBalance.sort((a, b) =>
         sortOrder === 'desc' ? b.balance - a.balance : a.balance - b.balance
       );
     }
@@ -359,6 +359,21 @@ export class PurchasingService {
 
           // ✅ Track product for later price update
           productIds.push(line.productId);
+        }
+
+        // ✅ Auto-create supplier payment for CASH transactions
+        if ((createGRNDto.paymentTerm || 'CASH') === 'CASH') {
+          await tx.supplierPayment.create({
+            data: {
+              supplierId,
+              grnId: grn.id,
+              amount: grn.total,
+              paymentDate: new Date(),
+              method: createGRNDto.paymentMethod || 'CASH',
+              notes: `استلام بضاعة - ${grn.grnNo}`,
+              createdBy: userId,
+            },
+          });
         }
 
         return grn;

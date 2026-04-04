@@ -12,7 +12,7 @@ import Users from './pages/Users';
 import Reports from './pages/Reports';
 import Customers from './pages/Customers';
 import StockAdjustments from './pages/StockAdjustments';
-//import Transfers from './pages/Transfers';
+import Transfers from './pages/Transfers';
 import Returns from './pages/Returns';
 import PlatformSettings from './pages/PlatformSettings';
 import PriceManagement from './pages/PriceManagement';
@@ -21,6 +21,7 @@ import CustomerPayments from './pages/CustomerPayments';
 import Roles from './pages/Roles';
 import CostVerification from './pages/CostVerification';
 import Expenses from './pages/Expenses';
+import Treasury from './pages/Treasury';
 
 
 export default function App() {
@@ -44,12 +45,14 @@ export default function App() {
           <Route path="sales/:id" element={<SalesDetail />} />  {/* ✅ ADDED */}
           <Route path="suppliers" element={<Suppliers />} />
           <Route path="receive-goods" element={<ReceiveGoods />} />
+          <Route path="goods-receipts" element={<ReceiveGoods />} />
           <Route path="categories" element={<Categories />} />
           <Route path="users" element={<Users />} />
           <Route path="reports" element={<Reports />} />
           <Route path="customers" element={<Customers />} />
           <Route path="stock-adjustments" element={<StockAdjustments />} />
-          {/* <Route path="transfers" element={<Transfers />} /> */}
+          <Route path="stock-adjustment" element={<StockAdjustments />} />
+          <Route path="transfers" element={<Transfers />} />
           <Route path="returns" element={<Returns />} />
           <Route path="/platform-settings" element={<ProtectedRoute><PlatformSettings /></ProtectedRoute>} />
           <Route path="settings" element={<PlatformSettings />} />
@@ -57,8 +60,10 @@ export default function App() {
           {/* <Route path="product-transactions" element={<ProductTransactions />} /> */}
           <Route path="/settings/platforms" element={<ProtectedRoute><PlatformSettings /></ProtectedRoute>} />
           <Route path="/customer-payments" element={<CustomerPayments />} />
+          <Route path="/customer-accounts" element={<CustomerPayments />} />
           <Route path="/roles" element={<Roles />} />
           <Route path="/expenses" element={<Expenses />} />
+          <Route path="/treasury" element={<Treasury />} />
 
         </Route>
       </Routes>
