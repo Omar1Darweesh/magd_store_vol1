@@ -1,0 +1,31 @@
+node_modules
+dist
+build
+.env
+.DS_Store
+coverage
+.vscode
+.idea
+# Portable runtimes (too large for git)
+node-portable/
+postgresql-portable/
+
+# Data folders
+postgresql-data/
+
+# Environment files
+backend/.env
+pos-client/.env
+backoffice/.env
+SERVER_IP.txt
+
+# Activation files
+ACTIVATION.lock
+.activation_record
+
+# Logs
+*.log
+
+# Developer tools
+unlock folders.bat
+lock folders.bat
