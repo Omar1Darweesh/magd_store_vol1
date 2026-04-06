@@ -1,0 +1,592 @@
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+APT - COMPREHENSIVE DATA REPORT
+Generated: 3/17/2026, 1:29:08 AM
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+📊 SUMMARY
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+Total Rows Processed:                           170
+✅ Successfully Inserted:                        158
+❌ Insertion Errors:                             6
+❌ Skipped (No Name):                            0
+❌ Removed (Duplicate Codes in Excel):           6 products
+⭐ Auto-Generated Codes:                         3 products
+⭐ Barcodes Set to NULL (Duplicate in Excel):    8 products
+⭐ Barcodes Auto-Generated (Empty in Excel):     58 products
+⚠️  Barcodes Modified (Cross-Brand Conflict):    0 products (added DUPL suffix)
+📁 Empty ItemTypes Created:                      30
+
+📐 CALCULATION:
+  170 (total rows)
+  - 0 (no name)
+  - 6 (duplicate codes removed)
+  ───────────
+  = 164 (expected to insert)
+  - 6 (insertion errors)
+  ───────────
+  = 158 (actually inserted)
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+PRODUCT COUNTS BY HIERARCHY
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+📦 CATEGORIES:
+  APT: 164 products
+
+📂 SUBCATEGORIES:
+  APT > كهرباء: 40 products
+  APT > يدوي: 68 products
+  APT > اكسسوارات: 10 products
+  APT > بطاررية: 8 products
+  APT > جاردن: 15 products
+  APT > وحدات قياس: 15 products
+  APT > هواء: 8 products
+
+📁 ITEM TYPES (All):
+  APT > يدوي > بنس كماشة فرنساوي انجليزي: 18 products
+  APT > يدوي > مفكات: 16 products
+  APT > يدوي > شاكوش ومطرقة: 11 products
+  APT > كهرباء > صاروخ: 10 products
+  APT > كهرباء > وهيلتي: 9 products
+  APT > هواء > دهانات: 8 products
+  APT > اكسسوارات > صنية والماظة: 7 products
+  APT > بطاررية > شنيور وهيلتي ودريل: 7 products
+  APT > جاردن > خراطيم: 6 products
+  APT > وحدات قياس > امتار يدوي: 6 products
+  APT > يدوي > ادوات سيارات: 5 products
+  APT > يدوي > مقصات: 5 products
+  APT > جاردن > ماكن غسيل: 5 products
+  APT > كهرباء > شنيور: 4 products
+  APT > يدوي > مفاتيح: 4 products
+  APT > وحدات قياس > زاوية علام: 4 products
+  APT > كهرباء > تسخين هوت جن: 3 products
+  APT > كهرباء > اركت: 3 products
+  APT > كهرباء > صنفرة: 3 products
+  APT > جاردن > ادوات زراعة: 3 products
+  APT > وحدات قياس > ميزان ليزر: 3 products
+  APT > كهرباء > صنية: 2 products
+  APT > كهرباء > ديسك: 2 products
+  APT > يدوي > اطقم عده: 2 products
+  APT > يدوي > اطقم الن وبيبه: 2 products
+  APT > يدوي > قطرات: 2 products
+  APT > اكسسوارات > احجار: 2 products
+  APT > وحدات قياس > ميزان مياه: 2 products
+  APT > كهرباء > بلاور: 1 products
+  APT > كهرباء > راوتر: 1 products
+  APT > كهرباء > فارة: 1 products
+  APT > كهرباء > ماكن لحام  بولي: 1 products
+  APT > يدوي > لقم ويد سيستم: 1 products
+  APT > يدوي > مسدس شمع: 1 products
+  APT > يدوي > منشار خشابي وحدادي: 1 products
+  APT > اكسسوارات > فرش: 1 products
+  APT > بطاررية > صاروخ: 1 products
+  APT > جاردن > مناشير زراعية: 1 products
+  APT > كهرباء > دهانات: 0 products ⭐ EMPTY
+  APT > كهرباء > ماكن جلخ: 0 products ⭐ EMPTY
+  APT > كهرباء > ماكن لحام  قصدير: 0 products ⭐ EMPTY
+  APT > كهرباء > ماكن لحام حديد: 0 products ⭐ EMPTY
+  APT > يدوي > ماكن سيراميك: 0 products ⭐ EMPTY
+  APT > يدوي > شنط عده: 0 products ⭐ EMPTY
+  APT > يدوي > قمطة وزرجينة ومنجلة: 0 products ⭐ EMPTY
+  APT > يدوي > اجنة ومسمار يدوي: 0 products ⭐ EMPTY
+  APT > يدوي > مسدس سليكون: 0 products ⭐ EMPTY
+  APT > يدوي > بوكليز: 0 products ⭐ EMPTY
+  APT > يدوي > جوانتي: 0 products ⭐ EMPTY
+  APT > يدوي > نظارت: 0 products ⭐ EMPTY
+  APT > يدوي > ازميل: 0 products ⭐ EMPTY
+  APT > يدوي > دباسة خشب: 0 products ⭐ EMPTY
+  APT > يدوي > ادوات دهانات: 0 products ⭐ EMPTY
+  APT > اكسسوارات > بنط: 0 products ⭐ EMPTY
+  APT > اكسسوارات > قطع غيار: 0 products ⭐ EMPTY
+  APT > اكسسوارات > سلاح اركت: 0 products ⭐ EMPTY
+  APT > اكسسوارات > صنفرة وادوات ماكن لحام: 0 products ⭐ EMPTY
+  APT > بطاررية > اطقم كومبو: 0 products ⭐ EMPTY
+  APT > بطاررية > دهانات: 0 products ⭐ EMPTY
+  APT > بطاررية > بلاور وتسخين: 0 products ⭐ EMPTY
+  APT > بطاررية > كشافات: 0 products ⭐ EMPTY
+  APT > بطاررية > صنية: 0 products ⭐ EMPTY
+  APT > جاردن > رشاشات: 0 products ⭐ EMPTY
+  APT > جاردن > مقصات زرع: 0 products ⭐ EMPTY
+  APT > جاردن > ماكن قص نجيلة: 0 products ⭐ EMPTY
+  APT > وحدات قياس > امتار ليزر: 0 products ⭐ EMPTY
+  APT > هواء > دباسات: 0 products ⭐ EMPTY
+  APT > هواء > دريل: 0 products ⭐ EMPTY
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+⭐ EMPTY ITEM TYPES CREATED - 30
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+NOTE: These ItemTypes were found in Excel but have NO products.
+They were created in the database structure.
+
+1. APT > كهرباء > دهانات
+2. APT > كهرباء > ماكن جلخ
+3. APT > كهرباء > ماكن لحام  قصدير
+4. APT > كهرباء > ماكن لحام حديد
+5. APT > يدوي > ماكن سيراميك
+6. APT > يدوي > شنط عده
+7. APT > يدوي > قمطة وزرجينة ومنجلة
+8. APT > يدوي > اجنة ومسمار يدوي
+9. APT > يدوي > مسدس سليكون
+10. APT > يدوي > بوكليز
+11. APT > يدوي > جوانتي
+12. APT > يدوي > نظارت
+13. APT > يدوي > ازميل
+14. APT > يدوي > دباسة خشب
+15. APT > يدوي > ادوات دهانات
+16. APT > اكسسوارات > بنط
+17. APT > اكسسوارات > قطع غيار
+18. APT > اكسسوارات > سلاح اركت
+19. APT > اكسسوارات > صنفرة وادوات ماكن لحام
+20. APT > بطاررية > اطقم كومبو
+21. APT > بطاررية > دهانات
+22. APT > بطاررية > بلاور وتسخين
+23. APT > بطاررية > كشافات
+24. APT > بطاررية > صنية
+25. APT > جاردن > رشاشات
+26. APT > جاردن > مقصات زرع
+27. APT > جاردن > ماكن قص نجيلة
+28. APT > وحدات قياس > امتار ليزر
+29. APT > هواء > دباسات
+30. APT > هواء > دريل
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+MISSING FIELDS SUMMARY
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+⭐ Products with AUTO-GENERATED CODE:             12
+⭐ Products with AUTO-GENERATED BARCODE:          58
+ℹ️  Products with ZERO quantity:                  36
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+⭐ AUTO-GENERATED CODES - 3 PRODUCTS
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+NOTE: These products had NO CODE in Excel. Test codes were auto-generated.
+
+1. Row 108: دقماق
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  Original Code: EMPTY
+  Generated Code: TEST-1773703747886-15C5UX
+  Barcode: 6221257000023
+  Location: يدوي / شاكوش ومطرقة
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED CODE
+
+2. Row 109: مطرقه 1000
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  Original Code: EMPTY
+  Generated Code: TEST-1773703747886-B6JZ5U
+  Barcode: 6223007702263
+  Location: يدوي / شاكوش ومطرقة
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED CODE
+
+3. Row 196: خرطوم مياه 25 متر 2/1 بوصه
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  Original Code: EMPTY
+  Generated Code: TEST-1773703747886-0L76FV
+  Barcode: 6221257483994
+  Location: جاردن / خراطيم
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED CODE
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+❌ INSERTION ERRORS - 6 PRODUCTS FAILED TO INSERT
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+NOTE: These products passed validation but failed during database insertion.
+
+1. Row 143: كوريك تمساح شنطه بلاستك 2 طن
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  Code: TA820050FS
+  Barcode: 6221257441611
+  Location: يدوي / ادوات سيارات
+  ❌ ERROR: 
+Invalid `prisma.product.create()` invocation:
+
+
+Null constraint violation on the fields: (`barcode`)
+
+2. Row 144: كوريك باكم صيني 2طن 276
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  Code: T90204D
+  Barcode: 6221257441611
+  Location: يدوي / ادوات سيارات
+  ❌ ERROR: 
+Invalid `prisma.product.create()` invocation:
+
+
+Null constraint violation on the fields: (`barcode`)
+
+3. Row 232: زاويه صلب 300مم
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  Code: DL1C12
+  Barcode: 6221257025019
+  Location: وحدات قياس / زاوية علام
+  ❌ ERROR: 
+Invalid `prisma.product.create()` invocation:
+
+
+Null constraint violation on the fields: (`barcode`)
+
+4. Row 235: زاويه صلب اسود 300_200
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  Code: 200*300
+  Barcode: 6221257025019
+  Location: وحدات قياس / زاوية علام
+  ❌ ERROR: 
+Invalid `prisma.product.create()` invocation:
+
+
+Null constraint violation on the fields: (`barcode`)
+
+5. Row 242: مسدس دكو مقلوب فونيه 1.5
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  Code: F75G
+  Barcode: 6221257038804
+  Location: هواء / دهانات
+  ❌ ERROR: 
+Invalid `prisma.product.create()` invocation:
+
+
+Null constraint violation on the fields: (`barcode`)
+
+6. Row 244: مسدس دكو مقلوب بنته بلاستك
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  Code: AB-17G
+  Barcode: 6221257038804
+  Location: هواء / دهانات
+  ❌ ERROR: 
+Invalid `prisma.product.create()` invocation:
+
+
+Null constraint violation on the fields: (`barcode`)
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+❌ DUPLICATE CODES IN EXCEL - 3 FOUND (ALL PRODUCTS REMOVED)
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+NOTE: When CODE is duplicated within the Excel sheet, ALL products with that code are REMOVED.
+CODE must be unique - it is the primary identifier.
+
+❌ CODE: DW07705 (used 2 times - ALL 2 PRODUCTS REMOVED)
+  1. Row 47: ديسك قطعيه 900وات 7 وربع
+     Barcode: EMPTY
+     Location: كهرباء / ديسك
+  2. Row 51: ديسك قطعيه زوايا 900
+     Barcode: 6221257377149
+     Location: كهرباء / ديسك
+
+❌ CODE: DW07716 (used 2 times - ALL 2 PRODUCTS REMOVED)
+  1. Row 48: ديسك قطعيه 1200وات
+     Barcode: EMPTY
+     Location: كهرباء / ديسك
+  2. Row 50: ديسك قطعيه زوايا 1200 8"
+     Barcode: 6221257353860
+     Location: كهرباء / ديسك
+
+❌ CODE: DW0611045 (used 2 times - ALL 2 PRODUCTS REMOVED)
+  1. Row 179: شنيور 10مم ظرف معدن 20 فولت 50 نيوتن واحد بطاريه عاده
+     Barcode: 6221257527667
+     Location: بطاررية / شنيور وهيلتي ودريل
+  2. Row 180: شنيور 10 مم ظرف معدن 20 فولت 50 نيوتن2بطاريه شنطه عاده
+     Barcode: 6221257527667
+     Location: بطاررية / شنيور وهيلتي ودريل
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+⭐ DUPLICATE BARCODES IN EXCEL - 4 FOUND
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+NOTE: When BARCODE is duplicated within the Excel sheet, barcode is SET TO NULL.
+Products are inserted WITHOUT barcode.
+
+⭐ BARCODE: 6221257441611 (used 2 times)
+  1. Row 143: كوريك تمساح شنطه بلاستك 2 طن
+     Code: TA820050FS
+     Original Barcode: 6221257441611
+     Modified Barcode: NULL
+     Location: يدوي / ادوات سيارات
+     Status: ✅ PRODUCT INSERTED WITHOUT BARCODE
+  2. Row 144: كوريك باكم صيني 2طن 276
+     Code: T90204D
+     Original Barcode: 6221257441611
+     Modified Barcode: NULL
+     Location: يدوي / ادوات سيارات
+     Status: ✅ PRODUCT INSERTED WITHOUT BARCODE
+
+⭐ BARCODE: 6221257527667 (used 2 times)
+  1. Row 179: شنيور 10مم ظرف معدن 20 فولت 50 نيوتن واحد بطاريه عاده
+     Code: DW0611045
+     Original Barcode: 6221257527667
+     Modified Barcode: NULL
+     Location: بطاررية / شنيور وهيلتي ودريل
+     Status: ✅ PRODUCT INSERTED WITHOUT BARCODE
+  2. Row 180: شنيور 10 مم ظرف معدن 20 فولت 50 نيوتن2بطاريه شنطه عاده
+     Code: DW0611045
+     Original Barcode: 6221257527667
+     Modified Barcode: NULL
+     Location: بطاررية / شنيور وهيلتي ودريل
+     Status: ✅ PRODUCT INSERTED WITHOUT BARCODE
+
+⭐ BARCODE: 6221257025019 (used 2 times)
+  1. Row 232: زاويه صلب 300مم
+     Code: DL1C12
+     Original Barcode: 6221257025019
+     Modified Barcode: NULL
+     Location: وحدات قياس / زاوية علام
+     Status: ✅ PRODUCT INSERTED WITHOUT BARCODE
+  2. Row 235: زاويه صلب اسود 300_200
+     Code: 200*300
+     Original Barcode: 6221257025019
+     Modified Barcode: NULL
+     Location: وحدات قياس / زاوية علام
+     Status: ✅ PRODUCT INSERTED WITHOUT BARCODE
+
+⭐ BARCODE: 6221257038804 (used 2 times)
+  1. Row 242: مسدس دكو مقلوب فونيه 1.5
+     Code: F75G
+     Original Barcode: 6221257038804
+     Modified Barcode: NULL
+     Location: هواء / دهانات
+     Status: ✅ PRODUCT INSERTED WITHOUT BARCODE
+  2. Row 244: مسدس دكو مقلوب بنته بلاستك
+     Code: AB-17G
+     Original Barcode: 6221257038804
+     Modified Barcode: NULL
+     Location: هواء / دهانات
+     Status: ✅ PRODUCT INSERTED WITHOUT BARCODE
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+⭐ PRODUCTS WITH AUTO-GENERATED BARCODE (58)
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+NOTE: These products had NO barcode in Excel. Barcode was auto-generated from hierarchy.
+
+1. Row 12: كيت شاكوش تكسير 1700
+  Code: DW63
+  Generated Barcode: APT
+  Location: كهرباء / وهيلتي
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+2. Row 13: كيت شاكوش 1500 وات 36معدن
+  Code: DW36HT
+  Generated Barcode: APTDUPL1
+  Location: كهرباء / وهيلتي
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+3. Row 15: هليتي عدل 800
+  Code: DW2621
+  Generated Barcode: APTDUPL2
+  Location: كهرباء / وهيلتي
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+4. Row 16: كيت شاكوش 1500 بلاستيك كبير
+  Code: DW36DT
+  Generated Barcode: APTDUPL3
+  Location: كهرباء / وهيلتي
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+5. Row 22: مسدس تسخين 2000وات
+  Code: DW09250
+  Generated Barcode: APTDUPL4
+  Location: كهرباء / تسخين هوت جن
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+6. Row 27: صاروخ قطعيه 2100 وات9 بوصه
+  Code: DW05623
+  Generated Barcode: APTDUPL5
+  Location: كهرباء / صاروخ
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+7. Row 30: صاروخ 600
+  Code: DW05215-V2
+  Generated Barcode: APTDUPL6
+  Location: كهرباء / صاروخ
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+8. Row 32: صاروخ تلميع 7"1200 وات
+  Code: DW06350
+  Generated Barcode: APTDUPL7
+  Location: كهرباء / صاروخ
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+9. Row 36: ميني كرافت 135وات 129 ق
+  Code: DW06412
+  Generated Barcode: APTDUPL8
+  Location: كهرباء / صاروخ
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+10. Row 49: ديسك قطعيه زوايا 2200 \12"
+  Code: DW07751
+  Generated Barcode: APTDUPL11
+  Location: كهرباء / ديسك
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+11. Row 62: شنطه لحام مواسير بلاستيك 2000 وات
+  Code: DW19925
+  Generated Barcode: APTDUPL12
+  Location: كهرباء / ماكن لحام  بولي
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+12. Row 70: مفك عاده ازرق 5*150مم
+  Code: AH114130073-5150
+  Generated Barcode: APTDUPL13
+  Location: يدوي / مفكات
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+13. Row 71: مفك صليبه150*2 ازرق PH
+  Code: AH114132073-2150
+  Generated Barcode: APTDUPL14
+  Location: يدوي / مفكات
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+14. Row 73: علبه 10سن مفك عاده وصليبه
+  Code: AH2061002114
+  Generated Barcode: APTDUPL15
+  Location: يدوي / مفكات
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+15. Row 76: مفك صليبه 150*2 مم PH
+  Code: AH142274
+  Generated Barcode: APTDUPL16
+  Location: يدوي / مفكات
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+16. Row 78: مفك دق صليبه شفاف سلاح اخر
+  Code: 506025
+  Generated Barcode: APTDUPL17
+  Location: يدوي / مفكات
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+17. Row 79: مفك دق عاده شفاف سلاح للاخر 6*150 مم
+  Code: 506002
+  Generated Barcode: APTDUPL18
+  Location: يدوي / مفكات
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+18. Row 80: مفك دق عاده شفاف سلاح للاخر 8*250مم
+  Code: 506005
+  Generated Barcode: APTDUPL19
+  Location: يدوي / مفكات
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+19. Row 81: علبه 10 سن مفك صليبه اتجاهين
+  Code: AH2021002222
+  Generated Barcode: APTDUPL20
+  Location: يدوي / مفكات
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+20. Row 84: طقم لقم رباط مسدسه2\1
+  Code: 123012
+  Generated Barcode: APTDUPL21
+  Location: يدوي / لقم ويد سيستم
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+21. Row 86: كماشه حداد مسلح 9" هندي
+  Code: 5242-220
+  Generated Barcode: APTDUPL22
+  Location: يدوي / بنس كماشة فرنساوي انجليزي
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+22. Row 87: بنسه لحام 800امبير
+  Code: GW-800_AMP
+  Generated Barcode: APTDUPL23
+  Location: يدوي / بنس كماشة فرنساوي انجليزي
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+23. Row 88: بنسه غراب 10"يد عازل هندي
+  Code: 5231-250
+  Generated Barcode: APTDUPL24
+  Location: يدوي / بنس كماشة فرنساوي انجليزي
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+24. Row 94: بنسة غراب 12 بوصة
+  Code: AH1233240-12
+  Generated Barcode: APTDUPL25
+  Location: يدوي / بنس كماشة فرنساوي انجليزي
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+25. Row 95: بوكليز 6"
+  Code: TYK150
+  Generated Barcode: APTDUPL26
+  Location: يدوي / بنس كماشة فرنساوي انجليزي
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+26. Row 96: بوكليز 8"
+  Code: TYK200
+  Generated Barcode: APTDUPL27
+  Location: يدوي / بنس كماشة فرنساوي انجليزي
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+27. Row 97: بنسه برشام 9.5"
+  Code: AH2413100-230
+  Generated Barcode: APTDUPL28
+  Location: يدوي / بنس كماشة فرنساوي انجليزي
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+28. Row 101: بنسه تيل داخليه بوز عدل 7بوصه
+  Code: AH1112040-180
+  Generated Barcode: APTDUPL29
+  Location: يدوي / بنس كماشة فرنساوي انجليزي
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+29. Row 103: كماشه نجاري يد عازل 7 "هندي
+  Code: GCF-519
+  Generated Barcode: APTDUPL30
+  Location: يدوي / بنس كماشة فرنساوي انجليزي
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+30. Row 105: شنطه 219 قطعه
+  Code: 121219
+  Generated Barcode: APTDUPL31
+  Location: يدوي / اطقم عده
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+... and 28 more
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+⚠️ PRODUCTS WITH MISSING COST (12)
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+1. Row 5: شنيور 1050
+  Code: DW02795 V4
+  Location: كهرباء / شنيور
+
+2. Row 52: ديسك 10 بوصه 2000وات
+  Code: DW07743
+  Location: كهرباء / ديسك
+
+3. Row 67: مفك قلاب
+  Code: 546201_L150
+  Location: يدوي / مفكات
+
+4. Row 87: بنسه لحام 800امبير
+  Code: GW-800_AMP
+  Location: يدوي / بنس كماشة فرنساوي انجليزي
+
+5. Row 108: دقماق
+  Code: TEST-1773703747886-15C5UX
+  Location: يدوي / شاكوش ومطرقة
+
+6. Row 109: مطرقه 1000
+  Code: TEST-1773703747886-B6JZ5U
+  Location: يدوي / شاكوش ومطرقة
+
+7. Row 121: طقم الانكيه طويل عاده
+  Code: AH511521-9
+  Location: يدوي / اطقم الن وبيبه
+
+8. Row 135: طقم مفتاح بلدي 6الي 32
+  Code: GCF-302
+  Location: يدوي / مفاتيح
+
+9. Row 136: طقم مفتاح ناحيه وناحيه 8 الي 32
+  Code: GCF-305
+  Location: يدوي / مفاتيح
+
+10. Row 164: الماظة 7 بوصة حوائط
+  Code: DW200316-7
+  Location: اكسسوارات / صنية والماظة
+
+11. Row 218: متر 3*16سلاح ابيض
+  Code: CR-3K57W
+  Location: وحدات قياس / امتار يدوي
+
+12. Row 219: متر 5*19سلاح ابيض
+  Code: CR-5K47E
+  Location: وحدات قياس / امتار يدوي
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+END OF REPORT
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
