@@ -17,7 +17,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 @Controller('pos')
 @UseGuards(JwtAuthGuard)
 export class SalesController {
-  constructor(private readonly salesService: SalesService) {}
+  constructor(private readonly salesService: SalesService) { }
 
   // ✅ FIXED: Changed method name from createSaleWithPaymentType to createSale
   @Post('sales')
@@ -80,26 +80,28 @@ export class SalesController {
     @Query('take') take?: string,
     @Query('branchId') branchId?: string,
     @Query('customerId') customerId?: string,
-    @Query('userId') userId?: string, // ✅ NEW
-    @Query('channel') channel?: string, // ✅ NEW
+    @Query('userId') userId?: string,
+    @Query('channel') channel?: string,
     @Query('search') search?: string,
     @Query('paymentMethod') paymentMethod?: string,
     @Query('dateFilter') dateFilter?: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
+    @Query('businessDayId') businessDayId?: string,
   ) {
     return this.salesService.findAll({
       skip: skip ? parseInt(skip) : undefined,
       take: take ? parseInt(take) : undefined,
       branchId: branchId ? parseInt(branchId) : undefined,
       customerId: customerId ? parseInt(customerId) : undefined,
-      userId: userId ? parseInt(userId) : undefined, // ✅ NEW
-      channel: channel && channel !== 'ALL' ? channel : undefined, // ✅ NEW
+      userId: userId ? parseInt(userId) : undefined,
+      channel: channel && channel !== 'ALL' ? channel : undefined,
       search,
       paymentMethod,
       dateFilter,
       startDate,
       endDate,
+      businessDayId: businessDayId ? parseInt(businessDayId) : undefined,
     });
   }
 

@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import apiClient from '../api/client';
 import { Plus, Trash2, Save, Search, X, Package, AlertCircle, CheckCircle2, History, Eye, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 
@@ -7,6 +7,7 @@ const PAYMENT_TERMS = [
     { value: 'DAYS_15', label: 'آجل 15 يوم', subLabel: 'Net 15', days: 15, color: '#d97706', bg: '#fef3c7', border: '#d97706' },
     { value: 'DAYS_30', label: 'آجل 30 يوم', subLabel: 'Net 30', days: 30, color: '#ea580c', bg: '#ffedd5', border: '#ea580c' },
     { value: 'DAYS_60', label: 'آجل 60 يوم', subLabel: 'Net 60', days: 60, color: '#dc2626', bg: '#fee2e2', border: '#dc2626' },
+    { value: 'DAYS_CUSTOM', label: 'آجل مخصص', subLabel: 'Custom', days: -1, color: '#7c3aed', bg: '#ede9fe', border: '#7c3aed' },
 ];
 
 function calcDueDate(days: number): string | null {
@@ -31,6 +32,7 @@ export default function ReceiveGoods() {
     const [lines, setLines] = useState<GRNLine[]>([]);
     const [supplierId, setSupplierId] = useState('');
     const [paymentTerm, setPaymentTerm] = useState('CASH');
+    const [customDays, setCustomDays] = useState<number | ''>(30);
     const [paymentMethod, setPaymentMethod] = useState('CASH');
     const [taxRate, setTaxRate] = useState(15);
     const [notes, setNotes] = useState('');
@@ -50,7 +52,8 @@ export default function ReceiveGoods() {
     const GRN_PAGE_SIZE = 20;
 
     const activeTerm = PAYMENT_TERMS.find(t => t.value === paymentTerm) || PAYMENT_TERMS[0];
-    const dueDate = calcDueDate(activeTerm.days);
+    const effectiveDays = paymentTerm === 'DAYS_CUSTOM' ? (Number(customDays) || 0) : activeTerm.days;
+    const dueDate = calcDueDate(effectiveDays);
     const subtotal = lines.reduce((s, l) => s + l.qty * l.cost, 0);
     const taxAmount = (subtotal * taxRate) / 100;
     const total = subtotal + taxAmount;
@@ -126,6 +129,7 @@ export default function ReceiveGoods() {
             const payload = {
                 branchId: 1, supplierId: parseInt(supplierId), paymentTerm, taxRate,
                 notes,
+                ...(paymentTerm === 'DAYS_CUSTOM' ? { creditDays: Number(customDays) || 0 } : {}),
                 ...(paymentTerm === 'CASH' ? { paymentMethod } : {}),
                 lines: lines.map(l => ({ productId: l.productId, qty: l.qty, cost: l.cost })),
             };
@@ -204,7 +208,7 @@ export default function ReceiveGoods() {
                     {/* ── Section 2: Payment type ── */}
                     <div className="card" style={{ marginBottom: '1rem' }}>
                         <h3 style={{ margin: '0 0 14px', fontSize: '15px', fontWeight: 700, color: '#374151' }}>طريقة الدفع</h3>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
                             {PAYMENT_TERMS.map(t => {
                                 const active = paymentTerm === t.value;
                                 return (
@@ -217,12 +221,43 @@ export default function ReceiveGoods() {
                                         }}>
                                         <div style={{ fontWeight: 700, fontSize: '15px', color: active ? t.color : '#374151' }}>{t.label}</div>
                                         <div style={{ fontSize: '12px', color: active ? t.color : '#9ca3af', marginTop: '2px' }}>{t.subLabel}</div>
-                                        {active && t.days === 0 && <div style={{ marginTop: '6px', fontSize: '11px', color: t.color, fontWeight: 700 }}>دفع فوري ✓</div>}
-                                        {active && dueDate && <div style={{ marginTop: '6px', fontSize: '11px', color: t.color, fontWeight: 600 }}>استحقاق: {dueDate}</div>}
+                                        {active && t.value === 'CASH' && <div style={{ marginTop: '6px', fontSize: '11px', color: t.color, fontWeight: 700 }}>دفع فوري ✓</div>}
+                                        {active && t.value !== 'CASH' && t.value !== 'DAYS_CUSTOM' && dueDate && <div style={{ marginTop: '6px', fontSize: '11px', color: t.color, fontWeight: 600 }}>استحقاق: {dueDate}</div>}
+                                        {active && t.value === 'DAYS_CUSTOM' && dueDate && <div style={{ marginTop: '6px', fontSize: '11px', color: t.color, fontWeight: 600 }}>استحقاق: {dueDate}</div>}
                                     </button>
                                 );
                             })}
                         </div>
+
+                        {/* Custom days input */}
+                        {paymentTerm === 'DAYS_CUSTOM' && (
+                            <div style={{ marginTop: '14px', display: 'flex', alignItems: 'center', gap: '12px', background: '#f5f3ff', border: '1px solid #c4b5fd', borderRadius: '10px', padding: '14px 18px' }}>
+                                <span style={{ fontSize: '14px', fontWeight: 600, color: '#6d28d9', whiteSpace: 'nowrap' }}>عدد الأيام:</span>
+                                <input
+                                    type="number"
+                                    min={1}
+                                    max={365}
+                                    value={customDays}
+                                    onChange={e => setCustomDays(e.target.value === '' ? '' : Math.max(1, parseInt(e.target.value) || 1))}
+                                    placeholder="أدخل عدد الأيام..."
+                                    style={{
+                                        width: '120px', padding: '8px 12px', border: '1.5px solid #a78bfa',
+                                        borderRadius: '8px', fontSize: '16px', fontWeight: 700, textAlign: 'center',
+                                        color: '#5b21b6', background: 'white', fontFamily: 'inherit',
+                                        outline: 'none',
+                                    }}
+                                    onFocus={e => e.target.style.borderColor = '#7c3aed'}
+                                    onBlur={e => e.target.style.borderColor = '#a78bfa'}
+                                />
+                                <span style={{ fontSize: '13px', color: '#7c3aed' }}>يوم</span>
+                                {dueDate && (
+                                    <span style={{ fontSize: '13px', color: '#6d28d9', fontWeight: 600, marginRight: 'auto' }}>
+                                        📅 الاستحقاق: {dueDate}
+                                    </span>
+                                )}
+                            </div>
+                        )}
+
                         {paymentTerm === 'CASH' && (
                             <div style={{ marginTop: '14px' }}>
                                 <div style={{ fontSize: '13px', fontWeight: 600, color: '#374151', marginBottom: '8px' }}>وسيلة الدفع</div>
@@ -251,7 +286,7 @@ export default function ReceiveGoods() {
                         )}
                         {paymentTerm !== 'CASH' && (
                             <div style={{ marginTop: '12px', padding: '10px 14px', background: activeTerm.bg, borderRadius: '8px', fontSize: '13px', color: activeTerm.color, fontWeight: 600 }}>
-                                ⚠️ فاتورة آجلة — تاريخ الاستحقاق: {dueDate}. تذكر تسجيل الدفع عند السداد.
+                                ⚠️ فاتورة آجلة {effectiveDays > 0 ? `(${effectiveDays} يوم)` : ''} — تاريخ الاستحقاق: {dueDate}. تذكر تسجيل الدفع عند السداد.
                             </div>
                         )}
                     </div>
@@ -470,6 +505,9 @@ export default function ReceiveGoods() {
                                     <tbody>
                                         {grns.map(grn => {
                                             const termCfg = PAYMENT_TERMS.find(t => t.value === grn.paymentTerm) || PAYMENT_TERMS[0];
+                                            const termLabel = grn.paymentTerm === 'DAYS_CUSTOM' && grn.creditDays
+                                                ? `آجل ${grn.creditDays} يوم`
+                                                : termCfg.label;
                                             return (
                                                 <tr key={grn.id}
                                                     style={{ cursor: 'pointer' }}
@@ -482,7 +520,7 @@ export default function ReceiveGoods() {
                                                     <td style={{ color: '#64748b', fontSize: '13px' }}>{grn.branch?.name || '—'}</td>
                                                     <td>
                                                         <span style={{ padding: '3px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 600, background: termCfg.bg, color: termCfg.color }}>
-                                                            {termCfg.label}
+                                                            {termLabel}
                                                         </span>
                                                     </td>
                                                     <td style={{ textAlign: 'center', fontWeight: 700, color: '#0f172a' }}>

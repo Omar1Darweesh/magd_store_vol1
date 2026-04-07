@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import apiClient from '../api/client';
 import * as XLSX from 'xlsx';
 import {
@@ -51,6 +51,7 @@ const PAYMENT_TERMS: Record<string, { label: string; color: string; bg: string }
     DAYS_15: { label: 'آجل 15 يوم', color: '#d97706', bg: '#fef3c7' },
     DAYS_30: { label: 'آجل 30 يوم', color: '#ea580c', bg: '#ffedd5' },
     DAYS_60: { label: 'آجل 60 يوم', color: '#dc2626', bg: '#fee2e2' },
+    DAYS_CUSTOM: { label: 'آجل مخصص', color: '#7c3aed', bg: '#ede9fe' },
 };
 
 const TERM_OPTIONS = [
@@ -59,6 +60,7 @@ const TERM_OPTIONS = [
     { value: 'DAYS_15', label: 'آجل 15 يوم' },
     { value: 'DAYS_30', label: 'آجل 30 يوم' },
     { value: 'DAYS_60', label: 'آجل 60 يوم' },
+    { value: 'DAYS_CUSTOM', label: 'آجل مخصص' },
 ];
 
 const TERM_OPTIONS_MODAL = [
@@ -66,6 +68,7 @@ const TERM_OPTIONS_MODAL = [
     { value: 'DAYS_15', label: 'آجل 15 يوم' },
     { value: 'DAYS_30', label: 'آجل 30 يوم' },
     { value: 'DAYS_60', label: 'آجل 60 يوم' },
+    { value: 'DAYS_CUSTOM', label: 'آجل مخصص' },
 ];
 
 const ACTIVE_OPTIONS = [
@@ -598,7 +601,7 @@ export default function Suppliers() {
                             </div>
                             <div style={{ marginBottom: '28px' }}>
                                 <label style={{ display: 'block', marginBottom: '10px', fontWeight: 600, fontSize: '14px' }}>شروط الدفع الافتراضية</label>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '10px' }}>
                                     {TERM_OPTIONS_MODAL.map(opt => {
                                         const cfg = PAYMENT_TERMS[opt.value];
                                         const active = form.paymentTerms === opt.value;

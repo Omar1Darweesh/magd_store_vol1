@@ -82,6 +82,7 @@ interface Product {
     taxRate?: number;
     cost: number;
     stock?: number;
+    supplier?: { id: number; name: string } | null;
 }
 
 interface Customer {
@@ -121,6 +122,8 @@ function POS() {
     const [loadingProducts, setLoadingProducts] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState<string>('');
     const [categories, setCategories] = useState<any[]>([]);
+    const [suppliers, setSuppliers] = useState<{ id: number; name: string }[]>([]);
+    const [selectedSupplier, setSelectedSupplier] = useState<string>('');
     const [editingPrice, setEditingPrice] = useState<{
         productId: number;
         currentPrice: number;
@@ -234,13 +237,23 @@ function POS() {
         }
     };
 
-    const loadProductsForBrowser = async (categoryId?: string) => {
+    const loadSuppliers = async () => {
+        try {
+            const data = await apiClient.get('/purchasing/suppliers?active=true&take=200');
+            setSuppliers(data?.data || data || []);
+        } catch (e) {
+            console.error('Failed to load suppliers', e);
+        }
+    };
+
+    const loadProductsForBrowser = async (categoryId?: string, supplierId?: string) => {
         try {
             setLoadingProducts(true);
             const branchId = user.branchId || user.branch?.id || 1;
-            const url = categoryId
-                ? `/products?branchId=${branchId}&categoryId=${categoryId}&active=true&take=2000`
-                : `/products?branchId=${branchId}&active=true&take=2000`;
+            const params = new URLSearchParams({ branchId: String(branchId), active: 'true', take: '2000' });
+            if (categoryId) params.set('categoryId', categoryId);
+            if (supplierId) params.set('supplierId', supplierId);
+            const url = `/products?${params.toString()}`;
             const response = await apiClient.get(url);
             const products = (response.data || response).map((p: any) => ({
                 ...p,
@@ -262,6 +275,7 @@ function POS() {
     useEffect(() => {
         if (showProductBrowser) {
             loadCategories();
+            loadSuppliers();
             loadProductsForBrowser();
         }
     }, [showProductBrowser]);
@@ -1109,6 +1123,19 @@ function POS() {
                                                 </div>
                                             )}
 
+                                            {item.supplier && (
+                                                <div style={{ marginBottom: '8px' }}>
+                                                    <span style={{
+                                                        display: 'inline-block', padding: '2px 8px',
+                                                        background: '#eff6ff', color: '#1d4ed8',
+                                                        borderRadius: '9999px', fontSize: '11px', fontWeight: 600,
+                                                        border: '1px solid #bfdbfe',
+                                                    }}>
+                                                        {item.supplier.name}
+                                                    </span>
+                                                </div>
+                                            )}
+
                                             {item.stock !== undefined && (
                                                 <small style={{
                                                     color: item.stock <= 10 ? '#f59e0b' : '#10b981',
@@ -1938,7 +1965,7 @@ function POS() {
                                 <button
                                     onClick={() => {
                                         setSelectedCategory('');
-                                        loadProductsForBrowser();
+                                        loadProductsForBrowser(undefined, selectedSupplier || undefined);
                                     }}
                                     style={{
                                         padding: '10px 20px',
@@ -1961,7 +1988,7 @@ function POS() {
                                         key={cat.id}
                                         onClick={() => {
                                             setSelectedCategory(cat.id.toString());
-                                            loadProductsForBrowser(cat.id.toString());
+                                            loadProductsForBrowser(cat.id.toString(), selectedSupplier || undefined);
                                         }}
                                         style={{
                                             padding: '10px 20px',
@@ -1981,6 +2008,34 @@ function POS() {
                                     </button>
                                 ))}
                             </div>
+
+                            {/* Supplier filter */}
+                            {suppliers.length > 0 && (
+                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center', paddingTop: '4px' }}>
+                                    <span style={{ fontSize: '13px', color: '#6b7280', fontWeight: 600, whiteSpace: 'nowrap' }}>المورد:</span>
+                                    <button
+                                        onClick={() => { setSelectedSupplier(''); loadProductsForBrowser(selectedCategory || undefined, undefined); }}
+                                        style={{
+                                            padding: '6px 14px', borderRadius: '20px', border: '2px solid', cursor: 'pointer', fontSize: '13px', fontWeight: 600, transition: 'all 0.2s', whiteSpace: 'nowrap',
+                                            background: !selectedSupplier ? '#667eea' : 'white',
+                                            color: !selectedSupplier ? 'white' : '#4b5563',
+                                            borderColor: !selectedSupplier ? 'transparent' : '#e5e7eb',
+                                        }}
+                                    >الكل</button>
+                                    {suppliers.map(s => (
+                                        <button
+                                            key={s.id}
+                                            onClick={() => { setSelectedSupplier(s.id.toString()); loadProductsForBrowser(selectedCategory || undefined, s.id.toString()); }}
+                                            style={{
+                                                padding: '6px 14px', borderRadius: '20px', border: '2px solid', cursor: 'pointer', fontSize: '13px', fontWeight: 600, transition: 'all 0.2s', whiteSpace: 'nowrap',
+                                                background: selectedSupplier === s.id.toString() ? '#667eea' : 'white',
+                                                color: selectedSupplier === s.id.toString() ? 'white' : '#4b5563',
+                                                borderColor: selectedSupplier === s.id.toString() ? 'transparent' : '#e5e7eb',
+                                            }}
+                                        >{s.name}</button>
+                                    ))}
+                                </div>
+                            )}
                         </div>
 
                         {loadingProducts ? (
@@ -2101,6 +2156,19 @@ function POS() {
                                                 <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
                                                     {product.size && <SizeBadge size={product.size} large />}
                                                     {product.color && <ColorSwatch color={product.color} large />}
+                                                </div>
+                                            )}
+
+                                            {product.supplier && (
+                                                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
+                                                    <span style={{
+                                                        display: 'inline-block', padding: '2px 10px',
+                                                        background: '#eff6ff', color: '#1d4ed8',
+                                                        borderRadius: '9999px', fontSize: '11px', fontWeight: 600,
+                                                        border: '1px solid #bfdbfe',
+                                                    }}>
+                                                        {product.supplier.name}
+                                                    </span>
                                                 </div>
                                             )}
 

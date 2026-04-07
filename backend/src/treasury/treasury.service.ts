@@ -26,8 +26,13 @@ export class TreasuryService {
   }
 
   private dateRange(dateFrom?: string, dateTo?: string) {
-    const from = dateFrom ? new Date(dateFrom + 'T00:00:00') : undefined;
-    const to = dateTo ? new Date(dateTo + 'T23:59:59.999') : undefined;
+    // Accept either a bare date "2026-04-07" or a full ISO "2026-04-07T21:00:00.000Z"
+    const from = dateFrom
+      ? (dateFrom.includes('T') ? new Date(dateFrom) : new Date(dateFrom + 'T00:00:00'))
+      : undefined;
+    const to = dateTo
+      ? (dateTo.includes('T') ? new Date(dateTo) : new Date(dateTo + 'T23:59:59.999'))
+      : undefined;
     if (!from && !to) return undefined;
     return { ...(from ? { gte: from } : {}), ...(to ? { lte: to } : {}) };
   }
@@ -51,27 +56,29 @@ export class TreasuryService {
       },
     });
 
-    // 2. Supplier payments (outgoing)
+    // 2. Supplier payments (outgoing) — filter by createdAt so business day
+    //    boundaries are always respected (paymentDate may be midnight UTC)
     const supplierOut = await this.prisma.supplierPayment.groupBy({
       by: ['method'],
       _sum: { amount: true },
-      where: range ? { paymentDate: range } : {},
+      where: range ? { createdAt: range } : {},
     });
 
-    // 3. Expenses (outgoing, per payment method)
+    // 3. Expenses (outgoing, per payment method) — same: use createdAt
     const expenseOut = await this.prisma.expense.groupBy({
       by: ['paymentMethod'],
       _sum: { amount: true },
-      where: range ? { expenseDate: range } : {},
+      where: range ? { createdAt: range } : {},
     });
 
-    // 4. Manual treasury transactions
+    // 4. Manual treasury transactions — transactionDate is now always new Date()
+    //    but use createdAt for safety
     const manualIn = await this.prisma.treasuryTransaction.groupBy({
       by: ['paymentMethod'],
       _sum: { amount: true },
       where: {
         type: 'INCOME',
-        ...(range ? { transactionDate: range } : {}),
+        ...(range ? { createdAt: range } : {}),
       },
     });
 
@@ -80,7 +87,7 @@ export class TreasuryService {
       _sum: { amount: true },
       where: {
         type: 'EXPENSE',
-        ...(range ? { transactionDate: range } : {}),
+        ...(range ? { createdAt: range } : {}),
       },
     });
 
@@ -164,31 +171,32 @@ export class TreasuryService {
           orderBy: { createdAt: 'desc' },
         }),
 
-      // Supplier payments as EXPENSE
+      // Supplier payments as EXPENSE — filter by createdAt
       query.type === 'INCOME'
         ? []
         : this.prisma.supplierPayment.findMany({
           where: {
-            ...(range ? { paymentDate: range } : {}),
+            ...(range ? { createdAt: range } : {}),
           },
           select: {
             id: true,
             amount: true,
             method: true,
             paymentDate: true,
+            createdAt: true,
             notes: true,
             supplier: { select: { name: true } },
             user: { select: { fullName: true } },
           },
-          orderBy: { paymentDate: 'desc' },
+          orderBy: { createdAt: 'desc' },
         }),
 
-      // Expenses as EXPENSE
+      // Expenses as EXPENSE — filter by createdAt
       query.type === 'INCOME'
         ? []
         : this.prisma.expense.findMany({
           where: {
-            ...(range ? { expenseDate: range } : {}),
+            ...(range ? { createdAt: range } : {}),
             ...(query.paymentMethod ? { paymentMethod: query.paymentMethod as PaymentMethod } : {}),
           },
           select: {
@@ -198,21 +206,22 @@ export class TreasuryService {
             paymentMethod: true,
             description: true,
             expenseDate: true,
+            createdAt: true,
             category: { select: { nameAr: true, name: true } },
             user: { select: { fullName: true } },
           },
-          orderBy: { expenseDate: 'desc' },
+          orderBy: { createdAt: 'desc' },
         }),
 
-      // Manual treasury transactions
+      // Manual treasury transactions — filter by createdAt
       this.prisma.treasuryTransaction.findMany({
         where: {
           ...(query.type ? { type: query.type as any } : {}),
-          ...(range ? { transactionDate: range } : {}),
+          ...(range ? { createdAt: range } : {}),
           ...(query.paymentMethod ? { paymentMethod: query.paymentMethod as PaymentMethod } : {}),
         },
         include: { user: { select: { fullName: true } } },
-        orderBy: { transactionDate: 'desc' },
+        orderBy: { createdAt: 'desc' },
       }),
     ]);
 
@@ -236,7 +245,7 @@ export class TreasuryService {
         amount: Number(sp.amount),
         paymentMethod: sp.method || 'CASH',
         purpose: `دفع للمورد - ${sp.supplier?.name || ''}`,
-        date: sp.paymentDate,
+        date: sp.createdAt,
         user: sp.user?.fullName,
         notes: sp.notes,
       })),
@@ -247,7 +256,7 @@ export class TreasuryService {
         amount: Number(e.amount),
         paymentMethod: e.paymentMethod,
         purpose: `مصروف - ${e.category?.nameAr || e.category?.name || ''}: ${e.description || ''}`,
-        date: e.expenseDate,
+        date: e.createdAt,
         user: e.user?.fullName,
         referenceNo: e.expenseNo,
       })),
@@ -260,7 +269,7 @@ export class TreasuryService {
         paymentMethod: m.paymentMethod,
         purpose: m.purpose,
         notes: m.notes,
-        date: m.transactionDate,
+        date: m.createdAt,
         user: m.user?.fullName,
       })),
     ];
@@ -343,6 +352,8 @@ export class TreasuryService {
   // ─── Manual transactions CRUD ────────────────────────
 
   async createManual(dto: CreateTreasuryTransactionDto, userId: number) {
+    // Always use the actual current timestamp so the transaction is correctly
+    // attributed to the currently open business day, never to a past one.
     return this.prisma.treasuryTransaction.create({
       data: {
         type: dto.type as any,
@@ -350,7 +361,7 @@ export class TreasuryService {
         paymentMethod: dto.paymentMethod as any,
         purpose: dto.purpose,
         notes: dto.notes,
-        transactionDate: dto.transactionDate ? new Date(dto.transactionDate) : new Date(),
+        transactionDate: new Date(),
         isManual: true,
         createdBy: userId,
       },

@@ -18,6 +18,7 @@ import { RolesModule } from './roles/roles.module';
 import { DatabaseModule } from './database/database.module';
 import { ExpensesModule } from './expenses/expenses.module';
 import { TreasuryModule } from './treasury/treasury.module';
+import { BusinessDayModule } from './business-day/business-day.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { TreasuryModule } from './treasury/treasury.module';
     DatabaseModule,
     ExpensesModule,
     TreasuryModule,
+    BusinessDayModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

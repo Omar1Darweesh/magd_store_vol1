@@ -153,8 +153,10 @@ interface Product {
     active: boolean;
     categoryId: number | null;
     itemTypeId: number | null;
+    supplierId: number | null;
     category: any;
     itemType: any;
+    supplier?: { id: number; name: string } | null;
     stock: number;
 }
 
@@ -178,6 +180,11 @@ interface ItemType {
     nameAr: string;
 }
 
+interface Supplier {
+    id: number;
+    name: string;
+}
+
 export default function Products() {
     const [products, setProducts] = useState<Product[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
@@ -198,11 +205,19 @@ export default function Products() {
     const [stockFilter, setStockFilter] = useState<string>(''); // Add this line
     const [sizeFilter, setSizeFilter] = useState<string>('');
     const [colorFilter, setColorFilter] = useState<string>('');
+    const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+    const [selectedSupplier, setSelectedSupplier] = useState<number | null>(null);
 
     useEffect(() => {
         fetchProducts();
         fetchCategories();
-    }, [searchTerm, selectedCategory, selectedSubcategory, selectedItemType, page, showInactive, stockFilter, sizeFilter, colorFilter]); // Add stockFilter here
+    }, [searchTerm, selectedCategory, selectedSubcategory, selectedItemType, page, showInactive, stockFilter, sizeFilter, colorFilter, selectedSupplier]); // Add stockFilter here
+
+    useEffect(() => {
+        apiClient.get('/purchasing/suppliers?active=true&take=200').then(r => {
+            setSuppliers(r.data?.data || r.data || []);
+        }).catch(() => { });
+    }, []);
 
     const fetchProducts = async () => {
         setLoading(true);
@@ -223,6 +238,8 @@ export default function Products() {
             if (stockFilter) {
                 params.stockStatus = stockFilter;
             }
+
+            if (selectedSupplier) params.supplierId = selectedSupplier;
 
             // Client-side size/color filters (applied after fetch)
             const response = await apiClient.get('/products', { params });
@@ -289,7 +306,7 @@ export default function Products() {
         return subcategory?.itemTypes || [];
     };
 
-    const hasActiveFilters = searchTerm || selectedCategory || selectedSubcategory || selectedItemType || stockFilter || sizeFilter || colorFilter;
+    const hasActiveFilters = searchTerm || selectedCategory || selectedSubcategory || selectedItemType || stockFilter || sizeFilter || colorFilter || selectedSupplier;
 
     return (
         <div style={{ padding: '2rem' }}>
@@ -586,6 +603,38 @@ export default function Products() {
                         value={colorFilter}
                         onChange={(v) => { setColorFilter(v); setPage(1); }}
                     />
+
+                    {/* Supplier Filter */}
+                    <div style={{ position: 'relative' }}>
+                        <Filter
+                            size={18}
+                            style={{
+                                position: 'absolute',
+                                right: '12px',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                color: selectedSupplier ? '#667eea' : '#9ca3af',
+                            }}
+                        />
+                        <select
+                            value={selectedSupplier || ''}
+                            onChange={(e) => { setSelectedSupplier(e.target.value ? Number(e.target.value) : null); setPage(1); }}
+                            style={{
+                                width: '100%',
+                                padding: '0.75rem 2.5rem 0.75rem 1rem',
+                                border: selectedSupplier ? '2px solid #667eea' : '1px solid #e5e7eb',
+                                borderRadius: '8px',
+                                fontSize: '0.875rem',
+                                background: 'white',
+                                fontWeight: selectedSupplier ? 600 : 'normal',
+                            }}
+                        >
+                            <option value="">كل الموردين</option>
+                            {suppliers.map(s => (
+                                <option key={s.id} value={s.id}>{s.name}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
 
                 {/* Filter Actions Row */}
@@ -679,6 +728,7 @@ export default function Products() {
                                     setStockFilter(''); // Add this line
                                     setSizeFilter('');
                                     setColorFilter('');
+                                    setSelectedSupplier(null);
                                     setPage(1);
                                 }}
                                 style={{
@@ -744,6 +794,9 @@ export default function Products() {
                                     <th style={{ padding: '1rem', textAlign: 'right', fontWeight: '600', color: '#374151' }}>
                                         الباركود
                                     </th>
+                                    <th style={{ padding: '1rem', textAlign: 'right', fontWeight: '600', color: '#374151' }}>
+                                        المورد
+                                    </th>
                                     <th style={{ padding: '1rem', textAlign: 'center', fontWeight: '600', color: '#374151' }}>
                                         السعر
                                     </th>
@@ -800,6 +853,24 @@ export default function Products() {
                                                 <div style={{ fontFamily: 'monospace', fontSize: '0.875rem' }}>
                                                     {product.barcode}
                                                 </div>
+                                            </td>
+                                            <td style={{ padding: '1rem' }}>
+                                                {product.supplier ? (
+                                                    <span style={{
+                                                        display: 'inline-block',
+                                                        padding: '2px 10px',
+                                                        background: '#eff6ff',
+                                                        color: '#1d4ed8',
+                                                        borderRadius: '9999px',
+                                                        fontSize: '0.78rem',
+                                                        fontWeight: 600,
+                                                        border: '1px solid #bfdbfe',
+                                                    }}>
+                                                        {product.supplier.name}
+                                                    </span>
+                                                ) : (
+                                                    <span style={{ color: '#d1d5db', fontSize: '0.8rem' }}>—</span>
+                                                )}
                                             </td>
                                             <td style={{ padding: '1rem', textAlign: 'center' }}>
                                                 <div style={{ fontWeight: '600', color: '#059669' }}>

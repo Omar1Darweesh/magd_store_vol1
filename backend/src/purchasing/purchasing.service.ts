@@ -313,6 +313,7 @@ export class PurchasingService {
             notes,
             createdBy: userId,
             paymentTerm: createGRNDto.paymentTerm || 'CASH',
+            creditDays: createGRNDto.creditDays ?? null,
             taxRate: taxRateVal,
             subtotal,
             taxAmount,

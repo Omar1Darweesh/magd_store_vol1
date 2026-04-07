@@ -507,26 +507,28 @@ export class SalesService {
     take?: number;
     branchId?: number;
     customerId?: number;
-    userId?: number; // ✅ NEW
-    channel?: string; // ✅ NEW
+    userId?: number;
+    channel?: string;
     search?: string;
     paymentMethod?: string;
     dateFilter?: string;
     startDate?: string;
     endDate?: string;
+    businessDayId?: number;
   }) {
     const {
       skip,
       take,
       branchId,
       customerId,
-      userId, // ✅ NEW
-      channel, // ✅ NEW
+      userId,
+      channel,
       search,
       paymentMethod,
       dateFilter,
       startDate,
       endDate,
+      businessDayId,
     } = params;
 
     const where: any = {};
@@ -545,8 +547,18 @@ export class SalesService {
       where.paymentMethod = paymentMethod;
     }
 
-    // Date filter logic
-    if (dateFilter || (startDate && endDate)) {
+    // Business Day filter — overrides date filter when provided
+    if (businessDayId) {
+      const day = await this.prisma.businessDay.findUnique({
+        where: { id: businessDayId },
+      });
+      if (day) {
+        where.createdAt = {
+          gte: day.openedAt,
+          lte: day.closedAt ?? new Date(),
+        };
+      }
+    } else if (dateFilter || (startDate && endDate)) {
       let start: Date | undefined;
       let end: Date | undefined;
       const now = new Date();

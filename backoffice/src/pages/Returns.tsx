@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { Minus, Plus, Filter, X } from 'lucide-react'; // ✅ Add Filter, X
 import apiClient from '../api/client';
+import { useBusinessDay } from '../context/BusinessDayContext';
+import type { BusinessDay } from '../api/businessDay';
+import { businessDayApi } from '../api/businessDay';
 
 const styles = {
     container: { padding: '20px', fontFamily: 'inherit' },
@@ -87,6 +90,10 @@ export default function Returns() {
     const [channels, setChannels] = useState<string[]>([]);
     const isMounted = useRef(true);
 
+    const { currentDay } = useBusinessDay();
+    const [businessDayId, setBusinessDayId] = useState<string>('ALL');
+    const [businessDays, setBusinessDays] = useState<BusinessDay[]>([]);
+
     useEffect(() => {
         return () => {
             isMounted.current = false;
@@ -97,7 +104,16 @@ export default function Returns() {
     // ✅ NEW: Fetch filter data
     useEffect(() => {
         fetchFilterData();
+        businessDayApi.getHistory(0, 50).then(r => setBusinessDays(r.data));
     }, []);
+
+    // Default to current open business day
+    useEffect(() => {
+        if (currentDay && businessDayId === 'ALL') {
+            applyBusinessDay(currentDay.id.toString(), currentDay);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentDay]);
 
     const fetchFilterData = async () => {
         try {
@@ -203,7 +219,22 @@ export default function Returns() {
             setLoading(false);
         }
     };
+    function applyBusinessDay(id: string, day?: BusinessDay | null) {
+        setBusinessDayId(id);
+        if (id === 'ALL') {
+            setFilters(prev => ({ ...prev, dateFilter: 'all', startDate: '', endDate: '' }));
+            return;
+        }
+        const target = day || businessDays.find(d => d.id.toString() === id);
+        if (target) {
+            const start = target.openedAt.split('T')[0];
+            const end = target.closedAt ? target.closedAt.split('T')[0] : new Date().toISOString().split('T')[0];
+            setFilters(prev => ({ ...prev, dateFilter: 'custom', startDate: start, endDate: end }));
+        }
+    }
+
     const resetFilters = () => {
+        setBusinessDayId('ALL');
         setFilters({
             dateFilter: 'all',
             userId: 'ALL',
@@ -634,7 +665,10 @@ export default function Returns() {
                             </label>
                             <select
                                 value={filters.dateFilter}
-                                onChange={(e) => setFilters({ ...filters, dateFilter: e.target.value })}
+                                onChange={(e) => {
+                                    setBusinessDayId('ALL'); // clear business day when date filter changes
+                                    setFilters({ ...filters, dateFilter: e.target.value, startDate: '', endDate: '' });
+                                }}
                                 style={{ width: '100%', padding: '8px 12px', border: '1px solid #d1d5db', borderRadius: '6px' }}
                             >
                                 <option value="all">الكل</option>
@@ -693,6 +727,32 @@ export default function Returns() {
                                 <option value="ALL">جميع القنوات</option>
                                 {channels.map(channel => (
                                     <option key={channel} value={channel}>{channel}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Business Day Filter */}
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                                يوم العمل
+                            </label>
+                            <select
+                                value={businessDayId}
+                                onChange={(e) => applyBusinessDay(e.target.value)}
+                                style={{
+                                    width: '100%', padding: '8px 12px', borderRadius: '6px',
+                                    border: businessDayId !== 'ALL' ? '2px solid #10b981' : '1px solid #d1d5db',
+                                    background: businessDayId !== 'ALL' ? '#f0fdf4' : 'white',
+                                }}
+                            >
+                                <option value="ALL">بدون فلتر يوم عمل</option>
+                                {currentDay && (
+                                    <option value={currentDay.id.toString()}>🟢 يوم العمل الحالي #{currentDay.id}</option>
+                                )}
+                                {businessDays.filter(d => d.status === 'CLOSED').map(d => (
+                                    <option key={d.id} value={d.id.toString()}>
+                                        يوم #{d.id} — {new Date(d.openedAt).toLocaleDateString('ar-EG', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                    </option>
                                 ))}
                             </select>
                         </div>

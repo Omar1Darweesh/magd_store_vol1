@@ -353,6 +353,11 @@ export class ProductsService {
       finalProductData.itemTypeId = productData.itemTypeId;
     }
 
+    // Add supplierId only if provided
+    if (productData.supplierId) {
+      finalProductData.supplierId = productData.supplierId;
+    }
+
     // ✅ USE TRANSACTION to create product + initial stock
     const product = await this.prisma.$transaction(async (prisma) => {
       // Create the product
@@ -369,6 +374,7 @@ export class ProductsService {
               },
             },
           },
+          supplier: { select: { id: true, name: true } },
         },
       });
 
@@ -444,6 +450,7 @@ export class ProductsService {
     active?: boolean;
     branchId?: number;
     stockStatus?: 'empty' | 'low' | 'enough' | 'high';
+    supplierId?: number;
   }) {
     const MAX_TAKE = 2000; // ✅ INCREASED: Support larger product catalogs
     const MAX_SKIP = 100000;
@@ -457,6 +464,7 @@ export class ProductsService {
       active,
       branchId,
       stockStatus,
+      supplierId,
     } = params || {};
 
     // ✅ FIXED: Add max limits to prevent resource exhaustion
@@ -490,6 +498,10 @@ export class ProductsService {
 
     if (itemTypeId !== undefined) {
       where.itemTypeId = itemTypeId;
+    }
+
+    if (supplierId !== undefined) {
+      where.supplierId = supplierId;
     }
 
     // Filter by subcategory (through itemType)
@@ -568,6 +580,7 @@ export class ProductsService {
               },
             },
           },
+          supplier: { select: { id: true, name: true } },
         },
         orderBy: { createdAt: 'desc' },
       }),
@@ -728,6 +741,7 @@ export class ProductsService {
             },
           },
         },
+        supplier: { select: { id: true, name: true } },
       },
     });
 
@@ -763,6 +777,7 @@ export class ProductsService {
             },
           },
         },
+        supplier: { select: { id: true, name: true } },
       },
     });
 
@@ -805,6 +820,7 @@ export class ProductsService {
             },
           },
         },
+        supplier: { select: { id: true, name: true } },
       },
     });
 
@@ -921,6 +937,8 @@ export class ProductsService {
       updateData.categoryId = updateProductDto.categoryId;
     if (updateProductDto.itemTypeId !== undefined)
       updateData.itemTypeId = updateProductDto.itemTypeId;
+    if (updateProductDto.supplierId !== undefined)
+      updateData.supplierId = updateProductDto.supplierId === null ? null : updateProductDto.supplierId;
 
     const updated = await this.prisma.product.update({
       where: { id },
@@ -936,6 +954,7 @@ export class ProductsService {
             },
           },
         },
+        supplier: { select: { id: true, name: true } },
       },
     });
 

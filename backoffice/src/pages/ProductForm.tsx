@@ -30,6 +30,11 @@ interface ItemType {
     defaultWholesaleMargin?: number;
 }
 
+interface Supplier {
+    id: number;
+    name: string;
+}
+
 interface ProductFormProps {
     product?: any;
     onClose: () => void;
@@ -90,6 +95,8 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
     const [selectedSubcategoryId, setSelectedSubcategoryId] = useState<number | null>(null);
     const [selectedItemTypeId, setSelectedItemTypeId] = useState<number | null>(null);
+    const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+    const [selectedSupplierId, setSelectedSupplierId] = useState<number | null>(null);
 
     // ✅ Special category mode (Mixed or Defective)
     const [isSpecialCategory, setIsSpecialCategory] = useState(false);
@@ -173,6 +180,9 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
     // Load categories on mount
     useEffect(() => {
         fetchCategories();
+        apiClient.get('/purchasing/suppliers?active=true&take=200').then(r => {
+            setSuppliers(r.data?.data || r.data || []);
+        }).catch(() => { });
     }, []);
 
     // Load existing product data
@@ -197,6 +207,15 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
                 initialStock: product.stock || 0,
                 active: product.active ?? true,
             });
+
+            // Load supplier
+            if (product.supplierId) {
+                setSelectedSupplierId(product.supplierId);
+            } else if (product.supplier?.id) {
+                setSelectedSupplierId(product.supplier.id);
+            } else {
+                setSelectedSupplierId(null);
+            }
 
             // Load hierarchy if product has itemType
             if (product.itemType) {
@@ -417,6 +436,7 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
                 ...baseData,
                 itemTypeId: isSpecialCategory ? null : selectedItemTypeId,
                 categoryId: selectedCategoryId,
+                supplierId: selectedSupplierId || null,
             };
 
             // ✅ For editing existing products, include costAvg
@@ -833,6 +853,28 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
                                     fontSize: '1rem',
                                 }}
                             />
+                        </div>
+
+                        {/* Supplier */}
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>المورد</label>
+                            <select
+                                value={selectedSupplierId || ''}
+                                onChange={(e) => setSelectedSupplierId(Number(e.target.value) || null)}
+                                style={{
+                                    width: '100%',
+                                    padding: '0.75rem',
+                                    border: '1px solid #d1d5db',
+                                    borderRadius: '0.5rem',
+                                    fontSize: '1rem',
+                                    background: 'white',
+                                }}
+                            >
+                                <option value="">بدون مورد</option>
+                                {suppliers.map(s => (
+                                    <option key={s.id} value={s.id}>{s.name}</option>
+                                ))}
+                            </select>
                         </div>
 
                         {/* Size */}

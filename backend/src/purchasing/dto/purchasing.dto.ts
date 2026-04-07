@@ -47,6 +47,10 @@ export class CreateGRNDto {
   @IsOptional()
   paymentTerm?: PaymentTerm;
 
+  @IsInt()
+  @IsOptional()
+  creditDays?: number;
+
   @IsEnum(PaymentMethod)
   @IsOptional()
   paymentMethod?: PaymentMethod;

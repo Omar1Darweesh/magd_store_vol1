@@ -47,6 +47,8 @@ model User {
   treasuryTransactions  TreasuryTransaction[]
   roles          UserRole[]
   branch         Branch          @relation(fields: [branchId], references: [id])
+  businessDaysOpened BusinessDay[] @relation("BusinessDayOpener")
+  businessDaysClosed BusinessDay[] @relation("BusinessDayCloser")
 
   @@map("users")
 }
@@ -223,6 +225,7 @@ model Product {
   minQty           Int?                @map("min_qty")
   maxQty           Int?                @map("max_qty")
   active           Boolean             @default(true)
+  supplierId       Int?                @map("supplier_id")
   createdAt        DateTime            @default(now()) @map("created_at")
   updatedAt        DateTime            @updatedAt @map("updated_at")
   itemTypeId       Int?                @map("item_type_id")
@@ -235,10 +238,12 @@ model Product {
   salesLines       SalesLine[]
   salesReturnLines SalesReturnLine[]
   stockMovements   StockMovement[]
+  supplier         Supplier?           @relation(fields: [supplierId], references: [id])
 
   @@index([code])
   @@index([barcode])
   @@index([itemTypeId])
+  @@index([supplierId])
   @@map("products")
 }
 
@@ -405,6 +410,7 @@ model Supplier {
   purchaseOrders PurchaseOrder[]
   auditLogs      SupplierAudit[]
   payments       SupplierPayment[]
+  products       Product[]
 
   @@map("suppliers")
 }
@@ -479,6 +485,7 @@ model GoodsReceipt {
   branchId    Int                @map("branch_id")
   relatedPoId Int?               @map("related_po_id")
   paymentTerm PaymentTerm        @default(CASH) @map("payment_term")
+  creditDays  Int?               @map("credit_days")
   subtotal    Decimal            @default(0) @db.Decimal(10, 2)
   taxRate     Decimal            @default(14) @map("tax_rate") @db.Decimal(5, 2)
   taxAmount   Decimal            @default(0) @map("tax_amount") @db.Decimal(10, 2)
@@ -597,6 +604,7 @@ enum PaymentTerm {
   DAYS_15
   DAYS_30
   DAYS_60
+  DAYS_CUSTOM
 }
 
 // ============= Expenses Module =============
@@ -667,4 +675,29 @@ model TreasuryTransaction {
 enum TreasuryType {
   INCOME
   EXPENSE
+}
+
+// ============= Business Day Module =============
+model BusinessDay {
+  id         Int               @id @default(autoincrement())
+  openedAt   DateTime          @default(now()) @map("opened_at")
+  closedAt   DateTime?         @map("closed_at")
+  openedBy   Int               @map("opened_by")
+  closedBy   Int?              @map("closed_by")
+  notes      String?
+  status     BusinessDayStatus @default(OPEN)
+  createdAt  DateTime          @default(now()) @map("created_at")
+  updatedAt  DateTime          @updatedAt @map("updated_at")
+
+  opener     User              @relation("BusinessDayOpener", fields: [openedBy], references: [id])
+  closer     User?             @relation("BusinessDayCloser", fields: [closedBy], references: [id])
+
+  @@index([status])
+  @@index([openedAt])
+  @@map("business_days")
+}
+
+enum BusinessDayStatus {
+  OPEN
+  CLOSED
 }

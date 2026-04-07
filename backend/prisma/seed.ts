@@ -194,8 +194,8 @@ async function main() {
         { key: 'returns', nameAr: 'المرتجعات', nameEn: 'Returns', route: '/returns', category: 'transactions', icon: 'RotateCcw', sortOrder: 2 },
         { key: 'customer-payments', nameAr: 'حسابات العملاء', nameEn: 'Customer Payments', route: '/customer-payments', category: 'transactions', icon: 'DollarSign', sortOrder: 3 },
         { key: 'receive-goods', nameAr: 'استلام بضاعة', nameEn: 'Receive Goods', route: '/receive-goods', category: 'transactions', icon: 'Package', sortOrder: 4 },
-            { key: 'treasury', nameAr: 'الخزينة', nameEn: 'Treasury', route: '/treasury', category: 'transactions', icon: 'Landmark', sortOrder: 5 },
-            // { key: 'transfers', nameAr: 'التحويلات', nameEn: 'Transfers', route: '/transfers', category: 'transactions', icon: 'Plane', sortOrder: 6 },
+        { key: 'treasury', nameAr: 'الخزينة', nameEn: 'Treasury', route: '/treasury', category: 'transactions', icon: 'Landmark', sortOrder: 5 },
+        // { key: 'transfers', nameAr: 'التحويلات', nameEn: 'Transfers', route: '/transfers', category: 'transactions', icon: 'Plane', sortOrder: 6 },
 
         // Inventory (المخزون)
         { key: 'products', nameAr: 'المنتجات', nameEn: 'Products', route: '/products', category: 'inventory', icon: 'Box', sortOrder: 6 },
@@ -213,6 +213,8 @@ async function main() {
         { key: 'roles', nameAr: 'الأدوار والصلاحيات', nameEn: 'Roles', route: '/roles', category: 'admin', icon: 'Shield', sortOrder: 14 },
         { key: 'platform-settings', nameAr: 'إعدادات المنصات', nameEn: 'Platform Settings', route: '/platform-settings', category: 'admin', icon: 'Settings', sortOrder: 15 },
         { key: 'reports', nameAr: 'التقارير', nameEn: 'Reports', route: '/reports', category: 'admin', icon: 'BarChart3', sortOrder: 16 },
+        { key: 'business-day', nameAr: 'يوم العمل', nameEn: 'Business Day', route: '/business-day', category: 'admin', icon: 'CalendarDays', sortOrder: 17 },
+        { key: 'day-cash-sheet', nameAr: 'يومية الصندوق', nameEn: 'Day Cash Sheet', route: '/day-cash-sheet', category: 'admin', icon: 'BookOpen', sortOrder: 18 },
     ];
 
     console.log(`📊 Total pages in array: ${pages.length}`); // ✅ ADD THIS LINE

@@ -1,5 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import apiClient from '../api/client';
+import { useBusinessDay } from '../context/BusinessDayContext';
+import { businessDayApi } from '../api/businessDay';
+import type { BusinessDay } from '../api/businessDay';
 import * as XLSX from 'xlsx';
 import {
     Plus, Edit2, Trash2, Search, Download, Filter,
@@ -189,6 +192,11 @@ function PaymentBadge({ method }: { method: string }) {
 }
 
 export default function Expenses() {
+    // Business day
+    const { currentDay, loading: dayLoading } = useBusinessDay();
+    const [businessDays, setBusinessDays] = useState<BusinessDay[]>([]);
+    const [selectedDayId, setSelectedDayId] = useState<string>('');
+
     // State
     const [stats, setStats] = useState<ExpenseStats | null>(null);
     const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -251,9 +259,61 @@ export default function Expenses() {
     useEffect(() => { fetchStats(); fetchCategories(); }, [fetchStats, fetchCategories]);
     useEffect(() => { fetchExpenses(); }, [fetchExpenses]);
 
+    // Load business day history
+    useEffect(() => {
+        businessDayApi.getHistory(0, 100).then(r => setBusinessDays(r.data)).catch(() => { });
+    }, []);
+
+    // Initialize filter once: current day → last closed day → all
+    const defaultApplied = useRef(false);
+    useEffect(() => {
+        if (defaultApplied.current || dayLoading) return;
+        const now = new Date().toISOString();
+        if (currentDay) {
+            defaultApplied.current = true;
+            setSelectedDayId('current');
+            setFilters(f => ({ ...f, dateFrom: currentDay.openedAt, dateTo: now }));
+        } else if (businessDays.length > 0) {
+            const last = businessDays.find(d => d.status === 'CLOSED');
+            if (last) {
+                defaultApplied.current = true;
+                setSelectedDayId('last');
+                setFilters(f => ({ ...f, dateFrom: last.openedAt, dateTo: last.closedAt! }));
+            }
+        }
+    }, [currentDay, dayLoading, businessDays]);
+
     // Handlers
+    const applyQuickFilter = (id: string) => {
+        setSelectedDayId(id);
+        setPage(1);
+        const now = new Date().toISOString();
+        if (id === 'current' && currentDay) {
+            setFilters(f => ({ ...f, dateFrom: currentDay.openedAt, dateTo: now }));
+        } else if (id === 'last') {
+            const last = businessDays.find(d => d.status === 'CLOSED');
+            if (last) setFilters(f => ({ ...f, dateFrom: last.openedAt, dateTo: last.closedAt! }));
+        } else if (id === '7d') {
+            const d = new Date(); d.setDate(d.getDate() - 7);
+            setFilters(f => ({ ...f, dateFrom: d.toISOString(), dateTo: now }));
+        } else if (id === 'month') {
+            const first = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+            setFilters(f => ({ ...f, dateFrom: first.toISOString(), dateTo: now }));
+        } else {
+            setFilters(f => ({ ...f, dateFrom: '', dateTo: '' }));
+        }
+    };
+
     const resetFilters = () => {
-        setFilters({ search: '', categoryId: '', paymentMethod: '', dateFrom: '', dateTo: '', sortBy: 'createdAt', sortOrder: 'desc' });
+        const now = new Date().toISOString();
+        if (currentDay) {
+            setSelectedDayId('current');
+            setFilters({ search: '', categoryId: '', paymentMethod: '', dateFrom: currentDay.openedAt, dateTo: now, sortBy: 'createdAt', sortOrder: 'desc' });
+        } else {
+            const last = businessDays.find(d => d.status === 'CLOSED');
+            setSelectedDayId(last ? 'last' : 'all');
+            setFilters({ search: '', categoryId: '', paymentMethod: '', dateFrom: last?.openedAt ?? '', dateTo: last?.closedAt ?? '', sortBy: 'createdAt', sortOrder: 'desc' });
+        }
         setPage(1);
     };
 
@@ -539,6 +599,46 @@ export default function Expenses() {
                 background: 'white', borderRadius: '16px', padding: '20px', marginBottom: '24px',
                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', border: '1px solid #e2e8f0'
             }}>
+                {/* Business Day Quick Filter Pills */}
+                {(() => {
+                    const lastClosed = businessDays.find(d => d.status === 'CLOSED');
+                    const chip = (id: string, active: boolean): React.CSSProperties => ({
+                        background: active ? '#6366f1' : '#f1f5f9',
+                        color: active ? 'white' : '#475569',
+                        border: active ? '2px solid #6366f1' : '2px solid transparent',
+                        padding: '7px 16px', borderRadius: '20px', cursor: 'pointer',
+                        fontSize: '13px', fontWeight: '600', whiteSpace: 'nowrap',
+                        transition: 'all 0.15s', fontFamily: 'inherit',
+                    });
+                    return (
+                        <div style={{ marginBottom: '16px' }}>
+                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                                <span style={{ color: '#64748b', fontSize: '13px', fontWeight: '600', marginLeft: '4px' }}>نطاق:</span>
+                                {currentDay && (
+                                    <button onClick={() => applyQuickFilter('current')} style={chip('current', selectedDayId === 'current')}>
+                                        🟢 اليوم الحالي — {new Date(currentDay.openedAt).toLocaleDateString('ar-SA')}
+                                    </button>
+                                )}
+                                {lastClosed && (
+                                    <button onClick={() => applyQuickFilter('last')} style={chip('last', selectedDayId === 'last')}>
+                                        آخر يوم مغلق — {new Date(lastClosed.openedAt).toLocaleDateString('ar-SA')}
+                                    </button>
+                                )}
+                                <button onClick={() => applyQuickFilter('7d')} style={chip('7d', selectedDayId === '7d')}>آخر 7 أيام</button>
+                                <button onClick={() => applyQuickFilter('month')} style={chip('month', selectedDayId === 'month')}>هذا الشهر</button>
+                                <button onClick={() => applyQuickFilter('all')} style={chip('all', selectedDayId === 'all')}>الكل</button>
+                            </div>
+                            {filters.dateFrom && (
+                                <div style={{ marginTop: '6px', fontSize: '12px', color: '#6366f1', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                    <Calendar size={12} />
+                                    {new Date(filters.dateFrom).toLocaleDateString('ar-SA')}
+                                    {' — '}
+                                    {filters.dateTo ? new Date(filters.dateTo).toLocaleDateString('ar-SA') : 'الآن'}
+                                </div>
+                            )}
+                        </div>
+                    );
+                })()}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                     <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                         <div style={{ position: 'relative', flex: 1, minWidth: '300px' }}>
@@ -609,7 +709,7 @@ export default function Expenses() {
                         <div>
                             <label style={{ display: 'block', marginBottom: '6px', color: '#475569', fontSize: '13px', fontWeight: '500' }}>من تاريخ</label>
                             <input
-                                type="date" value={filters.dateFrom}
+                                type="date" value={filters.dateFrom ? filters.dateFrom.split('T')[0] : ''}
                                 onChange={e => { setFilters(p => ({ ...p, dateFrom: e.target.value })); setPage(1); }}
                                 style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}
                             />
@@ -617,7 +717,7 @@ export default function Expenses() {
                         <div>
                             <label style={{ display: 'block', marginBottom: '6px', color: '#475569', fontSize: '13px', fontWeight: '500' }}>إلى تاريخ</label>
                             <input
-                                type="date" value={filters.dateTo}
+                                type="date" value={filters.dateTo ? filters.dateTo.split('T')[0] : ''}
                                 onChange={e => { setFilters(p => ({ ...p, dateTo: e.target.value })); setPage(1); }}
                                 style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}
                             />

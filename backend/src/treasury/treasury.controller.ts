@@ -37,7 +37,7 @@ export class TreasuryController {
     @Body() dto: CreateTreasuryTransactionDto,
     @Request() req: any,
   ) {
-    return this.treasuryService.createManual(dto, req.user.id);
+    return this.treasuryService.createManual(dto, req.user.userId);
   }
 
   @Delete('transactions/:id')

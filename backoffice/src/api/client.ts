@@ -25,7 +25,10 @@ apiClient.interceptors.response.use(
         if (error.response?.status === 401) {
             localStorage.removeItem('accessToken');
             localStorage.removeItem('user');
-            window.location.href = '/login';
+            // Avoid redirect loop: only navigate if not already on login
+            if (!window.location.pathname.startsWith('/login')) {
+                window.location.href = '/login';
+            }
         }
         return Promise.reject(error);
     }

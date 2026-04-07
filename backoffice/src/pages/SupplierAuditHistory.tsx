@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import apiClient from '../api/client';
 import { X, Clock, ShoppingCart, Banknote, FileText } from 'lucide-react';
 

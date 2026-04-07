@@ -38,7 +38,7 @@ export class ProductsController {
     private readonly productsService: ProductsService,
     private readonly priceManagementService: PriceManagementService,
     private readonly profitMarginService: ProfitMarginService,
-  ) {}
+  ) { }
 
   // ============================================
   // CATEGORY ENDPOINTS
@@ -163,6 +163,7 @@ export class ProductsController {
     @Query('active') active?: string,
     @Query('branchId') branchId?: string,
     @Query('stockStatus') stockStatus?: string,
+    @Query('supplierId') supplierId?: string,
   ) {
     return this.productsService.findAll({
       skip: skip ? Number(skip) : undefined,
@@ -179,6 +180,7 @@ export class ProductsController {
         | 'enough'
         | 'high'
         | undefined,
+      supplierId: supplierId ? Number(supplierId) : undefined,
     });
   }
 

@@ -16,11 +16,11 @@ export class CreateProductDto {
 
   @IsString()
   @IsNotEmpty()
-  barcode: string;
+  barcode!: string;
 
   @IsString()
   @IsNotEmpty()
-  nameEn: string;
+  nameEn!: string;
 
   @IsString()
   @IsOptional()
@@ -54,7 +54,7 @@ export class CreateProductDto {
 
   @IsNumber()
   @Min(0)
-  cost: number;
+  cost!: number;
 
   @IsEnum(CostMethod)
   @IsOptional()
@@ -62,11 +62,11 @@ export class CreateProductDto {
 
   @IsNumber()
   @Min(0)
-  priceRetail: number;
+  priceRetail!: number;
 
   @IsNumber()
   @Min(0)
-  priceWholesale: number;
+  priceWholesale!: number;
 
   @IsNumber()
   @Min(0, { message: 'Minimum quantity cannot be negative' })
@@ -86,6 +86,10 @@ export class CreateProductDto {
   @IsBoolean()
   @IsOptional()
   active?: boolean;
+
+  @IsNumber()
+  @IsOptional()
+  supplierId?: number;
 }
 
 export class UpdateProductDto {
@@ -166,4 +170,8 @@ export class UpdateProductDto {
   @IsBoolean()
   @IsOptional()
   active?: boolean;
+
+  @IsNumber()
+  @IsOptional()
+  supplierId?: number;
 }

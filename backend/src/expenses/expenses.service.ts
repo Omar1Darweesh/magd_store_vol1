@@ -5,7 +5,7 @@ import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ExpensesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   // ============= Categories =============
   async createCategory(dto: CreateExpenseCategoryDto) {
@@ -80,7 +80,7 @@ export class ExpensesService {
     const year = today.getFullYear();
     const month = String(today.getMonth() + 1).padStart(2, '0');
     const prefix = `EXP-${year}${month}-`;
-    
+
     const lastExpense = await this.prisma.expense.findFirst({
       where: {
         expenseNo: { startsWith: prefix },
@@ -157,12 +157,18 @@ export class ExpensesService {
     }
 
     if (options?.dateFrom || options?.dateTo) {
-      where.expenseDate = {};
+      where.createdAt = {};
       if (options.dateFrom) {
-        where.expenseDate.gte = new Date(options.dateFrom);
+        // ISO string (from business-day selector) → use verbatim; date-only → start of day
+        where.createdAt.gte = options.dateFrom.includes('T')
+          ? new Date(options.dateFrom)
+          : new Date(options.dateFrom + 'T00:00:00');
       }
       if (options.dateTo) {
-        where.expenseDate.lte = new Date(options.dateTo);
+        // ISO string → use verbatim; date-only → end of day so the full day is included
+        where.createdAt.lte = options.dateTo.includes('T')
+          ? new Date(options.dateTo)
+          : new Date(options.dateTo + 'T23:59:59.999');
       }
     }
 
@@ -211,7 +217,7 @@ export class ExpensesService {
 
   async update(id: number, dto: UpdateExpenseDto) {
     await this.findOne(id);
-    
+
     if (dto.categoryId) {
       const category = await this.prisma.expenseCategory.findUnique({
         where: { id: dto.categoryId },
@@ -244,11 +250,19 @@ export class ExpensesService {
   // ============= Statistics =============
   async getStats(options?: { dateFrom?: string; dateTo?: string }) {
     const where: Prisma.ExpenseWhereInput = {};
-    
+
     if (options?.dateFrom || options?.dateTo) {
-      where.expenseDate = {};
-      if (options.dateFrom) where.expenseDate.gte = new Date(options.dateFrom);
-      if (options.dateTo) where.expenseDate.lte = new Date(options.dateTo);
+      where.createdAt = {};
+      if (options.dateFrom) {
+        where.createdAt.gte = options.dateFrom.includes('T')
+          ? new Date(options.dateFrom)
+          : new Date(options.dateFrom + 'T00:00:00');
+      }
+      if (options.dateTo) {
+        where.createdAt.lte = options.dateTo.includes('T')
+          ? new Date(options.dateTo)
+          : new Date(options.dateTo + 'T23:59:59.999');
+      }
     }
 
     // Total expenses
@@ -258,28 +272,29 @@ export class ExpensesService {
       _count: true,
     });
 
-    // Today's expenses
+    // Today's expenses — use createdAt (consistent with all filtering)
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
-    
+
     const todayResult = await this.prisma.expense.aggregate({
       where: {
         ...where,
-        expenseDate: { gte: today, lt: tomorrow },
+        createdAt: { gte: today, lt: tomorrow },
       },
       _sum: { amount: true },
       _count: true,
     });
 
-    // This month's expenses
+    // This month's expenses — use createdAt
     const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
     const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59);
-    
+
     const monthResult = await this.prisma.expense.aggregate({
       where: {
-        expenseDate: { gte: firstDayOfMonth, lte: lastDayOfMonth },
+        ...where,
+        createdAt: { gte: firstDayOfMonth, lte: lastDayOfMonth },
       },
       _sum: { amount: true },
       _count: true,
@@ -383,11 +398,11 @@ export class ExpensesService {
     dateTo?: string;
   }) {
     const where: Prisma.ExpenseWhereInput = {};
-    
+
     if (options?.categoryId) {
       where.categoryId = options.categoryId;
     }
-    
+
     if (options?.dateFrom || options?.dateTo) {
       where.expenseDate = {};
       if (options.dateFrom) where.expenseDate.gte = new Date(options.dateFrom);

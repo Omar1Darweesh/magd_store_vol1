@@ -5,6 +5,9 @@ import {
     TrendingDown, Activity, PieChart
 } from 'lucide-react';
 import apiClient from '../api/client';
+import { useBusinessDay } from '../context/BusinessDayContext';
+import { businessDayApi } from '../api/businessDay';
+import type { BusinessDay } from '../api/businessDay';
 
 // @ts-ignore - jspdf-autotable types
 import type jsPDF from 'jspdf';
@@ -243,11 +246,26 @@ export default function Reports() {
     // ✅ NEW: Platform sales state
     const [platformSales, setPlatformSales] = useState<PlatformSalesDetails | null>(null);
     const [loadingPlatformSales, setLoadingPlatformSales] = useState(false);
+    // Business Day
+    const { currentDay } = useBusinessDay();
+    const [businessDays, setBusinessDays] = useState<BusinessDay[]>([]);
+    const [selectedBusinessDayId, setSelectedBusinessDayId] = useState<number | null>(null);
 
     useEffect(() => {
         fetchReports();
         fetchPlatformSales(); // ✅ Fetch platform sales when date changes
     }, [dateRange]);
+
+    useEffect(() => {
+        businessDayApi.getHistory(0, 50).then(r => setBusinessDays(r.data));
+    }, []);
+
+    const applyBusinessDay = (day: BusinessDay) => {
+        const start = formatDate(new Date(day.openedAt));
+        const end = formatDate(day.closedAt ? new Date(day.closedAt) : new Date());
+        setSelectedBusinessDayId(day.id);
+        setDateRange({ startDate: start, endDate: end, label: `يوم عمل #${day.id}` });
+    };
 
     const handleCustomDateRange = () => {
         if (customStartDate && customEndDate) {
@@ -925,7 +943,7 @@ export default function Reports() {
                 </div>
 
                 {/* Date Filter Buttons */}
-                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
                     {[
                         { fn: getToday, label: 'اليوم' },
                         { fn: getYesterday, label: 'أمس' },
@@ -934,7 +952,7 @@ export default function Reports() {
                     ].map((preset) => (
                         <button
                             key={preset.label}
-                            onClick={() => setDateRange(preset.fn())}
+                            onClick={() => { setSelectedBusinessDayId(null); setDateRange(preset.fn()); }}
                             style={{
                                 padding: '10px 18px',
                                 background: dateRange.label === preset.label
@@ -956,6 +974,59 @@ export default function Reports() {
                             {preset.label}
                         </button>
                     ))}
+
+                    {/* Business Day quick button */}
+                    {currentDay && (
+                        <button
+                            onClick={() => applyBusinessDay(currentDay)}
+                            style={{
+                                padding: '10px 18px',
+                                background: selectedBusinessDayId === currentDay.id
+                                    ? 'rgba(255,255,255,0.95)'
+                                    : 'rgba(16,185,129,0.3)',
+                                border: '2px solid rgba(16,185,129,0.7)',
+                                borderRadius: '10px',
+                                color: selectedBusinessDayId === currentDay.id ? '#065f46' : 'white',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                                fontWeight: '700',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                            }}
+                        >
+                            🟢 يوم العمل الحالي
+                        </button>
+                    )}
+
+                    {/* Business Day history dropdown */}
+                    {businessDays.filter(d => d.status === 'CLOSED').length > 0 && (
+                        <select
+                            value={selectedBusinessDayId ?? ''}
+                            onChange={(e) => {
+                                const id = parseInt(e.target.value);
+                                const day = businessDays.find(d => d.id === id);
+                                if (day) applyBusinessDay(day);
+                            }}
+                            style={{
+                                padding: '10px 14px',
+                                background: 'rgba(255,255,255,0.15)',
+                                border: '1px solid rgba(255,255,255,0.3)',
+                                borderRadius: '10px',
+                                color: 'white',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                            }}
+                        >
+                            <option value="">📅 أيام عمل سابقة</option>
+                            {businessDays.filter(d => d.status === 'CLOSED').map(d => (
+                                <option key={d.id} value={d.id} style={{ color: '#1e293b' }}>
+                                    {new Date(d.openedAt).toLocaleDateString('ar-EG')} ← {d.closedAt ? new Date(d.closedAt).toLocaleDateString('ar-EG') : '-'}
+                                </option>
+                            ))}
+                        </select>
+                    )}
                     <button
                         onClick={fetchReports}
                         style={{

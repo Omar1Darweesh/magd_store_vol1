@@ -5,11 +5,11 @@ import {
     Plus, Trash2, ChevronDown, ChevronUp, Package, CheckCircle, AlertCircle, AlertTriangle
 } from 'lucide-react';
 
-interface Product { id: number; nameAr: string; nameEn: string; barcode: string; }
+interface Product { id: number; nameAr: string; nameEn: string; barcode: string; code?: string; size?: string; color?: string; priceRetail: number; stock: number; active: boolean; }
 interface GRNLine { id: number; qty: number; cost: string; product: Product; }
 interface GRNPayment { id: number; amount: string; paymentDate: string; method?: string; notes?: string; }
 interface GRN {
-    id: number; grnNo: string; paymentTerm: string; createdAt: string;
+    id: number; grnNo: string; paymentTerm: string; creditDays?: number | null; createdAt: string;
     subtotalNum: number; taxAmountNum: number; totalNum: number;
     paidAmount: number; remaining: number;
     notes?: string;
@@ -27,8 +27,29 @@ interface Summary { totalInvoiced: number; totalPaid: number; balance: number; g
 interface Financials { summary: Summary; grns: GRN[]; payments: Payment[]; }
 
 const PAYMENT_TERM_LABELS: Record<string, string> = {
-    CASH: 'نقدي', DAYS_15: 'آجل 15 يوم', DAYS_30: 'آجل 30 يوم', DAYS_60: 'آجل 60 يوم',
+    CASH: 'نقدي', DAYS_15: 'آجل 15 يوم', DAYS_30: 'آجل 30 يوم', DAYS_60: 'آجل 60 يوم', DAYS_CUSTOM: 'آجل مخصص',
 };
+
+function getTermDays(paymentTerm: string, creditDays?: number | null): number {
+    if (paymentTerm === 'DAYS_15') return 15;
+    if (paymentTerm === 'DAYS_30') return 30;
+    if (paymentTerm === 'DAYS_60') return 60;
+    if (paymentTerm === 'DAYS_CUSTOM') return creditDays || 0;
+    return 0;
+}
+
+function getTermLabel(paymentTerm: string, creditDays?: number | null): string {
+    if (paymentTerm === 'DAYS_CUSTOM') return `آجل ${creditDays || '?'} يوم`;
+    return PAYMENT_TERM_LABELS[paymentTerm] || paymentTerm;
+}
+
+function computeDueDate(createdAt: string, paymentTerm: string, creditDays?: number | null): Date | null {
+    const days = getTermDays(paymentTerm, creditDays);
+    if (days === 0) return null;
+    const d = new Date(createdAt);
+    d.setDate(d.getDate() + days);
+    return d;
+}
 const PAYMENT_METHODS = [
     { value: 'CASH', label: 'كاش' },
     { value: 'TRANSFER', label: 'تحويل بنكي' },
@@ -38,13 +59,15 @@ const PAYMENT_METHODS = [
     { value: 'FAWRY', label: 'فوري' },
 ];
 
-type Tab = 'grns' | 'payments';
+type Tab = 'grns' | 'payments' | 'products';
 
 export default function SupplierDetails({ supplier, onClose }: { supplier: any; onClose: () => void }) {
     const [data, setData] = useState<Financials | null>(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<Tab>('grns');
     const [expandedGrn, setExpandedGrn] = useState<number | null>(null);
+    const [products, setProducts] = useState<Product[]>([]);
+    const [productsLoading, setProductsLoading] = useState(false);
 
     // Add payment modal state
     const [showPayModal, setShowPayModal] = useState(false);
@@ -64,7 +87,16 @@ export default function SupplierDetails({ supplier, onClose }: { supplier: any; 
             .finally(() => setLoading(false));
     }, [supplier.id]);
 
+    const loadProducts = useCallback(() => {
+        setProductsLoading(true);
+        apiClient.get(`/products?supplierId=${supplier.id}&take=500&active=true`)
+            .then(({ data }) => setProducts(data?.data || []))
+            .catch(console.error)
+            .finally(() => setProductsLoading(false));
+    }, [supplier.id]);
+
     useEffect(() => { load(); }, [load]);
+    useEffect(() => { if (activeTab === 'products') loadProducts(); }, [activeTab, loadProducts]);
 
     const handleAddPayment = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -101,7 +133,13 @@ export default function SupplierDetails({ supplier, onClose }: { supplier: any; 
         if (grn.remaining <= 0) return { bg: '#f0fdf4', color: '#16a34a', icon: <CheckCircle size={14} />, label: 'مدفوع بالكامل' };
         if (grn.paidAmount > 0) return { bg: '#fffbeb', color: '#d97706', icon: <AlertTriangle size={14} />, label: 'مدفوع جزئياً' };
         if (grn.paymentTerm === 'CASH') return { bg: '#fef2f2', color: '#dc2626', icon: <AlertCircle size={14} />, label: 'غير مدفوع' };
-        return { bg: '#eef2ff', color: '#6366f1', icon: <Clock size={14} />, label: PAYMENT_TERM_LABELS[grn.paymentTerm] || grn.paymentTerm };
+        const dueDate = computeDueDate(grn.createdAt, grn.paymentTerm, grn.creditDays);
+        if (dueDate) {
+            const diffDays = Math.ceil((dueDate.getTime() - Date.now()) / 86400000);
+            if (diffDays < 0) return { bg: '#fef2f2', color: '#dc2626', icon: <AlertCircle size={14} />, label: `متأخر ${Math.abs(diffDays)} يوم` };
+            if (diffDays <= 7) return { bg: '#fffbeb', color: '#d97706', icon: <AlertTriangle size={14} />, label: `يستحق خلال ${diffDays} يوم` };
+        }
+        return { bg: '#eef2ff', color: '#6366f1', icon: <Clock size={14} />, label: getTermLabel(grn.paymentTerm, grn.creditDays) };
     };
 
     return (
@@ -145,14 +183,14 @@ export default function SupplierDetails({ supplier, onClose }: { supplier: any; 
                         {/* ── Tabs + Add Payment ── */}
                         <div style={{ padding: '0 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
                             <div style={{ display: 'flex', gap: '4px', background: '#e5e7eb', borderRadius: '8px', padding: '4px' }}>
-                                {(['grns', 'payments'] as Tab[]).map(tab => (
+                                {(['grns', 'payments', 'products'] as Tab[]).map(tab => (
                                     <button key={tab} onClick={() => setActiveTab(tab)} style={{
                                         padding: '7px 18px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '14px',
                                         background: activeTab === tab ? 'white' : 'transparent',
                                         color: activeTab === tab ? '#111827' : '#6b7280',
                                         boxShadow: activeTab === tab ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
                                     }}>
-                                        {tab === 'grns' ? `فواتير الاستلام (${data.grns.length})` : `الدفعات (${data.payments.length})`}
+                                        {tab === 'grns' ? `فواتير الاستلام (${data.grns.length})` : tab === 'payments' ? `الدفعات (${data.payments.length})` : 'المنتجات'}
                                     </button>
                                 ))}
                             </div>
@@ -186,6 +224,15 @@ export default function SupplierDetails({ supplier, onClose }: { supplier: any; 
                                                             <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: 700, padding: '2px 10px', background: status.bg, color: status.color, borderRadius: '9999px' }}>
                                                                 {status.icon} {status.label}
                                                             </span>
+                                                            {grn.paymentTerm !== 'CASH' && grn.remaining > 0 && (() => {
+                                                                const due = computeDueDate(grn.createdAt, grn.paymentTerm, grn.creditDays);
+                                                                if (!due) return null;
+                                                                return (
+                                                                    <span style={{ fontSize: '11px', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                                                        📅 {due.toLocaleDateString('ar-SA', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                                    </span>
+                                                                );
+                                                            })()}
                                                         </div>
                                                         <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
                                                             {grn.lines.length} صنف · {grn.user?.fullName}
@@ -205,13 +252,44 @@ export default function SupplierDetails({ supplier, onClose }: { supplier: any; 
                                                 {isOpen && (
                                                     <div style={{ borderTop: '1px solid #f3f4f6', padding: '16px 18px', background: '#fafafa' }}>
                                                         {/* GRN totals breakdown */}
-                                                        <div style={{ display: 'flex', gap: '24px', marginBottom: '16px', flexWrap: 'wrap' }}>
-                                                            <InfoPair label="المجموع الفرعي" value={fmt(grn.subtotalNum) + ' ر.س'} />
-                                                            <InfoPair label="الضريبة" value={fmt(grn.taxAmountNum) + ' ر.س'} />
-                                                            <InfoPair label="الإجمالي" value={fmt(grn.totalNum) + ' ر.س'} bold />
-                                                            <InfoPair label="شرط الدفع" value={PAYMENT_TERM_LABELS[grn.paymentTerm] || grn.paymentTerm} />
-                                                            {grn.notes && <InfoPair label="ملاحظات" value={grn.notes} />}
-                                                        </div>
+                                                        {(() => {
+                                                            const due = computeDueDate(grn.createdAt, grn.paymentTerm, grn.creditDays);
+                                                            const dueFmt = due ? due.toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' }) : null;
+                                                            const diffDays = due ? Math.ceil((due.getTime() - Date.now()) / 86400000) : null;
+                                                            const isOverdue = diffDays !== null && diffDays < 0;
+                                                            const isDueSoon = diffDays !== null && diffDays >= 0 && diffDays <= 7;
+                                                            return (
+                                                                <>
+                                                                    <div style={{ display: 'flex', gap: '24px', marginBottom: dueFmt ? '10px' : '16px', flexWrap: 'wrap' }}>
+                                                                        <InfoPair label="المجموع الفرعي" value={fmt(grn.subtotalNum) + ' ر.س'} />
+                                                                        <InfoPair label="الضريبة" value={fmt(grn.taxAmountNum) + ' ر.س'} />
+                                                                        <InfoPair label="الإجمالي" value={fmt(grn.totalNum) + ' ر.س'} bold />
+                                                                        <InfoPair label="شرط الدفع" value={getTermLabel(grn.paymentTerm, grn.creditDays)} />
+                                                                        {grn.notes && <InfoPair label="ملاحظات" value={grn.notes} />}
+                                                                    </div>
+                                                                    {dueFmt && (
+                                                                        <div style={{
+                                                                            display: 'flex', alignItems: 'center', gap: '10px',
+                                                                            padding: '10px 14px', borderRadius: '8px', marginBottom: '16px',
+                                                                            background: isOverdue ? '#fef2f2' : isDueSoon ? '#fffbeb' : '#eef2ff',
+                                                                            border: `1px solid ${isOverdue ? '#fecaca' : isDueSoon ? '#fde68a' : '#c7d2fe'}`,
+                                                                        }}>
+                                                                            <span style={{ fontSize: '16px' }}>{isOverdue ? '⚠️' : isDueSoon ? '⏰' : '📅'}</span>
+                                                                            <div>
+                                                                                <span style={{ fontSize: '12px', fontWeight: 700, color: isOverdue ? '#dc2626' : isDueSoon ? '#d97706' : '#4f46e5' }}>
+                                                                                    {isOverdue
+                                                                                        ? `متأخر ${Math.abs(diffDays!)} يوم!`
+                                                                                        : isDueSoon
+                                                                                            ? `يستحق خلال ${diffDays} يوم`
+                                                                                            : `تاريخ الاستحقاق`}
+                                                                                </span>
+                                                                                <span style={{ fontSize: '13px', fontWeight: 600, color: '#374151', marginRight: '8px' }}>{dueFmt}</span>
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
+                                                                </>
+                                                            );
+                                                        })()}
 
                                                         {/* Products table */}
                                                         <div style={{ fontSize: '13px', fontWeight: 700, color: '#374151', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -298,6 +376,70 @@ export default function SupplierDetails({ supplier, onClose }: { supplier: any; 
                                                 ))}
                                             </tbody>
                                         </table>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Products Tab */}
+                            {activeTab === 'products' && (
+                                <div>
+                                    {productsLoading ? (
+                                        <div style={{ textAlign: 'center', padding: '40px', color: '#9ca3af' }}>جاري التحميل...</div>
+                                    ) : products.length === 0 ? (
+                                        <div style={{ textAlign: 'center', padding: '40px', color: '#9ca3af' }}>
+                                            <Package size={40} style={{ marginBottom: '12px', opacity: 0.4 }} /><br />
+                                            لا توجد منتجات مرتبطة بهذا المورد
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div style={{ marginBottom: '12px', fontSize: '13px', color: '#6b7280' }}>{products.length} منتج مرتبط</div>
+                                            <table style={{ width: '100%', borderCollapse: 'collapse', background: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.07)' }}>
+                                                <thead>
+                                                    <tr style={{ background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
+                                                        <th style={{ padding: '10px 14px', textAlign: 'right', fontWeight: 600, fontSize: '12px', color: '#374151' }}>الكود</th>
+                                                        <th style={{ padding: '10px 14px', textAlign: 'right', fontWeight: 600, fontSize: '12px', color: '#374151' }}>الاسم</th>
+                                                        <th style={{ padding: '10px 14px', textAlign: 'right', fontWeight: 600, fontSize: '12px', color: '#374151' }}>الباركود</th>
+                                                        <th style={{ padding: '10px 14px', textAlign: 'center', fontWeight: 600, fontSize: '12px', color: '#374151' }}>سعر البيع</th>
+                                                        <th style={{ padding: '10px 14px', textAlign: 'center', fontWeight: 600, fontSize: '12px', color: '#374151' }}>المخزون</th>
+                                                        <th style={{ padding: '10px 14px', textAlign: 'center', fontWeight: 600, fontSize: '12px', color: '#374151' }}>الحالة</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {products.map(p => (
+                                                        <tr key={p.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                                                            <td style={{ padding: '10px 14px', fontFamily: 'monospace', fontSize: '12px', color: '#6b7280' }}>{p.code || '—'}</td>
+                                                            <td style={{ padding: '10px 14px' }}>
+                                                                <div style={{ fontWeight: 600, fontSize: '13px', color: '#111827' }}>{p.nameAr || p.nameEn}</div>
+                                                                <div style={{ display: 'flex', gap: '4px', marginTop: '2px', flexWrap: 'wrap' }}>
+                                                                    {p.size && <span style={{ fontSize: '10px', background: '#1e293b', color: 'white', borderRadius: '3px', padding: '1px 5px', fontFamily: 'monospace' }}>{p.size}</span>}
+                                                                    {p.color && <span style={{ fontSize: '10px', background: '#f1f5f9', color: '#374151', borderRadius: '3px', padding: '1px 5px', border: '1px solid #e2e8f0' }}>{p.color}</span>}
+                                                                </div>
+                                                            </td>
+                                                            <td style={{ padding: '10px 14px', fontFamily: 'monospace', fontSize: '11px', color: '#6b7280' }}>{p.barcode}</td>
+                                                            <td style={{ padding: '10px 14px', textAlign: 'center', fontWeight: 700, fontSize: '13px', color: '#059669' }}>{fmt(Number(p.priceRetail))} ر.س</td>
+                                                            <td style={{ padding: '10px 14px', textAlign: 'center' }}>
+                                                                <span style={{
+                                                                    display: 'inline-block', padding: '2px 8px', borderRadius: '9999px', fontSize: '12px', fontWeight: 600,
+                                                                    background: p.stock <= 0 ? '#fee2e2' : '#dcfce7',
+                                                                    color: p.stock <= 0 ? '#dc2626' : '#16a34a',
+                                                                }}>
+                                                                    {p.stock}
+                                                                </span>
+                                                            </td>
+                                                            <td style={{ padding: '10px 14px', textAlign: 'center' }}>
+                                                                <span style={{
+                                                                    display: 'inline-block', padding: '2px 8px', borderRadius: '9999px', fontSize: '11px', fontWeight: 600,
+                                                                    background: p.active ? '#dcfce7' : '#f1f5f9',
+                                                                    color: p.active ? '#16a34a' : '#94a3b8',
+                                                                }}>
+                                                                    {p.active ? 'نشط' : 'غير نشط'}
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </>
                                     )}
                                 </div>
                             )}

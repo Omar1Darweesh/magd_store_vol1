@@ -1,7 +1,8 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Package, LogOut, Menu, X, Users, Settings, ShoppingCart, Plane, Building2, Tags, BarChart3, ClipboardList, RotateCcw, DollarSign, Shield, Box, Warehouse, Truck, UserCog, CheckCircle, Wallet, Landmark } from 'lucide-react';
+import { LayoutDashboard, Package, LogOut, Menu, X, Users, Settings, ShoppingCart, Plane, Building2, Tags, BarChart3, ClipboardList, RotateCcw, DollarSign, Shield, Box, Warehouse, Truck, UserCog, CheckCircle, Wallet, Landmark, CalendarDays, BookOpen } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import apiClient from './api/client';
+import BusinessDayBar from './components/BusinessDayBar';
 
 // Icon mapping
 const iconMap: Record<string, any> = {
@@ -25,6 +26,8 @@ const iconMap: Record<string, any> = {
     CheckCircle,
     Wallet,
     Landmark,
+    CalendarDays,
+    BookOpen,
 };
 
 export default function Layout() {
@@ -216,6 +219,7 @@ export default function Layout() {
 
                 {/* Page Content */}
                 <div style={{ flex: 1, overflow: 'auto', padding: '0' }}>
+                    <BusinessDayBar />
                     <Outlet />
                 </div>
             </div>

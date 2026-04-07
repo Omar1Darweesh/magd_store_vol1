@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
 import { ShoppingCart, Eye, Filter, X } from 'lucide-react';
+import { useBusinessDay } from '../context/BusinessDayContext';
+import type { BusinessDay } from '../api/businessDay';
+import { businessDayApi } from '../api/businessDay';
 
 interface Sale {
     id: number;
@@ -56,16 +59,20 @@ export default function Sales() {
         userId: 'ALL',        // ✅ NEW
         customerId: 'ALL',    // ✅ NEW
         channel: 'ALL',       // ✅ NEW
+        businessDayId: 'ALL', // ✅ BUSINESS DAY
         startDate: '',
         endDate: '',
         search: '',
     });
 
     const [showFilters, setShowFilters] = useState(false);
+    const { currentDay } = useBusinessDay();
+    const [businessDays, setBusinessDays] = useState<BusinessDay[]>([]);
 
     // ✅ NEW: Fetch users and customers for dropdowns
     useEffect(() => {
         fetchUsersAndCustomers();
+        businessDayApi.getHistory(0, 50).then(r => setBusinessDays(r.data));
     }, []);
 
     const fetchUsersAndCustomers = async () => {
@@ -126,6 +133,10 @@ export default function Sales() {
                 params.channel = filters.channel;
             }
 
+            if (filters.businessDayId !== 'ALL') {
+                params.businessDayId = filters.businessDayId;
+            }
+
             if (filters.search) {
                 params.search = filters.search;
             }
@@ -150,6 +161,7 @@ export default function Sales() {
             userId: 'ALL',
             customerId: 'ALL',
             channel: 'ALL',
+            businessDayId: 'ALL',
             startDate: '',
             endDate: '',
             search: '',
@@ -289,6 +301,39 @@ export default function Sales() {
                                 {channels.map(channel => (
                                     <option key={channel} value={channel}>{channel}</option>
                                 ))}
+                            </select>
+                        </div>
+
+                        {/* ✅ Business Day Filter */}
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+                                يوم العمل
+                            </label>
+                            <select
+                                value={filters.businessDayId}
+                                onChange={(e) => setFilters({ ...filters, businessDayId: e.target.value, dateFilter: 'all' })}
+                                style={{
+                                    width: '100%',
+                                    padding: '8px 12px',
+                                    border: filters.businessDayId !== 'ALL' ? '2px solid #10b981' : '1px solid #d1d5db',
+                                    borderRadius: '6px',
+                                    background: filters.businessDayId !== 'ALL' ? '#f0fdf4' : 'white',
+                                }}
+                            >
+                                <option value="ALL">كل الأيام</option>
+                                {currentDay && (
+                                    <option value={currentDay.id}>
+                                        🟢 يوم العمل الحالي ({new Date(currentDay.openedAt).toLocaleDateString('ar-EG')})
+                                    </option>
+                                )}
+                                {businessDays
+                                    .filter(d => d.status === 'CLOSED')
+                                    .map(d => (
+                                        <option key={d.id} value={d.id}>
+                                            {new Date(d.openedAt).toLocaleDateString('ar-EG')} →{' '}
+                                            {d.closedAt ? new Date(d.closedAt).toLocaleDateString('ar-EG') : '-'}
+                                        </option>
+                                    ))}
                             </select>
                         </div>
 
