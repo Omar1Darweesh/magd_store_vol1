@@ -1,0 +1,58 @@
+import {
+  Controller,
+  Get,
+  Put,
+  Post,
+  Delete,
+  Body,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
+import { PlatformSettingsService } from './platform-settings.service';
+import {
+  CreatePlatformDto,
+  UpdatePlatformDto,
+} from './dto/platform-settings.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+
+@Controller('settings/platforms')
+@UseGuards(JwtAuthGuard)
+export class PlatformSettingsController {
+  constructor(private platformSettingsService: PlatformSettingsService) {}
+
+  @Get()
+  getAllPlatforms() {
+    return this.platformSettingsService.getAllPlatforms();
+  }
+
+  @Get(':platform')
+  getPlatform(@Param('platform') platform: string) {
+    return this.platformSettingsService.getPlatform(platform);
+  }
+
+  @Post()
+  createPlatform(@Body() body: CreatePlatformDto) {
+    return this.platformSettingsService.upsertPlatform(body);
+  }
+
+  @Put(':platform')
+  updatePlatform(
+    @Param('platform') platform: string,
+    @Body() body: UpdatePlatformDto,
+  ) {
+    return this.platformSettingsService.upsertPlatform({
+      platform,
+      ...body,
+    });
+  }
+
+  @Delete(':platform')
+  deletePlatform(@Param('platform') platform: string) {
+    return this.platformSettingsService.deletePlatform(platform);
+  }
+
+  @Put('initialize/defaults')
+  initializeDefaults() {
+    return this.platformSettingsService.initializeDefaultPlatforms();
+  }
+}

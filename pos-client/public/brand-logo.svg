@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <circle cx="100" cy="100" r="90" stroke="#1a1a1a" stroke-width="3" fill="none"/>
+  <text x="100" y="85" text-anchor="middle" font-family="Georgia, serif" font-size="28" font-weight="bold" fill="#1a1a1a">MAGD</text>
+  <text x="100" y="115" text-anchor="middle" font-family="Georgia, serif" font-size="14" font-weight="normal" fill="#1a1a1a" letter-spacing="6">STORE</text>
+  <line x1="55" y1="93" x2="145" y2="93" stroke="#1a1a1a" stroke-width="1"/>
+  <line x1="55" y1="120" x2="145" y2="120" stroke="#1a1a1a" stroke-width="0.5"/>
+</svg>

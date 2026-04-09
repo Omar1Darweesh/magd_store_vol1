@@ -1,0 +1,385 @@
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+CROWN - COMPREHENSIVE DATA REPORT
+Generated: 3/17/2026, 1:29:09 AM
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+📊 SUMMARY
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+Total Rows Processed:                           36
+✅ Successfully Inserted:                        36
+❌ Insertion Errors:                             0
+❌ Skipped (No Name):                            0
+❌ Removed (Duplicate Codes in Excel):           0 products
+⭐ Auto-Generated Codes:                         1 products
+⭐ Barcodes Set to NULL (Duplicate in Excel):    0 products
+⭐ Barcodes Auto-Generated (Empty in Excel):     35 products
+⚠️  Barcodes Modified (Cross-Brand Conflict):    0 products (added DUPL suffix)
+📁 Empty ItemTypes Created:                      48
+
+📐 CALCULATION:
+  36 (total rows)
+  - 0 (no name)
+  - 0 (duplicate codes removed)
+  ───────────
+  = 36 (expected to insert)
+  - 0 (insertion errors)
+  ───────────
+  = 36 (actually inserted)
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+PRODUCT COUNTS BY HIERARCHY
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+📦 CATEGORIES:
+  CROWN: 36 products
+
+📂 SUBCATEGORIES:
+  CROWN > كهرباء: 15 products
+  CROWN > يدوي: 15 products
+  CROWN > اكسسوارات: 1 products
+  CROWN > جاردن: 1 products
+  CROWN > وحدات قياس: 4 products
+
+📁 ITEM TYPES (All):
+  CROWN > يدوي > بنس كماشة فرنساوي انجليزي: 6 products
+  CROWN > كهرباء > صاروخ: 5 products
+  CROWN > يدوي > مقصات: 4 products
+  CROWN > كهرباء > شنيور: 3 products
+  CROWN > كهرباء > راوتر: 2 products
+  CROWN > وحدات قياس > ميزان مياه: 2 products
+  CROWN > كهرباء > وهيلتي: 1 products
+  CROWN > كهرباء > تسخين هوت جن: 1 products
+  CROWN > كهرباء > اركت: 1 products
+  CROWN > كهرباء > صنية: 1 products
+  CROWN > كهرباء > صنفرة: 1 products
+  CROWN > يدوي > مفكات: 1 products
+  CROWN > يدوي > اطقم عده: 1 products
+  CROWN > يدوي > اطقم الن وبيبه: 1 products
+  CROWN > يدوي > منشار خشابي وحدادي: 1 products
+  CROWN > يدوي > ادوات سيارات: 1 products
+  CROWN > اكسسوارات > بنط: 1 products
+  CROWN > جاردن > مقصات زرع: 1 products
+  CROWN > وحدات قياس > امتار ليزر: 1 products
+  CROWN > وحدات قياس > ميزان ليزر: 1 products
+  CROWN > كهرباء > بلاور: 0 products ⭐ EMPTY
+  CROWN > كهرباء > دهانات: 0 products ⭐ EMPTY
+  CROWN > كهرباء > ديسك: 0 products ⭐ EMPTY
+  CROWN > كهرباء > فارة: 0 products ⭐ EMPTY
+  CROWN > كهرباء > ماكن جلخ: 0 products ⭐ EMPTY
+  CROWN > كهرباء > ماكن لحام  قصدير: 0 products ⭐ EMPTY
+  CROWN > كهرباء > ماكن لحام  بولي: 0 products ⭐ EMPTY
+  CROWN > كهرباء > ماكن لحام حديد: 0 products ⭐ EMPTY
+  CROWN > يدوي > ماكن سيراميك: 0 products ⭐ EMPTY
+  CROWN > يدوي > لقم ويد سيستم: 0 products ⭐ EMPTY
+  CROWN > يدوي > شاكوش ومطرقة: 0 products ⭐ EMPTY
+  CROWN > يدوي > شنط عده: 0 products ⭐ EMPTY
+  CROWN > يدوي > قمطة وزرجينة ومنجلة: 0 products ⭐ EMPTY
+  CROWN > يدوي > اجنة ومسمار يدوي: 0 products ⭐ EMPTY
+  CROWN > يدوي > مسدس سليكون: 0 products ⭐ EMPTY
+  CROWN > يدوي > مسدس شمع: 0 products ⭐ EMPTY
+  CROWN > يدوي > قطرات: 0 products ⭐ EMPTY
+  CROWN > يدوي > مفاتيح: 0 products ⭐ EMPTY
+  CROWN > يدوي > بوكليز: 0 products ⭐ EMPTY
+  CROWN > يدوي > جوانتي: 0 products ⭐ EMPTY
+  CROWN > يدوي > نظارت: 0 products ⭐ EMPTY
+  CROWN > يدوي > ازميل: 0 products ⭐ EMPTY
+  CROWN > يدوي > دباسة خشب: 0 products ⭐ EMPTY
+  CROWN > يدوي > ادوات دهانات: 0 products ⭐ EMPTY
+  CROWN > اكسسوارات > قطع غيار: 0 products ⭐ EMPTY
+  CROWN > اكسسوارات > صنية والماظة: 0 products ⭐ EMPTY
+  CROWN > اكسسوارات > سلاح اركت: 0 products ⭐ EMPTY
+  CROWN > اكسسوارات > احجار: 0 products ⭐ EMPTY
+  CROWN > اكسسوارات > صنفرة وادوات ماكن لحام: 0 products ⭐ EMPTY
+  CROWN > اكسسوارات > فرش: 0 products ⭐ EMPTY
+  CROWN > بطاررية > اطقم كومبو: 0 products ⭐ EMPTY
+  CROWN > بطاررية > شنيور وهيلتي ودريل: 0 products ⭐ EMPTY
+  CROWN > بطاررية > دهانات: 0 products ⭐ EMPTY
+  CROWN > بطاررية > بلاور وتسخين: 0 products ⭐ EMPTY
+  CROWN > بطاررية > كشافات: 0 products ⭐ EMPTY
+  CROWN > بطاررية > صاروخ: 0 products ⭐ EMPTY
+  CROWN > بطاررية > صنية: 0 products ⭐ EMPTY
+  CROWN > جاردن > رشاشات: 0 products ⭐ EMPTY
+  CROWN > جاردن > خراطيم: 0 products ⭐ EMPTY
+  CROWN > جاردن > ادوات زراعة: 0 products ⭐ EMPTY
+  CROWN > جاردن > ماكن قص نجيلة: 0 products ⭐ EMPTY
+  CROWN > جاردن > ماكن غسيل: 0 products ⭐ EMPTY
+  CROWN > جاردن > مناشير زراعية: 0 products ⭐ EMPTY
+  CROWN > وحدات قياس > امتار يدوي: 0 products ⭐ EMPTY
+  CROWN > وحدات قياس > زاوية علام: 0 products ⭐ EMPTY
+  CROWN > هواء > دباسات: 0 products ⭐ EMPTY
+  CROWN > هواء > دريل: 0 products ⭐ EMPTY
+  CROWN > هواء > دهانات: 0 products ⭐ EMPTY
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+⭐ EMPTY ITEM TYPES CREATED - 48
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+NOTE: These ItemTypes were found in Excel but have NO products.
+They were created in the database structure.
+
+1. CROWN > كهرباء > بلاور
+2. CROWN > كهرباء > دهانات
+3. CROWN > كهرباء > ديسك
+4. CROWN > كهرباء > فارة
+5. CROWN > كهرباء > ماكن جلخ
+6. CROWN > كهرباء > ماكن لحام  قصدير
+7. CROWN > كهرباء > ماكن لحام  بولي
+8. CROWN > كهرباء > ماكن لحام حديد
+9. CROWN > يدوي > ماكن سيراميك
+10. CROWN > يدوي > لقم ويد سيستم
+11. CROWN > يدوي > شاكوش ومطرقة
+12. CROWN > يدوي > شنط عده
+13. CROWN > يدوي > قمطة وزرجينة ومنجلة
+14. CROWN > يدوي > اجنة ومسمار يدوي
+15. CROWN > يدوي > مسدس سليكون
+16. CROWN > يدوي > مسدس شمع
+17. CROWN > يدوي > قطرات
+18. CROWN > يدوي > مفاتيح
+19. CROWN > يدوي > بوكليز
+20. CROWN > يدوي > جوانتي
+21. CROWN > يدوي > نظارت
+22. CROWN > يدوي > ازميل
+23. CROWN > يدوي > دباسة خشب
+24. CROWN > يدوي > ادوات دهانات
+25. CROWN > اكسسوارات > قطع غيار
+26. CROWN > اكسسوارات > صنية والماظة
+27. CROWN > اكسسوارات > سلاح اركت
+28. CROWN > اكسسوارات > احجار
+29. CROWN > اكسسوارات > صنفرة وادوات ماكن لحام
+30. CROWN > اكسسوارات > فرش
+31. CROWN > بطاررية > اطقم كومبو
+32. CROWN > بطاررية > شنيور وهيلتي ودريل
+33. CROWN > بطاررية > دهانات
+34. CROWN > بطاررية > بلاور وتسخين
+35. CROWN > بطاررية > كشافات
+36. CROWN > بطاررية > صاروخ
+37. CROWN > بطاررية > صنية
+38. CROWN > جاردن > رشاشات
+39. CROWN > جاردن > خراطيم
+40. CROWN > جاردن > ادوات زراعة
+41. CROWN > جاردن > ماكن قص نجيلة
+42. CROWN > جاردن > ماكن غسيل
+43. CROWN > جاردن > مناشير زراعية
+44. CROWN > وحدات قياس > امتار يدوي
+45. CROWN > وحدات قياس > زاوية علام
+46. CROWN > هواء > دباسات
+47. CROWN > هواء > دريل
+48. CROWN > هواء > دهانات
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+MISSING FIELDS SUMMARY
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+⭐ Products with AUTO-GENERATED CODE:             1
+⭐ Products with AUTO-GENERATED BARCODE:          35
+ℹ️  Products with ZERO quantity:                  0
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+⭐ AUTO-GENERATED CODES - 1 PRODUCTS
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+NOTE: These products had NO CODE in Excel. Test codes were auto-generated.
+
+1. Row 65: مفتاح عجل صليبه مقاس 17*14*13*12
+  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  Original Code: EMPTY
+  Generated Code: TEST-1773703749495-RHNHR0
+  Barcode: NULL
+  Location: يدوي / ادوات سيارات
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED CODE
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+⭐ PRODUCTS WITH AUTO-GENERATED BARCODE (35)
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+NOTE: These products had NO barcode in Excel. Barcode was auto-generated from hierarchy.
+
+1. Row 5: طقم شنيور 98 قطعه
+  Code: CK10-XA98
+  Generated Barcode: CROWN
+  Location: كهرباء / شنيور
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+2. Row 6: شنيور 810 وات
+  Code: CT10130
+  Generated Barcode: CROWNDUPL1
+  Location: كهرباء / شنيور
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+3. Row 7: شنيور 600 وات
+  Code: CT10128
+  Generated Barcode: CROWNDUPL2
+  Location: كهرباء / شنيور
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+4. Row 9: هيلتي عدل 800 وات BMC
+  Code: CT18182
+  Generated Barcode: CROWNDUPL3
+  Location: كهرباء / وهيلتي
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+5. Row 12: مسدس تسخين 2000وات
+  Code: CT12041K
+  Generated Barcode: CROWNDUPL4
+  Location: كهرباء / تسخين هوت جن
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+6. Row 15: صاروخ قطعيه5"1010 وات
+  Code: CT13023
+  Generated Barcode: CROWNDUPL5
+  Location: كهرباء / صاروخ
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+7. Row 16: صاروخ قطعيه 7بوصه 1300 وات
+  Code: CT13044
+  Generated Barcode: CROWNDUPL6
+  Location: كهرباء / صاروخ
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+8. Row 17: صاروخ 9" 2200
+  Code: ct13070
+  Generated Barcode: CROWNDUPL7
+  Location: كهرباء / صاروخ
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+9. Row 18: صاروخ 4.5 650 وات
+  Code: CT13625
+  Generated Barcode: CROWNDUPL8
+  Location: كهرباء / صاروخ
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+10. Row 21: اركت 550وات
+  Code: CT15287
+  Generated Barcode: CROWNDUPL9
+  Location: كهرباء / اركت
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+11. Row 23: حليه الكتروني 8مم1050
+  Code: CT11012
+  Generated Barcode: CROWNDUPL10
+  Location: كهرباء / راوتر
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+12. Row 24: حليه الكتروني 12 مم 1850
+  Code: CT11021
+  Generated Barcode: CROWNDUPL11
+  Location: كهرباء / راوتر
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+13. Row 26: منشار صنيه 7 وربع 1500وات
+  Code: ct15188_185
+  Generated Barcode: CROWNDUPL12
+  Location: كهرباء / صنية
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+14. Row 30: صنفره هزاز 90مم230مم200
+  Code: CT13562
+  Generated Barcode: CROWNDUPL13
+  Location: كهرباء / صنفرة
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+15. Row 37: مفك عاده صيني 38*6
+  Code: CPHDS-AS0603
+  Generated Barcode: CROWNDUPL14
+  Location: يدوي / مفكات
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+16. Row 41: قشاره سلك 6"
+  Code: CPHEP_WSA06
+  Generated Barcode: CROWNDUPL15
+  Location: يدوي / بنس كماشة فرنساوي انجليزي
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+17. Row 42: مفتاح فرنساوي 10 صيني
+  Code: CPHWA_CNA10
+  Generated Barcode: CROWNDUPL16
+  Location: يدوي / بنس كماشة فرنساوي انجليزي
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+18. Row 43: مفتاح فرنساوي 12صيني
+  Code: CPHWA_CNA12
+  Generated Barcode: CROWNDUPL17
+  Location: يدوي / بنس كماشة فرنساوي انجليزي
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+19. Row 44: مفتاح فرنساوي 8"
+  Code: CPHWA_CNA08
+  Generated Barcode: CROWNDUPL18
+  Location: يدوي / بنس كماشة فرنساوي انجليزي
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+20. Row 45: بنسه كلابه بوز عدل 10 صيني
+  Code: CPHPL_GSB10
+  Generated Barcode: CROWNDUPL19
+  Location: يدوي / بنس كماشة فرنساوي انجليزي
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+21. Row 46: بنسه برشام 10.5
+  Code: CPHPL_RTA10
+  Generated Barcode: CROWNDUPL20
+  Location: يدوي / بنس كماشة فرنساوي انجليزي
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+22. Row 48: طقم عدد يدوي 14 قطعه شنطه
+  Code: CPHTS-BXA14
+  Generated Barcode: CROWNDUPL21
+  Location: يدوي / اطقم عده
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+23. Row 51: طقم الن هكس اكثر طولا 9 قطع
+  Code: CPHOK-HMCX09
+  Generated Barcode: CROWNDUPL22
+  Location: يدوي / اطقم الن وبيبه
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+24. Row 58: برواز منشار حدادي 12 بوصه
+  Code: CPHSH_FXA12
+  Generated Barcode: CROWNDUPL23
+  Location: يدوي / منشار خشابي وحدادي
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+25. Row 65: مفتاح عجل صليبه مقاس 17*14*13*12
+  Code: TEST-1773703749495-RHNHR0
+  Generated Barcode: CROWNDUPL24
+  Location: يدوي / ادوات سيارات
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+26. Row 68: مقص صاج شمال 10 صيني
+  Code: CPHSSD_CLA10
+  Generated Barcode: CROWNDUPL25
+  Location: يدوي / مقصات
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+27. Row 69: مقص مواسير 42صيني
+  Code: CPHSC_PCA42
+  Generated Barcode: CROWNDUPL26
+  Location: يدوي / مقصات
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+28. Row 70: مقص صاج عدل 10 صيني
+  Code: CPHSSD_CSA10
+  Generated Barcode: CROWNDUPL27
+  Location: يدوي / مقصات
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+29. Row 71: مقص صاج يمين 10 صيني
+  Code: CPHSSD_CRA10
+  Generated Barcode: CROWNDUPL28
+  Location: يدوي / مقصات
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+30. Row 76: بنطه 4مم اتجاهين
+  Code: CTHDP0101
+  Generated Barcode: CROWNDUPL29
+  Location: اكسسوارات / بنط
+  ✅ STATUS: INSERTED WITH AUTO-GENERATED BARCODE
+
+... and 5 more
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+⚠️ PRODUCTS WITH MISSING COST (1)
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+1. Row 76: بنطه 4مم اتجاهين
+  Code: CTHDP0101
+  Location: اكسسوارات / بنط
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+END OF REPORT
+════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
