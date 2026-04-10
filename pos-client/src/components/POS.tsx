@@ -666,22 +666,6 @@ function POS() {
             setReceiptData(receiptDataObj);
             setShowReceipt(true);
 
-            // Print event handlers
-            const handleBeforePrint = () => {
-                console.log("📄 Print dialog opened");
-            };
-
-            const handleAfterPrint = () => {
-                console.log("✅ Print dialog closed");
-                // Just remove event listeners, don't hide receipt
-                window.removeEventListener('beforeprint', handleBeforePrint);
-                window.removeEventListener('afterprint', handleAfterPrint);
-            };
-
-            // Add event listeners
-            window.addEventListener('beforeprint', handleBeforePrint);
-            window.addEventListener('afterprint', handleAfterPrint);
-
             // Reset cart and form IMMEDIATELY (so user can start new sale)
             setCart([]);
             setPaymentMethod('CASH');
@@ -693,10 +677,8 @@ function POS() {
             setPaidAmount(0);
             setDeliveredNow(true);
 
-            // Trigger print after a delay to ensure rendering
-            setTimeout(() => {
-                window.print();
-            }, 500);
+            // Print in popup (Arabic font, isolated from app CSS)
+            printReceiptPopup(receiptDataObj);
 
         } catch (error: any) {
             console.error(error);
@@ -731,8 +713,151 @@ function POS() {
             setMessage(error.response?.data?.message || '❌ فشل إضافة العميل');
         }
     };
+    const printReceiptPopup = (data: any) => {
+        const cart = data.cart as any[];
+        const totals = data.totals;
+
+        const linesHTML = cart.map((line: any) => {
+            const sub = (line.qty * Number(line.price)).toFixed(2);
+            const name = line.nameAr || line.nameEn || '';
+            const custom = line.priceType === 'CUSTOM' ? ' *' : '';
+            return `
+              <tr>
+                <td class="item-name">${name}${custom}</td>
+                <td class="center">${line.qty}</td>
+                <td class="center">${Number(line.price).toFixed(0)}</td>
+                <td class="right">${sub}</td>
+              </tr>`;
+        }).join('');
+
+        const discountRow = Number(totals.discountAmount) > 0
+            ? `<tr><td>الخصم:</td><td class="right">-${Number(totals.discountAmount).toFixed(2)} ج.م</td></tr>` : '';
+        const taxRow = Number(totals.taxAmount) > 0
+            ? `<tr><td>الضريبة:</td><td class="right">+${Number(totals.taxAmount).toFixed(2)} ج.م</td></tr>` : '';
+        const shippingRow = Number(totals.shippingFee) > 0
+            ? `<tr><td>الشحن:</td><td class="right">${Number(totals.shippingFee).toFixed(2)} ج.م</td></tr>` : '';
+        const customerRow = data.customer
+            ? `<tr><td>العميل:</td><td class="right">${data.customer.name}</td></tr>` : '';
+        const partialRow = data.paymentType === 'PARTIAL' ? `
+            <div class="partial-box">
+              <table class="totals-table"><tbody>
+                <tr><td>المدفوع:</td><td class="right">${Number(data.paidAmount).toFixed(2)} ج.م</td></tr>
+                <tr><td>المتبقي:</td><td class="right">${(Number(totals.finalTotal) - Number(data.paidAmount)).toFixed(2)} ج.م</td></tr>
+              </tbody></table>
+            </div>` : '';
+        const creditRow = data.paymentType === 'CREDIT'
+            ? `<div class="credit-bar">آجل — المبلغ الكامل: ${Number(totals.finalTotal).toFixed(2)} ج.م</div>` : '';
+
+        const date = new Date(data.createdAt).toLocaleDateString('ar-EG');
+        const time = new Date(data.createdAt).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+
+        const html = `<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<title>Receipt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Cairo',Tahoma,Arial,sans-serif; font-size:11px; color:#000; width:76mm; direction:rtl; }
+  .center { text-align:center; }
+  .right  { text-align:left; }
+  .logo   { text-align:center; padding:4px 0 2px; }
+  .logo img { width:28mm; }
+  .brand-sub { text-align:center; font-size:8px; letter-spacing:4px; color:#444; margin-bottom:2px; }
+  .branch    { text-align:center; font-size:9px; color:#444; margin-bottom:6px; }
+  hr.thick   { border:none; border-top:2px solid #000; margin:4px 0; }
+  hr.thin    { border:none; border-top:1px solid #000; margin:2px 0; }
+  hr.dash    { border:none; border-top:1px dashed #999; margin:6px 0 4px; }
+  .info-table { width:100%; font-size:10px; border-collapse:collapse; margin-bottom:6px; }
+  .info-table td { padding:2px 0; }
+  .info-table td:last-child { text-align:left; }
+  .info-table td:first-child { font-weight:700; width:45%; }
+  .items-header { width:100%; font-size:9px; font-weight:800; border-collapse:collapse; }
+  .items-header th { padding:4px 0; }
+  .items-table { width:100%; font-size:9px; border-collapse:collapse; }
+  .items-table td { padding:4px 0; border-bottom:1px dotted #bbb; }
+  .item-name { width:50%; font-weight:600; }
+  .totals-table { width:100%; font-size:10px; border-collapse:collapse; }
+  .totals-table td { padding:2px 0; }
+  .totals-table td:last-child { text-align:left; }
+  .grand-total { background:#000; color:#fff; padding:6px 10px; margin:6px 0; display:flex; justify-content:space-between; font-size:13px; font-weight:800; }
+  .partial-box { border:1.5px solid #000; margin-bottom:4px; }
+  .partial-box .totals-table td { padding:3px 6px; font-weight:700; }
+  .credit-bar { background:#000; color:#fff; text-align:center; padding:4px; font-size:10px; font-weight:700; margin-bottom:4px; }
+  .policy { text-align:center; font-size:8px; color:#555; line-height:1.6; }
+  .footer { text-align:center; padding:2px 0 4px; }
+  .footer .thanks { font-size:11px; font-weight:800; margin-bottom:2px; }
+  .footer .sub    { font-size:9px; color:#555; }
+  .footer .phone  { font-size:10px; font-weight:700; margin-top:4px; letter-spacing:1px; }
+  .footer .social { font-size:8px; color:#888; margin-top:2px; }
+  @media print { @page { margin:0; size:80mm auto; } body { margin:0; } }
+</style>
+</head>
+<body>
+  <div class="logo"><img src="/brand-logo.png" alt="AL MAGD" onerror="this.style.display='none'"/></div>
+  <div class="brand-sub">FASHION &amp; CLOTHING</div>
+  <div class="branch">${data.branch?.name || ''}</div>
+  <hr class="thick"/>
+  <table class="info-table">
+    <tr><td>رقم الفاتورة:</td><td style="font-family:monospace;font-size:9px">${data.invoiceNo}</td></tr>
+    <tr><td>التاريخ:</td><td>${date}</td></tr>
+    <tr><td>الوقت:</td><td>${time}</td></tr>
+    <tr><td>البائع:</td><td>${data.user?.fullName || ''}</td></tr>
+    ${customerRow}
+    <tr><td>الدفع:</td><td>${data.paymentMethod || ''}</td></tr>
+  </table>
+  <hr class="thick"/>
+  <table class="items-header">
+    <tr>
+      <th style="text-align:right;width:50%">الصنف</th>
+      <th class="center" style="width:15%">الكمية</th>
+      <th class="center" style="width:15%">السعر</th>
+      <th style="text-align:left;width:20%">المبلغ</th>
+    </tr>
+  </table>
+  <hr class="thin"/>
+  <table class="items-table"><tbody>${linesHTML}</tbody></table>
+  <hr class="thick"/>
+  <table class="totals-table"><tbody>
+    <tr><td>المجموع الفرعي:</td><td class="right">${Number(totals.subtotal).toFixed(2)} ج.م</td></tr>
+    ${discountRow}${taxRow}${shippingRow}
+  </tbody></table>
+  <div class="grand-total"><span>الإجمالي</span><span>${Number(totals.finalTotal).toFixed(2)} ج.م</span></div>
+  ${partialRow}${creditRow}
+  <hr class="dash"/>
+  <div class="policy">
+    <div>يمكن الاستبدال خلال 14 يوم بشرط وجود الفاتورة</div>
+    <div>والمنتج بحالته الأصلية</div>
+  </div>
+  <hr class="dash"/>
+  <div class="footer">
+    <div class="thanks">شكراً لزيارتكم</div>
+    <div class="sub">نتطلع لخدمتكم دائماً</div>
+    <div class="phone">01090811974</div>
+    <div class="social">@magd.store</div>
+  </div>
+  <script>
+    // Wait for fonts then print
+    document.fonts.ready.then(function() {
+      setTimeout(function() { window.print(); window.close(); }, 300);
+    });
+  </script>
+</body>
+</html>`;
+
+        const popup = window.open('', '_blank', 'width=320,height=600,menubar=no,toolbar=no,location=no,scrollbars=yes');
+        if (popup) {
+            popup.document.write(html);
+            popup.document.close();
+        }
+    };
+
     const handlePrintReceipt = () => {
-        window.print();
+        if (receiptData) {
+            printReceiptPopup(receiptData);
+        }
     };
 
     const handleLogout = () => {
@@ -2473,7 +2598,7 @@ function POS() {
                     >
                         {/* Print Again Button */}
                         <button
-                            onClick={() => window.print()}
+                            onClick={() => receiptData && printReceiptPopup(receiptData)}
                             style={{
                                 background: '#3b82f6',
                                 color: 'white',
@@ -2524,179 +2649,6 @@ function POS() {
                 )}
 
 
-                {/* Print-only receipt - AL MAGD 80mm */}
-                {receiptData && (
-                    <div className="thermal-receipt-print" style={{ position: 'fixed', left: '-9999px', top: 0, direction: 'rtl', fontFamily: 'Tahoma, Arial, sans-serif', color: '#000', fontSize: '11px', lineHeight: '1.5', width: '74mm' }}>
-
-                        {/* ===== LOGO ===== */}
-                        <div style={{ textAlign: 'center', padding: '4px 0 2px' }}>
-                            <img src="/brand-logo.png" alt="AL MAGD" style={{ width: '30mm', height: 'auto' }} />
-                        </div>
-                        <div style={{ textAlign: 'center', fontSize: '8px', color: '#444', letterSpacing: '4px', marginBottom: '2px' }}>FASHION & CLOTHING</div>
-                        <div style={{ textAlign: 'center', fontSize: '9px', color: '#444', marginBottom: '6px' }}>{receiptData.branch?.name || ''}</div>
-
-                        {/* ===== LINE ===== */}
-                        <div style={{ borderBottom: '2px solid #000', marginBottom: '6px' }} />
-
-                        {/* ===== INVOICE INFO ===== */}
-                        <table style={{ width: '100%', fontSize: '10px', borderCollapse: 'collapse', marginBottom: '6px' }}>
-                            <tbody>
-                                <tr>
-                                    <td style={{ padding: '2px 0', fontWeight: '700', width: '40%' }}>رقم الفاتورة:</td>
-                                    <td style={{ padding: '2px 0', textAlign: 'left', fontFamily: 'Courier New, monospace', fontSize: '9px' }}>{receiptData.invoiceNo}</td>
-                                </tr>
-                                <tr>
-                                    <td style={{ padding: '2px 0', fontWeight: '700' }}>التاريخ:</td>
-                                    <td style={{ padding: '2px 0', textAlign: 'left' }}>{new Date(receiptData.createdAt).toLocaleDateString('ar-EG')}</td>
-                                </tr>
-                                <tr>
-                                    <td style={{ padding: '2px 0', fontWeight: '700' }}>الوقت:</td>
-                                    <td style={{ padding: '2px 0', textAlign: 'left' }}>{new Date(receiptData.createdAt).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}</td>
-                                </tr>
-                                <tr>
-                                    <td style={{ padding: '2px 0', fontWeight: '700' }}>البائع:</td>
-                                    <td style={{ padding: '2px 0', textAlign: 'left' }}>{receiptData.user.fullName}</td>
-                                </tr>
-                                {receiptData.customer && (
-                                    <tr>
-                                        <td style={{ padding: '2px 0', fontWeight: '700' }}>العميل:</td>
-                                        <td style={{ padding: '2px 0', textAlign: 'left' }}>{receiptData.customer.name}</td>
-                                    </tr>
-                                )}
-                                <tr>
-                                    <td style={{ padding: '2px 0', fontWeight: '700' }}>الدفع:</td>
-                                    <td style={{ padding: '2px 0', textAlign: 'left' }}>{receiptData.paymentMethod}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        {/* ===== PRODUCTS HEADER ===== */}
-                        <div style={{ borderBottom: '2px solid #000', marginBottom: '1px' }} />
-                        <table style={{ width: '100%', fontSize: '9px', borderCollapse: 'collapse' }}>
-                            <thead>
-                                <tr style={{ fontWeight: '800', fontSize: '10px' }}>
-                                    <th style={{ padding: '4px 0', textAlign: 'right', width: '50%' }}>الصنف</th>
-                                    <th style={{ padding: '4px 0', textAlign: 'center', width: '15%' }}>الكمية</th>
-                                    <th style={{ padding: '4px 0', textAlign: 'center', width: '15%' }}>السعر</th>
-                                    <th style={{ padding: '4px 0', textAlign: 'left', width: '20%' }}>المبلغ</th>
-                                </tr>
-                            </thead>
-                        </table>
-                        <div style={{ borderBottom: '1px solid #000', marginBottom: '2px' }} />
-
-                        {/* ===== PRODUCTS LIST ===== */}
-                        <table style={{ width: '100%', fontSize: '9px', borderCollapse: 'collapse' }}>
-                            <tbody>
-                                {receiptData.cart.map((line: any) => {
-                                    const lineSubtotal = line.qty * Number(line.price);
-                                    return (
-                                        <tr key={line.id} style={{ borderBottom: '1px dotted #bbb' }}>
-                                            <td style={{ padding: '4px 0', textAlign: 'right', width: '50%', fontWeight: '600' }}>
-                                                {line.nameAr || line.nameEn}
-                                                {line.priceType === 'CUSTOM' ? ' *' : ''}
-                                            </td>
-                                            <td style={{ padding: '4px 0', textAlign: 'center', width: '15%' }}>{line.qty}</td>
-                                            <td style={{ padding: '4px 0', textAlign: 'center', width: '15%' }}>{Number(line.price).toFixed(0)}</td>
-                                            <td style={{ padding: '4px 0', textAlign: 'left', width: '20%', fontWeight: '700' }}>{lineSubtotal.toFixed(2)}</td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-
-                        {/* ===== TOTALS ===== */}
-                        <div style={{ borderBottom: '2px solid #000', margin: '4px 0' }} />
-                        <table style={{ width: '100%', fontSize: '10px', borderCollapse: 'collapse' }}>
-                            <tbody>
-                                <tr>
-                                    <td style={{ padding: '2px 0', fontWeight: '600' }}>المجموع الفرعي:</td>
-                                    <td style={{ padding: '2px 0', textAlign: 'left' }}>{Number(receiptData.totals.subtotal).toFixed(2)} ج.م</td>
-                                </tr>
-                                {Number(receiptData.totals.discountAmount) > 0 && (
-                                    <tr>
-                                        <td style={{ padding: '2px 0', fontWeight: '600' }}>الخصم:</td>
-                                        <td style={{ padding: '2px 0', textAlign: 'left' }}>-{Number(receiptData.totals.discountAmount).toFixed(2)} ج.م</td>
-                                    </tr>
-                                )}
-                                {Number(receiptData.totals.taxAmount) > 0 && (
-                                    <tr>
-                                        <td style={{ padding: '2px 0', fontWeight: '600' }}>الضريبة:</td>
-                                        <td style={{ padding: '2px 0', textAlign: 'left' }}>+{Number(receiptData.totals.taxAmount).toFixed(2)} ج.م</td>
-                                    </tr>
-                                )}
-                                {Number(receiptData.totals.shippingFee) > 0 && (
-                                    <tr>
-                                        <td style={{ padding: '2px 0', fontWeight: '600' }}>الشحن:</td>
-                                        <td style={{ padding: '2px 0', textAlign: 'left' }}>{Number(receiptData.totals.shippingFee).toFixed(2)} ج.م</td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-
-                        {/* ===== GRAND TOTAL ===== */}
-                        <div style={{ background: '#000', color: '#fff', padding: '6px 10px', margin: '6px 0', display: 'flex', justifyContent: 'space-between', fontSize: '13px', fontWeight: '800' }}>
-                            <span>الإجمالي</span>
-                            <span>{Number(receiptData.totals.finalTotal).toFixed(2)} ج.م</span>
-                        </div>
-
-                        {/* ===== PARTIAL / CREDIT ===== */}
-                        {receiptData.paymentType === 'PARTIAL' && (
-                            <table style={{ width: '100%', fontSize: '10px', borderCollapse: 'collapse', border: '1.5px solid #000', marginBottom: '4px' }}>
-                                <tbody>
-                                    <tr>
-                                        <td style={{ padding: '3px 6px', fontWeight: '700' }}>المدفوع:</td>
-                                        <td style={{ padding: '3px 6px', textAlign: 'left', fontWeight: '700' }}>{Number(receiptData.paidAmount).toFixed(2)} ج.م</td>
-                                    </tr>
-                                    <tr>
-                                        <td style={{ padding: '3px 6px', fontWeight: '700' }}>المتبقي:</td>
-                                        <td style={{ padding: '3px 6px', textAlign: 'left', fontWeight: '700' }}>{(Number(receiptData.totals.finalTotal) - Number(receiptData.paidAmount)).toFixed(2)} ج.م</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        )}
-
-                        {receiptData.paymentType === 'CREDIT' && (
-                            <div style={{ background: '#000', color: '#fff', textAlign: 'center', padding: '4px', fontSize: '10px', fontWeight: '700', marginBottom: '4px' }}>
-                                آجل — المبلغ الكامل: {Number(receiptData.totals.finalTotal).toFixed(2)} ج.م
-                            </div>
-                        )}
-
-                        {/* ===== NOTES ===== */}
-                        {receiptData.config?.name && (
-                            <div style={{ fontSize: '9px', marginBottom: '4px' }}>
-                                <span style={{ fontWeight: '700' }}>ملاحظة: </span>
-                                {receiptData.config.name} — {receiptData.paymentMethod}
-                            </div>
-                        )}
-
-                        {/* ===== EXCHANGE POLICY ===== */}
-                        <div style={{ borderTop: '1px dashed #999', margin: '6px 0 4px' }} />
-                        <div style={{ textAlign: 'center', fontSize: '8px', color: '#555', lineHeight: '1.6' }}>
-                            <div>يمكن الاستبدال خلال 14 يوم بشرط وجود الفاتورة</div>
-                            <div>والمنتج بحالته الأصلية</div>
-                        </div>
-
-                        {/* ===== FOOTER ===== */}
-                        <div style={{ borderTop: '1px dashed #999', margin: '4px 0' }} />
-                        <div style={{ textAlign: 'center', padding: '2px 0 4px' }}>
-                            <div style={{ fontSize: '11px', fontWeight: '800', marginBottom: '2px' }}>شكراً لزيارتكم</div>
-                            <div style={{ fontSize: '9px', color: '#555' }}>نتطلع لخدمتكم دائماً</div>
-                            <div style={{ fontSize: '10px', fontWeight: '700', marginTop: '4px', letterSpacing: '1px' }}>01090811974</div>
-                            <div style={{ fontSize: '8px', color: '#888', marginTop: '2px' }}>@magd.store</div>
-                        </div>
-
-                        {/* ===== BARCODE ===== */}
-                        <div style={{ textAlign: 'center', marginTop: '6px', paddingBottom: '4px' }}>
-                            <div style={{ display: 'inline-flex', gap: '1px', marginBottom: '2px' }}>
-                                {receiptData.invoiceNo.split('').map((c: string, i: number) => (
-                                    <div key={i} style={{ background: '#000', width: i % 3 === 0 ? '2px' : '1px', height: '18px' }} />
-                                ))}
-                            </div>
-                            <div style={{ fontSize: '7px', fontFamily: 'Courier New, monospace', color: '#333' }}>{receiptData.invoiceNo}</div>
-                        </div>
-
-                    </div>
-                )}
 
             </div>
         </>
