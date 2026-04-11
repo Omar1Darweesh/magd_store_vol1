@@ -387,9 +387,11 @@ export class PurchasingService {
     for (const productId of uniqueProductIds) {
       try {
         const margins = await this.profitMarginService.getEffectiveMargins(productId);
-        if (margins.source !== 'DEFAULT') {
+        if (margins.source !== 'DEFAULT' && margins.source !== 'MANUAL') {
           await this.profitMarginService.updateProductPrices(productId, userId);
           console.log(`   ✅ Prices recalculated for product ${productId} (margin source: ${margins.source})`);
+        } else if (margins.source === 'MANUAL') {
+          console.log(`   🔒 Product ${productId} has manual pricing — prices preserved`);
         } else {
           console.log(`   ➖ Product ${productId} has no margins defined — prices preserved`);
         }

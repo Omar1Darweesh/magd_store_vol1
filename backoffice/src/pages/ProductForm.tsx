@@ -117,7 +117,11 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
         maxQty: 15,
         initialStock: 0,
         active: true,
+        manualPricing: false,
     });
+
+    // Track whether the product data has finished loading (to avoid auto-calc on initial load for manual-priced products)
+    const isLoadingProduct = useRef(!!product);
 
     const [loading, setLoading] = useState(false);
     const barcodeRef = useRef<SVGSVGElement>(null);
@@ -142,35 +146,66 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
         const productName = formData.nameAr || formData.nameEn || 'منتج';
         const price = formData.priceRetail;
         const code = formData.code || '';
-        const printWindow = window.open('', '_blank', 'width=500,height=350');
-        if (!printWindow) return;
-        printWindow.document.write(`
-<!DOCTYPE html>
+        const htmlContent = `<!DOCTYPE html>
 <html dir="rtl">
 <head>
   <meta charset="UTF-8">
   <title>تسمية منتج</title>
   <style>
-    body { margin: 0; padding: 8px; font-family: Arial, sans-serif; }
-    .label { width: 58mm; min-height: 38mm; padding: 4px; border: 1px solid #000; display: flex; flex-direction: column; align-items: center; gap: 3px; }
-    .product-name { font-size: 10pt; font-weight: bold; text-align: center; }
-    .price { font-size: 13pt; font-weight: bold; }
-    .code { font-size: 8pt; color: #555; }
-    .barcode-wrap svg { width: 52mm !important; height: auto; }
-    @media print { body { margin: 0; padding: 0; } @page { margin: 5mm; size: 62mm 45mm; } }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { margin: 0; padding: 0; font-family: Arial, 'Segoe UI', Tahoma, sans-serif; font-weight: 700; }
+    .label {
+      width: 40mm; height: 28mm;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 0.5mm; padding: 1mm 1.5mm;
+      overflow: hidden;
+    }
+    .product-name {
+      font-size: 7pt; font-weight: 900;
+      text-align: center; line-height: 1.1;
+      max-height: 7mm; overflow: hidden;
+      width: 100%;
+    }
+    .price {
+      font-size: 9pt; font-weight: 900;
+    }
+    .code {
+      font-size: 5pt; font-weight: 700; color: #333;
+    }
+    .barcode-wrap {
+      width: 100%; display: flex; justify-content: center;
+    }
+    .barcode-wrap svg {
+      width: 34mm !important; height: 10mm !important;
+    }
+    @media print {
+      @page { size: 40mm 28mm; margin: 0; }
+      body { margin: 0; padding: 0; }
+    }
   </style>
 </head>
 <body>
   <div class="label">
     <div class="product-name">${productName}</div>
     ${price ? `<div class="price">${price.toFixed(2)} ج.م</div>` : ''}
-    ${code ? `<div class="code">${code}</div>` : ''}
     <div class="barcode-wrap">${svgData}</div>
+    ${code ? `<div class="code">${code}</div>` : ''}
   </div>
-  <script>window.onload = function(){ window.print(); }<\/script>
 </body>
-</html>`);
+</html>`;
+        const printWindow = window.open('', 'printLabel', 'width=400,height=300');
+        if (!printWindow) {
+            alert('تم حظر النافذة المنبثقة — يرجى السماح بالنوافذ المنبثقة لهذا الموقع');
+            return;
+        }
+        printWindow.document.open();
+        printWindow.document.write(htmlContent);
         printWindow.document.close();
+        setTimeout(() => {
+            printWindow.focus();
+            printWindow.print();
+        }, 500);
     };
 
     // Load categories on mount
@@ -202,7 +237,11 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
                 maxQty: product.maxQty || 15,
                 initialStock: product.stock || 0,
                 active: product.active ?? true,
+                manualPricing: product.manualPricing ?? false,
             });
+
+            // Mark loading complete after a tick so the auto-calc effect won't fire during initial load
+            setTimeout(() => { isLoadingProduct.current = false; }, 0);
 
             // Load supplier
             if (product.supplierId) {
@@ -263,13 +302,13 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
 
     // ✅ AUTO-CALCULATE PRICES EFFECT
     useEffect(() => {
-        // Only auto-calc if NOT editing an existing product (user intent might be to keep old prices)
-        // OR if the user is actively changing cost/category on a new product.
-        // Actually, even for existing products, if they change the cost, they MIGHT want auto-update?
-        // Let's stick to: if Cost/CostAvg changes or Hierarchy changes, we update prices.
+        // Skip auto-calc during initial load for existing products
+        if (isLoadingProduct.current) return;
+        // Skip auto-calc if product is in manual pricing mode
+        if (formData.manualPricing) return;
 
         recalculatePrices();
-    }, [formData.cost, formData.costAvg, selectedCategoryId, selectedSubcategoryId, selectedItemTypeId, categories, subcategories, itemTypes]);
+    }, [formData.cost, formData.costAvg, formData.manualPricing, selectedCategoryId, selectedSubcategoryId, selectedItemTypeId, categories, subcategories, itemTypes]);
 
     const recalculatePrices = () => {
         // Use cost based on costMethod setting
@@ -1008,6 +1047,29 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
                             </div>
                         )}
 
+                        {/* Manual/Auto Pricing Toggle */}
+                        <div style={{
+                            display: 'flex', alignItems: 'center', gap: '0.75rem',
+                            padding: '0.75rem 1rem',
+                            background: formData.manualPricing ? '#fffbeb' : '#f0fdf4',
+                            border: `1px solid ${formData.manualPricing ? '#f59e0b' : '#86efac'}`,
+                            borderRadius: '0.5rem',
+                            gridColumn: '1 / -1',
+                        }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }}>
+                                <input
+                                    type="checkbox"
+                                    checked={formData.manualPricing}
+                                    onChange={(e) => {
+                                        const manual = e.target.checked;
+                                        setFormData(prev => ({ ...prev, manualPricing: manual }));
+                                    }}
+                                    style={{ width: '18px', height: '18px', accentColor: '#f59e0b' }}
+                                />
+                                {formData.manualPricing ? '🔒 تسعير يدوي — لن يتم إعادة حساب الأسعار تلقائياً' : '⚡ تسعير تلقائي — الأسعار تُحسب من هامش التصنيف'}
+                            </label>
+                        </div>
+
                         {/* Retail Price */}
                         <div>
                             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
@@ -1017,14 +1079,15 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
                                 type="number"
                                 step="0.01"
                                 value={formData.priceRetail}
-                                onChange={(e) => setFormData({ ...formData, priceRetail: Number(e.target.value) })}
+                                onChange={(e) => setFormData({ ...formData, priceRetail: Number(e.target.value), manualPricing: true })}
                                 required
                                 style={{
                                     width: '100%',
                                     padding: '0.75rem',
-                                    border: '1px solid #d1d5db',
+                                    border: formData.manualPricing ? '2px solid #f59e0b' : '1px solid #d1d5db',
                                     borderRadius: '0.5rem',
                                     fontSize: '1rem',
+                                    background: formData.manualPricing ? '#fffbeb' : 'white',
                                 }}
                             />
                         </div>
@@ -1038,13 +1101,14 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
                                 type="number"
                                 step="0.01"
                                 value={formData.priceWholesale}
-                                onChange={(e) => setFormData({ ...formData, priceWholesale: Number(e.target.value) })}
+                                onChange={(e) => setFormData({ ...formData, priceWholesale: Number(e.target.value), manualPricing: true })}
                                 style={{
                                     width: '100%',
                                     padding: '0.75rem',
-                                    border: '1px solid #d1d5db',
+                                    border: formData.manualPricing ? '2px solid #f59e0b' : '1px solid #d1d5db',
                                     borderRadius: '0.5rem',
                                     fontSize: '1rem',
+                                    background: formData.manualPricing ? '#fffbeb' : 'white',
                                 }}
                             />
                         </div>

@@ -222,6 +222,7 @@ model Product {
   priceWholesale   Decimal             @default(0) @map("price_wholesale") @db.Decimal(10, 2)
   retailMargin         Float?          @map("retail_margin")
   wholesaleMargin      Float?          @map("wholesale_margin")
+  manualPricing        Boolean         @default(false) @map("manual_pricing")
   minQty           Int?                @map("min_qty")
   maxQty           Int?                @map("max_qty")
   active           Boolean             @default(true)

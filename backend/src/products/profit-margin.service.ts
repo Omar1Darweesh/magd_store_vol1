@@ -5,7 +5,7 @@ import { ProductAuditService } from './product-audit.service';
 export interface EffectiveMargins {
   retailMargin: number;
   wholesaleMargin: number;
-  source: 'PRODUCT' | 'ITEM_TYPE' | 'SUBCATEGORY' | 'CATEGORY' | 'DEFAULT';
+  source: 'PRODUCT' | 'ITEM_TYPE' | 'SUBCATEGORY' | 'CATEGORY' | 'DEFAULT' | 'MANUAL';
 }
 
 @Injectable()
@@ -73,6 +73,15 @@ export class ProfitMarginService {
 
     if (!product) {
       throw new BadRequestException(`Product with ID ${productId} not found`);
+    }
+
+    // Priority 0: Manual pricing — product prices are set manually, skip all margin calculations
+    if (product.manualPricing) {
+      return {
+        retailMargin: 0,
+        wholesaleMargin: 0,
+        source: 'MANUAL',
+      };
     }
 
     // Priority 1: Product-level margins

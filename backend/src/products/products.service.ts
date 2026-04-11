@@ -338,6 +338,7 @@ export class ProductsService {
       costMethod: productData.costMethod ?? 'COST_AVG',
       priceRetail: productData.priceRetail,
       priceWholesale: productData.priceWholesale,
+      manualPricing: productData.manualPricing ?? false,
       minQty: productData.minQty,
       maxQty: productData.maxQty,
       active: productData.active ?? true,
@@ -933,6 +934,8 @@ export class ProductsService {
       updateData.priceRetail = updateProductDto.priceRetail;
     if (updateProductDto.priceWholesale !== undefined)
       updateData.priceWholesale = updateProductDto.priceWholesale;
+    if (updateProductDto.manualPricing !== undefined)
+      updateData.manualPricing = updateProductDto.manualPricing;
     if (updateProductDto.minQty !== undefined)
       updateData.minQty = updateProductDto.minQty;
     if (updateProductDto.maxQty !== undefined)

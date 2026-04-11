@@ -159,6 +159,7 @@ function POS() {
     const [appliedDiscount, setAppliedDiscount] = useState<number>(0);
     const [message, setMessage] = useState('');
     const barcodeInputRef = useRef<HTMLInputElement>(null);
+    const isPrintingRef = useRef(false); // Guard against double popup
     const [showSearch, setShowSearch] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<Product[]>([]);
@@ -714,39 +715,44 @@ function POS() {
         }
     };
     const printReceiptPopup = (data: any) => {
+        // Prevent double-popup (StrictMode / rapid clicks)
+        if (isPrintingRef.current) return;
+        isPrintingRef.current = true;
+        setTimeout(() => { isPrintingRef.current = false; }, 3000);
+
         const cart = data.cart as any[];
         const totals = data.totals;
 
+        // Build product rows — fixed 4 columns
         const linesHTML = cart.map((line: any) => {
             const sub = (line.qty * Number(line.price)).toFixed(2);
-            const name = line.nameAr || line.nameEn || '';
+            const name = (line.nameAr || line.nameEn || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             const custom = line.priceType === 'CUSTOM' ? ' *' : '';
-            return `
-              <tr>
-                <td class="item-name">${name}${custom}</td>
-                <td class="center">${line.qty}</td>
-                <td class="center">${Number(line.price).toFixed(0)}</td>
-                <td class="right">${sub}</td>
+            return `<tr>
+                <td class="n">${name}${custom}</td>
+                <td class="q">${line.qty}</td>
+                <td class="p">${Number(line.price).toFixed(0)}</td>
+                <td class="t">${sub}</td>
               </tr>`;
         }).join('');
 
-        const discountRow = Number(totals.discountAmount) > 0
-            ? `<tr><td>الخصم:</td><td class="right">-${Number(totals.discountAmount).toFixed(2)} ج.م</td></tr>` : '';
-        const taxRow = Number(totals.taxAmount) > 0
-            ? `<tr><td>الضريبة:</td><td class="right">+${Number(totals.taxAmount).toFixed(2)} ج.م</td></tr>` : '';
-        const shippingRow = Number(totals.shippingFee) > 0
-            ? `<tr><td>الشحن:</td><td class="right">${Number(totals.shippingFee).toFixed(2)} ج.م</td></tr>` : '';
-        const customerRow = data.customer
-            ? `<tr><td>العميل:</td><td class="right">${data.customer.name}</td></tr>` : '';
-        const partialRow = data.paymentType === 'PARTIAL' ? `
-            <div class="partial-box">
-              <table class="totals-table"><tbody>
-                <tr><td>المدفوع:</td><td class="right">${Number(data.paidAmount).toFixed(2)} ج.م</td></tr>
-                <tr><td>المتبقي:</td><td class="right">${(Number(totals.finalTotal) - Number(data.paidAmount)).toFixed(2)} ج.م</td></tr>
+        const discountRow  = Number(totals.discountAmount) > 0
+            ? `<tr><td style="text-align:right;font-weight:800;font-size:11px;padding:2px 0">الخصم:</td><td style="text-align:left;font-weight:900;font-size:11px;padding:2px 0">-${Number(totals.discountAmount).toFixed(2)} ج.م</td></tr>` : '';
+        const taxRow       = Number(totals.taxAmount) > 0
+            ? `<tr><td style="text-align:right;font-weight:800;font-size:11px;padding:2px 0">الضريبة:</td><td style="text-align:left;font-weight:900;font-size:11px;padding:2px 0">+${Number(totals.taxAmount).toFixed(2)} ج.م</td></tr>` : '';
+        const shippingRow  = Number(totals.shippingFee) > 0
+            ? `<tr><td style="text-align:right;font-weight:800;font-size:11px;padding:2px 0">الشحن:</td><td style="text-align:left;font-weight:900;font-size:11px;padding:2px 0">${Number(totals.shippingFee).toFixed(2)} ج.م</td></tr>` : '';
+        const customerRow  = data.customer
+            ? `<tr><td class="lbl">العميل:</td><td class="val">${(data.customer.name || '').replace(/</g,'&lt;')}</td></tr>` : '';
+        const partialBlock = data.paymentType === 'PARTIAL' ? `
+            <div class="partial">
+              <table><tbody>
+                <tr><td class="lbl">المدفوع:</td><td class="val">${Number(data.paidAmount).toFixed(2)} ج.م</td></tr>
+                <tr><td class="lbl">المتبقي:</td><td class="val">${(Number(totals.finalTotal) - Number(data.paidAmount)).toFixed(2)} ج.م</td></tr>
               </tbody></table>
             </div>` : '';
-        const creditRow = data.paymentType === 'CREDIT'
-            ? `<div class="credit-bar">آجل — المبلغ الكامل: ${Number(totals.finalTotal).toFixed(2)} ج.م</div>` : '';
+        const creditBlock  = data.paymentType === 'CREDIT'
+            ? `<div class="credit">آجل — المبلغ الكامل: ${Number(totals.finalTotal).toFixed(2)} ج.م</div>` : '';
 
         const date = new Date(data.createdAt).toLocaleDateString('ar-EG');
         const time = new Date(data.createdAt).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
@@ -756,98 +762,186 @@ function POS() {
 <head>
 <meta charset="UTF-8"/>
 <title>Receipt</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;800;900&display=swap" rel="stylesheet">
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family:'Cairo',Tahoma,Arial,sans-serif; font-size:11px; color:#000; width:76mm; direction:rtl; }
-  .center { text-align:center; }
-  .right  { text-align:left; }
-  .logo   { text-align:center; padding:4px 0 2px; }
-  .logo img { width:28mm; }
-  .brand-sub { text-align:center; font-size:8px; letter-spacing:4px; color:#444; margin-bottom:2px; }
-  .branch    { text-align:center; font-size:9px; color:#444; margin-bottom:6px; }
-  hr.thick   { border:none; border-top:2px solid #000; margin:4px 0; }
-  hr.thin    { border:none; border-top:1px solid #000; margin:2px 0; }
-  hr.dash    { border:none; border-top:1px dashed #999; margin:6px 0 4px; }
-  .info-table { width:100%; font-size:10px; border-collapse:collapse; margin-bottom:6px; }
-  .info-table td { padding:2px 0; }
-  .info-table td:last-child { text-align:left; }
-  .info-table td:first-child { font-weight:700; width:45%; }
-  .items-header { width:100%; font-size:9px; font-weight:800; border-collapse:collapse; }
-  .items-header th { padding:4px 0; }
-  .items-table { width:100%; font-size:9px; border-collapse:collapse; }
-  .items-table td { padding:4px 0; border-bottom:1px dotted #bbb; }
-  .item-name { width:50%; font-weight:600; }
-  .totals-table { width:100%; font-size:10px; border-collapse:collapse; }
-  .totals-table td { padding:2px 0; }
-  .totals-table td:last-child { text-align:left; }
-  .grand-total { background:#000; color:#fff; padding:6px 10px; margin:6px 0; display:flex; justify-content:space-between; font-size:13px; font-weight:800; }
-  .partial-box { border:1.5px solid #000; margin-bottom:4px; }
-  .partial-box .totals-table td { padding:3px 6px; font-weight:700; }
-  .credit-bar { background:#000; color:#fff; text-align:center; padding:4px; font-size:10px; font-weight:700; margin-bottom:4px; }
-  .policy { text-align:center; font-size:8px; color:#555; line-height:1.6; }
-  .footer { text-align:center; padding:2px 0 4px; }
-  .footer .thanks { font-size:11px; font-weight:800; margin-bottom:2px; }
-  .footer .sub    { font-size:9px; color:#555; }
-  .footer .phone  { font-size:10px; font-weight:700; margin-top:4px; letter-spacing:1px; }
-  .footer .social { font-size:8px; color:#888; margin-top:2px; }
-  @media print { @page { margin:0; size:80mm auto; } body { margin:0; } }
+/* ── Reset ── */
+* { margin:0; padding:0; box-sizing:border-box; }
+
+/* ── Body: fills popup exactly, @page controls paper ── */
+body {
+  font-family: 'Cairo', Tahoma, Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 700 !important;
+  color: #000;
+  direction: rtl;
+  width: 100%;
+  padding: 2mm 2mm 4mm;
+  overflow: hidden;
+}
+
+/* ── Print: force 80mm paper, zero margins ── */
+@media print {
+  @page { size: 80mm auto; margin: 0; }
+  body  { padding: 2mm 2mm 4mm; }
+}
+
+/* ── Tables: fixed layout so columns NEVER overflow ── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+td, th {
+  overflow: hidden;
+  word-break: break-word;
+  padding: 0;
+  font-weight: 700 !important;
+}
+
+/* ── Alignment helpers ── */
+.lbl { text-align: right; font-weight: 800; }   /* RTL start = right */
+.val { text-align: left;  font-weight: 700; }   /* RTL end   = left  */
+.ctr { text-align: center; }
+
+/* ── Dividers ── */
+.thick { border: none; border-top: 2px solid #000; margin: 4px 0; }
+.thin  { border: none; border-top: 1px solid #000; margin: 2px 0; }
+.dash  { border: none; border-top: 1px dashed #888; margin: 5px 0; }
+
+/* ── Header ── */
+.logo      { text-align: center; padding: 3px 0 2px; }
+.logo img  { width: 32mm; height: auto; }
+.brand-sub { text-align: center; font-size: 9px; font-weight: 900; letter-spacing: 3px; margin-bottom: 2px; }
+.branch    { text-align: center; font-size: 12px; font-weight: 900; margin-bottom: 4px; }
+
+/* ── Info block ── */
+.info td   { padding: 2px 0; font-size: 10px; }
+.info .lbl { width: 42%; }
+.info .val { width: 58%; }
+
+/* ── Items table ── */
+.items thead th { font-size: 10px; font-weight: 900; padding: 3px 1px; }
+.items tbody td { font-size: 10px; padding: 4px 1px; border-bottom: 1px dotted #bbb; }
+
+/* Column widths — set on <th> with table-layout:fixed */
+.col-n { width: 50%; text-align: right; font-weight: 800; }
+.col-q { width: 14%; text-align: center; }
+.col-p { width: 18%; text-align: center; }
+.col-t { width: 18%; text-align: left;  font-weight: 900; }
+
+/* Aliases for tbody td */
+.n { text-align: right; font-weight: 800; }
+.q { text-align: center; }
+.p { text-align: center; }
+.t { text-align: left;  font-weight: 900; }
+
+/* ── Totals block ── */
+.ttl td      { padding: 2px 0; font-size: 11px; }
+.ttl .lbl    { width: 58%; font-weight: 800; }
+.ttl .val    { width: 42%; font-weight: 900; }
+
+/* ── Grand total bar ── */
+.grand {
+  background: #000; color: #fff;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 7px 6px; margin: 5px 0;
+  font-size: 15px; font-weight: 900;
+}
+
+/* ── Partial / Credit ── */
+.partial      { border: 2px solid #000; padding: 2px 5px; margin-bottom: 5px; }
+.partial .lbl { width: 58%; }
+.partial .val { width: 42%; }
+.partial td   { padding: 3px 0; font-weight: 900; font-size: 11px; }
+.credit       { background: #000; color: #fff; text-align: center; padding: 5px; font-size: 11px; font-weight: 900; margin-bottom: 5px; }
+
+/* ── Footer ── */
+.policy { text-align: center; font-size: 9px; line-height: 1.8; }
+.footer { text-align: center; padding: 3px 0 5px; }
+.footer .ty  { font-size: 13px; font-weight: 900; margin-bottom: 3px; }
+.footer .sub { font-size: 9px; }
+.footer .ph  { font-size: 12px; font-weight: 900; margin-top: 4px; letter-spacing: 1px; }
+.footer .soc { font-size: 9px; margin-top: 2px; }
 </style>
 </head>
 <body>
-  <div class="logo"><img src="/brand-logo.png" alt="AL MAGD" onerror="this.style.display='none'"/></div>
-  <div class="brand-sub">FASHION &amp; CLOTHING</div>
-  <div class="branch">${data.branch?.name || ''}</div>
-  <hr class="thick"/>
-  <table class="info-table">
-    <tr><td>رقم الفاتورة:</td><td style="font-family:monospace;font-size:9px">${data.invoiceNo}</td></tr>
-    <tr><td>التاريخ:</td><td>${date}</td></tr>
-    <tr><td>الوقت:</td><td>${time}</td></tr>
-    <tr><td>البائع:</td><td>${data.user?.fullName || ''}</td></tr>
-    ${customerRow}
-    <tr><td>الدفع:</td><td>${data.paymentMethod || ''}</td></tr>
-  </table>
-  <hr class="thick"/>
-  <table class="items-header">
+
+<div class="logo">
+  <img src="/brand-logo.png" alt="AL MAGD" onerror="this.style.display='none'"/>
+</div>
+<div class="brand-sub">FASHION &amp; CLOTHING</div>
+<div class="branch">${data.branch?.name || ''}</div>
+
+<hr class="thick"/>
+
+<!-- ══ Invoice Info ══ -->
+<table class="info">
+  <tr><td class="lbl">رقم الفاتورة:</td><td class="val" style="font-size:9px;letter-spacing:0.5px">${data.invoiceNo}</td></tr>
+  <tr><td class="lbl">التاريخ:</td>      <td class="val">${date}</td></tr>
+  <tr><td class="lbl">الوقت:</td>        <td class="val">${time}</td></tr>
+  <tr><td class="lbl">البائع:</td>       <td class="val">${data.user?.fullName || ''}</td></tr>
+  ${customerRow}
+  <tr><td class="lbl">الدفع:</td>        <td class="val">${data.paymentMethod || ''}</td></tr>
+</table>
+
+<hr class="thick"/>
+
+<!-- ══ Products ══ -->
+<table class="items">
+  <thead>
     <tr>
-      <th style="text-align:right;width:50%">الصنف</th>
-      <th class="center" style="width:15%">الكمية</th>
-      <th class="center" style="width:15%">السعر</th>
-      <th style="text-align:left;width:20%">المبلغ</th>
+      <th class="col-n">الصنف</th>
+      <th class="col-q">الكمية</th>
+      <th class="col-p">السعر</th>
+      <th class="col-t">المبلغ</th>
     </tr>
-  </table>
-  <hr class="thin"/>
-  <table class="items-table"><tbody>${linesHTML}</tbody></table>
-  <hr class="thick"/>
-  <table class="totals-table"><tbody>
-    <tr><td>المجموع الفرعي:</td><td class="right">${Number(totals.subtotal).toFixed(2)} ج.م</td></tr>
-    ${discountRow}${taxRow}${shippingRow}
-  </tbody></table>
-  <div class="grand-total"><span>الإجمالي</span><span>${Number(totals.finalTotal).toFixed(2)} ج.م</span></div>
-  ${partialRow}${creditRow}
-  <hr class="dash"/>
-  <div class="policy">
-    <div>يمكن الاستبدال خلال 14 يوم بشرط وجود الفاتورة</div>
-    <div>والمنتج بحالته الأصلية</div>
-  </div>
-  <hr class="dash"/>
-  <div class="footer">
-    <div class="thanks">شكراً لزيارتكم</div>
-    <div class="sub">نتطلع لخدمتكم دائماً</div>
-    <div class="phone">01090811974</div>
-    <div class="social">@magd.store</div>
-  </div>
-  <script>
-    // Wait for fonts then print
-    document.fonts.ready.then(function() {
-      setTimeout(function() { window.print(); window.close(); }, 300);
-    });
-  </script>
+  </thead>
+  <tbody>${linesHTML}</tbody>
+</table>
+
+<hr class="thick"/>
+
+<!-- ══ Totals ══ -->
+<table class="ttl">
+  <tr>
+    <td style="text-align:right;font-weight:800;font-size:11px;padding:2px 0;width:58%">المجموع الفرعي:</td>
+    <td style="text-align:left;font-weight:900;font-size:13px;padding:2px 0;width:42%">${Number(totals.subtotal).toFixed(2)} ج.م</td>
+  </tr>
+  ${discountRow}${taxRow}${shippingRow}
+</table>
+
+<div class="grand">
+  <span>الإجمالي</span>
+  <span>${Number(totals.finalTotal).toFixed(2)} ج.م</span>
+</div>
+
+${partialBlock}${creditBlock}
+
+<hr class="dash"/>
+<div class="policy">
+  <div>يمكن الاستبدال خلال 14 يوم بشرط وجود الفاتورة</div>
+  <div>والمنتج بحالته الأصلية</div>
+</div>
+<hr class="dash"/>
+
+<div class="footer">
+  <div class="ty">شكراً لزيارتكم</div>
+  <div class="sub">نتطلع لخدمتكم دائماً</div>
+  <div class="ph">01090811974</div>
+  <div class="soc">@magd.store</div>
+</div>
+
+<script>
+  /* Wait for Cairo font to load, then print & close */
+  document.fonts.ready.then(function() {
+    setTimeout(function() { window.print(); window.close(); }, 400);
+  });
+</script>
 </body>
 </html>`;
 
-        const popup = window.open('', '_blank', 'width=320,height=600,menubar=no,toolbar=no,location=no,scrollbars=yes');
+        /* 80mm paper ≈ 302px at 96dpi, +scrollbar ≈ 320px */
+        const popup = window.open('', '_blank', 'width=320,height=700,menubar=no,toolbar=no,location=no,scrollbars=yes');
         if (popup) {
             popup.document.write(html);
             popup.document.close();

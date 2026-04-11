@@ -87,6 +87,10 @@ export class CreateProductDto {
   @IsOptional()
   active?: boolean;
 
+  @IsBoolean()
+  @IsOptional()
+  manualPricing?: boolean;
+
   @IsNumber()
   @IsOptional()
   supplierId?: number;
@@ -170,6 +174,10 @@ export class UpdateProductDto {
   @IsBoolean()
   @IsOptional()
   active?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  manualPricing?: boolean;
 
   @IsNumber()
   @IsOptional()
