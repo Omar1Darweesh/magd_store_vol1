@@ -2,6 +2,46 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import apiClient from '../api/client';
 import { Plus, Trash2, Save, Search, X, Package, AlertCircle, CheckCircle2, History, Eye, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 
+// ── colour / size helpers ────────────────────────────────────────────
+const COLOR_MAP: Record<string, string> = {
+    'أبيض': '#FFFFFF', 'أسود': '#111827', 'رمادي': '#9ca3af', 'بيج': '#c9b99a',
+    'كريمي': '#f5f0dc', 'أحمر': '#ef4444', 'وردي': '#f9a8d4', 'برتقالي': '#fb923c',
+    'أصفر': '#fbbf24', 'أخضر': '#22c55e', 'أخضر زيتي': '#4a7c59', 'أزرق': '#3b82f6',
+    'أزرق سماوي': '#38bdf8', 'أزرق كحلي': '#1e3a8a', 'بنفسجي': '#a855f7',
+    'بني': '#92400e', 'كاكي': '#a1855f', 'ذهبي': '#d4a017', 'فضي': '#b0b7c3',
+    'متعدد الألوان': 'multicolor',
+    white: '#FFFFFF', black: '#111827', gray: '#9ca3af', grey: '#9ca3af',
+    beige: '#c9b99a', cream: '#f5f0dc', red: '#ef4444', pink: '#f9a8d4',
+    orange: '#fb923c', yellow: '#fbbf24', green: '#22c55e', olive: '#4a7c59',
+    blue: '#3b82f6', navy: '#1e3a8a', purple: '#a855f7',
+    brown: '#92400e', khaki: '#a1855f', gold: '#d4a017', silver: '#b0b7c3',
+    multicolor: 'multicolor',
+};
+const LIGHT_COLORS = new Set(['أبيض', 'كريمي', 'أصفر', 'بيج', 'فضي', 'white', 'cream', 'yellow', 'beige', 'silver']);
+function getColorHex(name: string) { return COLOR_MAP[name] ?? COLOR_MAP[name?.toLowerCase()] ?? '#e2e8f0'; }
+
+function SizeBadge({ size }: { size: string }) {
+    return (
+        <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minWidth: 28, height: 22, padding: '0 7px', background: '#1e293b', color: 'white', borderRadius: 4, fontSize: 10, fontWeight: 800, letterSpacing: '0.5px', fontFamily: 'monospace', userSelect: 'none', flexShrink: 0 }}>
+            {size}
+        </span>
+    );
+}
+function ColorSwatch({ color }: { color: string }) {
+    const hex = getColorHex(color);
+    const isMulti = hex === 'multicolor';
+    const isLight = LIGHT_COLORS.has(color) || LIGHT_COLORS.has(color?.toLowerCase());
+    return (
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '2px 7px 2px 3px', background: 'white', border: '1px solid #e2e8f0', borderRadius: 5, flexShrink: 0 }}>
+            {isMulti
+                ? <span style={{ display: 'inline-block', width: 14, height: 14, borderRadius: 3, background: 'linear-gradient(135deg,#ef4444 0%,#22c55e 50%,#3b82f6 100%)', border: '1px solid rgba(0,0,0,.12)', flexShrink: 0 }} />
+                : <span style={{ display: 'inline-block', width: 14, height: 14, borderRadius: 3, background: hex, border: isLight ? '1px solid #d1d5db' : '1px solid rgba(0,0,0,.15)', flexShrink: 0 }} />
+            }
+            <span style={{ fontSize: 11, fontWeight: 600, color: '#374151' }}>{color}</span>
+        </span>
+    );
+}
+
 const PAYMENT_TERMS = [
     { value: 'CASH', label: 'كاش', subLabel: 'Cash', days: 0, color: '#16a34a', bg: '#dcfce7', border: '#16a34a' },
     { value: 'DAYS_15', label: 'آجل 15 يوم', subLabel: 'Net 15', days: 15, color: '#d97706', bg: '#fef3c7', border: '#d97706' },
@@ -20,6 +60,7 @@ function calcDueDate(days: number): string | null {
 interface GRNLine {
     productId: number; productName: string; productCode: string;
     barcode: string; currentStock: number; qty: number; cost: number;
+    color?: string; size?: string; supplierName?: string;
 }
 
 export default function ReceiveGoods() {
@@ -42,6 +83,13 @@ export default function ReceiveGoods() {
     const [loading, setLoading] = useState(false);
     const searchRef = useRef<HTMLInputElement>(null);
 
+    // modal sub-filters
+    const [modalCategory, setModalCategory] = useState('');
+    const [modalSupplier, setModalSupplier] = useState('');
+    const [modalColor, setModalColor] = useState('');
+    const [modalSize, setModalSize] = useState('');
+    const [categories, setCategories] = useState<any[]>([]);
+
     // ── GRN History state ──
     const [grns, setGrns] = useState<any[]>([]);
     const [grnTotal, setGrnTotal] = useState(0);
@@ -58,10 +106,29 @@ export default function ReceiveGoods() {
     const taxAmount = (subtotal * taxRate) / 100;
     const total = subtotal + taxAmount;
 
-    const results = searchTerm.length >= 1 ? products.filter(p => {
-        const q = searchTerm.toLowerCase();
-        return p.nameAr?.includes(searchTerm) || p.nameEn?.toLowerCase().includes(q) || p.barcode?.includes(searchTerm) || p.code?.toLowerCase().includes(q);
-    }).slice(0, 12) : [];
+    const results = (() => {
+        let list = products;
+        if (modalCategory) list = list.filter((p: any) => p.categoryId?.toString() === modalCategory || p.category?.id?.toString() === modalCategory);
+        if (modalSupplier) list = list.filter((p: any) => p.supplierId?.toString() === modalSupplier || p.supplier?.id?.toString() === modalSupplier);
+        if (modalColor) list = list.filter((p: any) => p.color === modalColor);
+        if (modalSize) list = list.filter((p: any) => p.size === modalSize);
+        if (searchTerm.length >= 1) {
+            const q = searchTerm.toLowerCase();
+            list = list.filter((p: any) =>
+                p.nameAr?.includes(searchTerm) ||
+                p.nameEn?.toLowerCase().includes(q) ||
+                p.barcode?.includes(searchTerm) ||
+                p.code?.toLowerCase().includes(q) ||
+                (p.color || '').toLowerCase().includes(q) ||
+                (p.size || '').toLowerCase().includes(q) ||
+                (p.supplier?.name || '').toLowerCase().includes(q)
+            );
+        }
+        return list.slice(0, 40);
+    })();
+
+    const modalColors = [...new Set(products.map((p: any) => p.color).filter(Boolean))] as string[];
+    const modalSizes = [...new Set(products.map((p: any) => p.size).filter(Boolean))] as string[];
 
     const fetchGRNs = useCallback(async (page: number) => {
         setGrnLoading(true);
@@ -92,8 +159,12 @@ export default function ReceiveGoods() {
         Promise.all([
             apiClient.get('/purchasing/suppliers?active=true'),
             apiClient.get('/products?active=true&take=2000'),
-        ]).then(([s, p]) => { setSuppliers(s.data.data); setProducts(p.data.data); })
-            .catch(console.error);
+            apiClient.get('/products/categories'),
+        ]).then(([s, p, cats]) => {
+            setSuppliers(s.data.data);
+            setProducts(p.data.data);
+            setCategories(Array.isArray(cats) ? cats : cats.data || []);
+        }).catch(console.error);
     }, []);
 
     const addProduct = (product: any) => {
@@ -108,6 +179,9 @@ export default function ReceiveGoods() {
                 productCode: product.code || '', barcode: product.barcode || '',
                 currentStock: product.stock || 0, qty: 1,
                 cost: Number(product.costAvg || product.cost || 0),
+                color: product.color || undefined,
+                size: product.size || undefined,
+                supplierName: product.supplier?.name || undefined,
             }]);
         }
         setShowModal(false);
@@ -295,7 +369,14 @@ export default function ReceiveGoods() {
                     <div className="card" style={{ marginBottom: '1rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                             <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: '#374151' }}>الأصناف ({lines.length})</h3>
-                            <button type="button" className="btn btn-primary" onClick={() => { setSearchTerm(''); setShowModal(true); }}>
+                            <button type="button" className="btn btn-primary" onClick={() => {
+                                setSearchTerm('');
+                                setModalCategory('');
+                                setModalSupplier('');
+                                setModalColor('');
+                                setModalSize('');
+                                setShowModal(true);
+                            }}>
                                 <Plus size={16} /> إضافة صنف
                             </button>
                         </div>
@@ -323,7 +404,18 @@ export default function ReceiveGoods() {
                                             <tr key={i}>
                                                 <td>
                                                     <div style={{ fontWeight: 600 }}>{line.productName}</div>
-                                                    <div style={{ fontSize: '12px', color: '#9ca3af' }}>{line.barcode} {line.productCode && `| ${line.productCode}`}</div>
+                                                    <div style={{ fontSize: '12px', color: '#9ca3af', marginBottom: 4 }}>{line.barcode} {line.productCode && `| ${line.productCode}`}</div>
+                                                    {(line.size || line.color || line.supplierName) && (
+                                                        <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', alignItems: 'center' }}>
+                                                            {line.size && <SizeBadge size={line.size} />}
+                                                            {line.color && <ColorSwatch color={line.color} />}
+                                                            {line.supplierName && (
+                                                                <span style={{ padding: '2px 8px', background: '#eff6ff', color: '#1d4ed8', borderRadius: 9999, fontSize: 11, fontWeight: 600, border: '1px solid #bfdbfe' }}>
+                                                                    {line.supplierName}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    )}
                                                 </td>
                                                 <td style={{ textAlign: 'center' }}>
                                                     <span style={{
@@ -412,58 +504,155 @@ export default function ReceiveGoods() {
                 {showModal && (
                     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}
                         onClick={() => setShowModal(false)}>
-                        <div className="card" style={{ width: '660px', maxWidth: '95vw', maxHeight: '80vh', display: 'flex', flexDirection: 'column', padding: 0, overflow: 'hidden' }}
+                        <div className="card" style={{ width: '780px', maxWidth: '97vw', maxHeight: '88vh', display: 'flex', flexDirection: 'column', padding: 0, overflow: 'hidden' }}
                             onClick={e => e.stopPropagation()}>
+
                             {/* Modal header */}
-                            <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ padding: '18px 24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <h3 style={{ margin: 0 }}>إضافة صنف</h3>
                                 <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}><X size={20} /></button>
                             </div>
-                            {/* Search input */}
-                            <div style={{ padding: '16px 24px', borderBottom: '1px solid var(--border)' }}>
+
+                            {/* Search + filters */}
+                            <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                {/* Text search */}
                                 <div style={{ position: 'relative' }}>
                                     <Search size={16} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} />
                                     <input ref={searchRef} autoFocus type="text" className="input-field" style={{ paddingRight: '36px' }}
-                                        placeholder="ابحث باسم المنتج أو الباركود أو الكود..."
+                                        placeholder="ابحث بالاسم، باركود، كود، لون، مقاس، مورد..."
                                         value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
                                         onKeyDown={e => e.key === 'Escape' && setShowModal(false)} />
                                 </div>
+
+                                {/* Category chips */}
+                                {categories.length > 0 && (
+                                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                                        <span style={{ fontSize: 12, color: '#6b7280', fontWeight: 600, whiteSpace: 'nowrap' }}>التصنيف:</span>
+                                        <button onClick={() => setModalCategory('')}
+                                            style={{ padding: '4px 12px', borderRadius: 20, border: '1.5px solid', cursor: 'pointer', fontSize: 12, fontWeight: 600, fontFamily: 'inherit', background: !modalCategory ? '#6366f1' : 'white', color: !modalCategory ? 'white' : '#4b5563', borderColor: !modalCategory ? 'transparent' : '#e5e7eb' }}>
+                                            الكل
+                                        </button>
+                                        {categories.map((cat: any) => (
+                                            <button key={cat.id} onClick={() => setModalCategory(cat.id.toString())}
+                                                style={{ padding: '4px 12px', borderRadius: 20, border: '1.5px solid', cursor: 'pointer', fontSize: 12, fontWeight: 600, fontFamily: 'inherit', whiteSpace: 'nowrap', background: modalCategory === cat.id.toString() ? '#6366f1' : 'white', color: modalCategory === cat.id.toString() ? 'white' : '#4b5563', borderColor: modalCategory === cat.id.toString() ? 'transparent' : '#e5e7eb' }}>
+                                                {cat.nameAr || cat.name}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Supplier chips */}
+                                {suppliers.length > 0 && (
+                                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                                        <span style={{ fontSize: 12, color: '#6b7280', fontWeight: 600, whiteSpace: 'nowrap' }}>المورد:</span>
+                                        <button onClick={() => setModalSupplier('')}
+                                            style={{ padding: '4px 12px', borderRadius: 20, border: '1.5px solid', cursor: 'pointer', fontSize: 12, fontWeight: 600, fontFamily: 'inherit', background: !modalSupplier ? '#6366f1' : 'white', color: !modalSupplier ? 'white' : '#4b5563', borderColor: !modalSupplier ? 'transparent' : '#e5e7eb' }}>
+                                            الكل
+                                        </button>
+                                        {suppliers.map((s: any) => (
+                                            <button key={s.id} onClick={() => setModalSupplier(s.id.toString())}
+                                                style={{ padding: '4px 12px', borderRadius: 20, border: '1.5px solid', cursor: 'pointer', fontSize: 12, fontWeight: 600, fontFamily: 'inherit', whiteSpace: 'nowrap', background: modalSupplier === s.id.toString() ? '#6366f1' : 'white', color: modalSupplier === s.id.toString() ? 'white' : '#4b5563', borderColor: modalSupplier === s.id.toString() ? 'transparent' : '#e5e7eb' }}>
+                                                {s.name}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Color chips */}
+                                {modalColors.length > 0 && (
+                                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                                        <span style={{ fontSize: 12, color: '#6b7280', fontWeight: 600, whiteSpace: 'nowrap' }}>اللون:</span>
+                                        <button onClick={() => setModalColor('')}
+                                            style={{ padding: '3px 10px', borderRadius: 20, border: '1.5px solid', cursor: 'pointer', fontSize: 12, fontWeight: 600, fontFamily: 'inherit', background: !modalColor ? '#6366f1' : 'white', color: !modalColor ? 'white' : '#4b5563', borderColor: !modalColor ? 'transparent' : '#e5e7eb' }}>
+                                            الكل
+                                        </button>
+                                        {modalColors.map(color => {
+                                            const hex = getColorHex(color);
+                                            const isMulti = hex === 'multicolor';
+                                            return (
+                                                <button key={color} onClick={() => setModalColor(modalColor === color ? '' : color)}
+                                                    style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 9px', borderRadius: 20, border: `1.5px solid ${modalColor === color ? '#6366f1' : '#e5e7eb'}`, cursor: 'pointer', fontSize: 12, fontWeight: 600, fontFamily: 'inherit', background: modalColor === color ? '#ede9fe' : 'white' }}>
+                                                    <span style={{ width: 11, height: 11, borderRadius: 2, background: isMulti ? 'linear-gradient(135deg,#ef4444,#22c55e,#3b82f6)' : hex, border: '1px solid rgba(0,0,0,.15)', display: 'inline-block', flexShrink: 0 }} />
+                                                    {color}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+
+                                {/* Size chips */}
+                                {modalSizes.length > 0 && (
+                                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                                        <span style={{ fontSize: 12, color: '#6b7280', fontWeight: 600, whiteSpace: 'nowrap' }}>المقاس:</span>
+                                        <button onClick={() => setModalSize('')}
+                                            style={{ padding: '3px 10px', borderRadius: 20, border: '1.5px solid', cursor: 'pointer', fontSize: 12, fontWeight: 600, fontFamily: 'inherit', background: !modalSize ? '#6366f1' : 'white', color: !modalSize ? 'white' : '#4b5563', borderColor: !modalSize ? 'transparent' : '#e5e7eb' }}>
+                                            الكل
+                                        </button>
+                                        {modalSizes.map(size => (
+                                            <button key={size} onClick={() => setModalSize(modalSize === size ? '' : size)}
+                                                style={{ padding: '3px 9px', borderRadius: 20, border: `1.5px solid ${modalSize === size ? '#6366f1' : '#e5e7eb'}`, cursor: 'pointer', fontSize: 12, fontWeight: 700, fontFamily: 'monospace', background: modalSize === size ? '#1e293b' : 'white', color: modalSize === size ? 'white' : '#1e293b' }}>
+                                                {size}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+
+                                <div style={{ fontSize: 12, color: '#94a3b8', display: 'flex', justifyContent: 'space-between' }}>
+                                    <span>{results.length} نتيجة</span>
+                                    <span>ESC للإغلاق</span>
+                                </div>
                             </div>
-                            {/* Results */}
+
+                            {/* Results list */}
                             <div style={{ flex: 1, overflowY: 'auto' }}>
-                                {results.length > 0 ? results.map(p => (
+                                {results.length > 0 ? results.map((p: any) => (
                                     <div key={p.id} onClick={() => addProduct(p)}
-                                        style={{ padding: '14px 24px', borderBottom: '1px solid #f1f5f9', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'background 0.1s' }}
+                                        style={{ padding: '12px 20px', borderBottom: '1px solid #f1f5f9', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, transition: 'background 0.1s' }}
                                         onMouseEnter={e => (e.currentTarget.style.background = '#f5f3ff')}
                                         onMouseLeave={e => (e.currentTarget.style.background = 'white')}>
-                                        <div>
-                                            <div style={{ fontWeight: 600, color: '#0f172a' }}>{p.nameAr || p.nameEn}</div>
-                                            <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '2px' }}>
-                                                {p.barcode || 'لا يوجد باركود'} {p.code && `| ${p.code}`}
+
+                                        {/* Left: name + meta */}
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <div style={{ fontWeight: 600, color: '#0f172a', marginBottom: 3 }}>{p.nameAr || p.nameEn}</div>
+                                            <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 5 }}>
+                                                {p.barcode || 'لا يوجد باركود'}{p.code ? ` | ${p.code}` : ''}
+                                            </div>
+                                            <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', alignItems: 'center' }}>
+                                                {p.size && <SizeBadge size={p.size} />}
+                                                {p.color && <ColorSwatch color={p.color} />}
+                                                {p.supplier?.name && (
+                                                    <span style={{ padding: '2px 8px', background: '#eff6ff', color: '#1d4ed8', borderRadius: 9999, fontSize: 11, fontWeight: 600, border: '1px solid #bfdbfe' }}>
+                                                        {p.supplier.name}
+                                                    </span>
+                                                )}
+                                                {p.category?.nameAr && (
+                                                    <span style={{ padding: '2px 8px', background: '#f0fdf4', color: '#16a34a', borderRadius: 9999, fontSize: 11, fontWeight: 600, border: '1px solid #86efac' }}>
+                                                        {p.category.nameAr}
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
-                                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexShrink: 0 }}>
-                                            <span style={{
-                                                padding: '3px 8px', borderRadius: '6px', fontSize: '12px', fontWeight: 600,
-                                                background: p.stock > 10 ? '#dcfce7' : p.stock > 0 ? '#fef3c7' : '#fee2e2',
-                                                color: p.stock > 10 ? '#16a34a' : p.stock > 0 ? '#d97706' : '#dc2626',
-                                            }}>مخزون: {p.stock || 0}</span>
-                                            <span style={{ fontWeight: 700, color: '#374151', fontSize: '15px' }}>{Number(p.costAvg || p.cost || 0).toFixed(2)} ر.س</span>
-                                            <span className="btn btn-primary" style={{ padding: '5px 12px', fontSize: '13px' }}>إضافة</span>
+
+                                        {/* Right: stock + cost + add */}
+                                        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
+                                            <span style={{ padding: '3px 8px', borderRadius: 6, fontSize: 12, fontWeight: 600, background: p.stock > 10 ? '#dcfce7' : p.stock > 0 ? '#fef3c7' : '#fee2e2', color: p.stock > 10 ? '#16a34a' : p.stock > 0 ? '#d97706' : '#dc2626' }}>
+                                                📦 {p.stock || 0}
+                                            </span>
+                                            <div style={{ textAlign: 'center' }}>
+                                                <div style={{ fontWeight: 700, color: '#374151', fontSize: 14 }}>{Number(p.costAvg || p.cost || 0).toFixed(2)} ج</div>
+                                                <div style={{ fontSize: 10, color: '#94a3b8' }}>متوسط التكلفة</div>
+                                            </div>
+                                            <span className="btn btn-primary" style={{ padding: '5px 14px', fontSize: 13, pointerEvents: 'none' }}>+ إضافة</span>
                                         </div>
                                     </div>
-                                )) : searchTerm.length >= 1 ? (
+                                )) : (
                                     <div style={{ textAlign: 'center', padding: '50px 20px', color: '#94a3b8' }}>
                                         <AlertCircle size={36} color="#e2e8f0" style={{ display: 'block', margin: '0 auto 10px' }} />
-                                        لا توجد نتائج لـ "{searchTerm}"
+                                        {searchTerm || modalCategory || modalSupplier || modalColor || modalSize
+                                            ? 'لا توجد نتائج مطابقة'
+                                            : 'اكتب للبحث أو اختر فلتر...'}
                                     </div>
-                                ) : (
-                                    <div style={{ textAlign: 'center', padding: '50px 20px', color: '#94a3b8' }}>اكتب للبحث عن منتج...</div>
                                 )}
-                            </div>
-                            <div style={{ padding: '10px 24px', background: '#f8fafc', borderTop: '1px solid var(--border)', fontSize: '12px', color: '#94a3b8', display: 'flex', justifyContent: 'space-between' }}>
-                                <span>💡 يمكنك البحث بالباركود مباشرة</span>
-                                <span>ESC للإغلاق</span>
                             </div>
                         </div>
                     </div>

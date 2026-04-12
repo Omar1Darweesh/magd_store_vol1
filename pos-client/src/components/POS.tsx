@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
-import { Search, Trash2, ShoppingCart, User, Building, Users, Printer, LogOut } from 'lucide-react';
+import { Search, Trash2, ShoppingCart, User, Building, Users, Printer, LogOut, CalendarDays, CheckCircle, XCircle } from 'lucide-react';
 import apiClient from '../api/client';
+import { businessDayApi } from '../api/businessDay';
+import type { BusinessDay } from '../api/businessDay';
 import './POS.css';
 
 const COLOR_MAP: Record<string, string> = {
@@ -124,6 +126,17 @@ function POS() {
     const [categories, setCategories] = useState<any[]>([]);
     const [suppliers, setSuppliers] = useState<{ id: number; name: string }[]>([]);
     const [selectedSupplier, setSelectedSupplier] = useState<string>('');
+    const [selectedColor, setSelectedColor] = useState<string>('');
+    const [selectedSize, setSelectedSize] = useState<string>('');
+    const [browserSearchQuery, setBrowserSearchQuery] = useState('');
+
+    // Business day
+    const [businessDay, setBusinessDay] = useState<BusinessDay | null>(null);
+    const [showBdPanel, setShowBdPanel] = useState(false);
+    const [bdNotes, setBdNotes] = useState('');
+    const [bdBusy, setBdBusy] = useState(false);
+    const [bdMessage, setBdMessage] = useState('');
+
     const [editingPrice, setEditingPrice] = useState<{
         productId: number;
         currentPrice: number;
@@ -238,6 +251,30 @@ function POS() {
         }
     };
 
+    const applyBrowserFilters = (
+        prods: Product[],
+        query: string,
+        color: string,
+        size: string
+    ): Product[] => {
+        let result = prods;
+        if (query) {
+            const q = query.toLowerCase();
+            result = result.filter(p =>
+                p.nameAr?.toLowerCase().includes(q) ||
+                p.nameEn?.toLowerCase().includes(q) ||
+                p.code?.toLowerCase().includes(q) ||
+                p.barcode?.toLowerCase().includes(q) ||
+                (p.color || '').toLowerCase().includes(q) ||
+                (p.size || '').toLowerCase().includes(q) ||
+                (p.supplier?.name || '').toLowerCase().includes(q)
+            );
+        }
+        if (color) result = result.filter(p => p.color === color);
+        if (size) result = result.filter(p => p.size === size);
+        return result;
+    };
+
     const loadSuppliers = async () => {
         try {
             const data = await apiClient.get('/purchasing/suppliers?active=true&take=200');
@@ -250,6 +287,9 @@ function POS() {
     const loadProductsForBrowser = async (categoryId?: string, supplierId?: string) => {
         try {
             setLoadingProducts(true);
+            setSelectedColor('');
+            setSelectedSize('');
+            setBrowserSearchQuery('');
             const branchId = user.branchId || user.branch?.id || 1;
             const params = new URLSearchParams({ branchId: String(branchId), active: 'true', take: '2000' });
             if (categoryId) params.set('categoryId', categoryId);
@@ -736,14 +776,14 @@ function POS() {
               </tr>`;
         }).join('');
 
-        const discountRow  = Number(totals.discountAmount) > 0
+        const discountRow = Number(totals.discountAmount) > 0
             ? `<tr><td style="text-align:right;font-weight:800;font-size:11px;padding:2px 0">الخصم:</td><td style="text-align:left;font-weight:900;font-size:11px;padding:2px 0">-${Number(totals.discountAmount).toFixed(2)} ج.م</td></tr>` : '';
-        const taxRow       = Number(totals.taxAmount) > 0
+        const taxRow = Number(totals.taxAmount) > 0
             ? `<tr><td style="text-align:right;font-weight:800;font-size:11px;padding:2px 0">الضريبة:</td><td style="text-align:left;font-weight:900;font-size:11px;padding:2px 0">+${Number(totals.taxAmount).toFixed(2)} ج.م</td></tr>` : '';
-        const shippingRow  = Number(totals.shippingFee) > 0
+        const shippingRow = Number(totals.shippingFee) > 0
             ? `<tr><td style="text-align:right;font-weight:800;font-size:11px;padding:2px 0">الشحن:</td><td style="text-align:left;font-weight:900;font-size:11px;padding:2px 0">${Number(totals.shippingFee).toFixed(2)} ج.م</td></tr>` : '';
-        const customerRow  = data.customer
-            ? `<tr><td class="lbl">العميل:</td><td class="val">${(data.customer.name || '').replace(/</g,'&lt;')}</td></tr>` : '';
+        const customerRow = data.customer
+            ? `<tr><td class="lbl">العميل:</td><td class="val">${(data.customer.name || '').replace(/</g, '&lt;')}</td></tr>` : '';
         const partialBlock = data.paymentType === 'PARTIAL' ? `
             <div class="partial">
               <table><tbody>
@@ -751,7 +791,7 @@ function POS() {
                 <tr><td class="lbl">المتبقي:</td><td class="val">${(Number(totals.finalTotal) - Number(data.paidAmount)).toFixed(2)} ج.م</td></tr>
               </tbody></table>
             </div>` : '';
-        const creditBlock  = data.paymentType === 'CREDIT'
+        const creditBlock = data.paymentType === 'CREDIT'
             ? `<div class="credit">آجل — المبلغ الكامل: ${Number(totals.finalTotal).toFixed(2)} ج.م</div>` : '';
 
         const date = new Date(data.createdAt).toLocaleDateString('ar-EG');
@@ -964,6 +1004,51 @@ ${partialBlock}${creditBlock}
         setMessage('✅ تم تحديث المنصات');
     };
 
+    // ── Business Day ───────────────────────────────────────────────
+    const loadBusinessDay = async () => {
+        try {
+            const day = await businessDayApi.getCurrent();
+            setBusinessDay(day);
+        } catch {
+            setBusinessDay(null);
+        }
+    };
+
+    const handleOpenBd = async () => {
+        setBdBusy(true);
+        setBdMessage('');
+        try {
+            const day = await businessDayApi.open(bdNotes || undefined);
+            setBusinessDay(day);
+            setBdNotes('');
+            setBdMessage('✅ تم فتح يوم العمل');
+        } catch (e: any) {
+            setBdMessage(e.response?.data?.message || '❌ فشل فتح يوم العمل');
+        } finally {
+            setBdBusy(false);
+        }
+    };
+
+    const handleCloseBd = async () => {
+        if (!window.confirm('هل تريد إغلاق يوم العمل الحالي؟')) return;
+        setBdBusy(true);
+        setBdMessage('');
+        try {
+            await businessDayApi.close(bdNotes || undefined);
+            setBusinessDay(null);
+            setBdNotes('');
+            setBdMessage('✅ تم إغلاق يوم العمل');
+        } catch (e: any) {
+            setBdMessage(e.response?.data?.message || '❌ فشل إغلاق يوم العمل');
+        } finally {
+            setBdBusy(false);
+        }
+    };
+
+    useEffect(() => {
+        loadBusinessDay();
+    }, []);
+
     if (loading && Object.keys(CHANNELS).length === 0) {
         return (
             <div style={{ padding: '40px', textAlign: 'center' }}>
@@ -1115,6 +1200,27 @@ ${partialBlock}${creditBlock}
                                 📦 {Object.keys(CHANNELS).length} منصات
                             </div>
                             <div className="branch-tag"><Building size={14} /> {user.branch?.name}</div>
+                            {/* Business Day Badge */}
+                            <button
+                                onClick={() => { setBdMessage(''); setShowBdPanel(true); }}
+                                style={{
+                                    display: 'flex', alignItems: 'center', gap: '6px',
+                                    padding: '6px 12px',
+                                    background: businessDay ? '#dcfce7' : '#fee2e2',
+                                    color: businessDay ? '#16a34a' : '#dc2626',
+                                    border: `1px solid ${businessDay ? '#86efac' : '#fca5a5'}`,
+                                    borderRadius: '8px', cursor: 'pointer',
+                                    fontSize: '13px', fontWeight: 700, transition: 'all 0.2s'
+                                }}
+                                title="يوم العمل"
+                            >
+                                {businessDay ? <CheckCircle size={14} /> : <XCircle size={14} />}
+                                {businessDay
+                                    ? `مفتوح • ${new Date(businessDay.openedAt).toLocaleDateString('ar-EG')}`
+                                    : 'مغلق'
+                                }
+                                <CalendarDays size={13} />
+                            </button>
                             <button onClick={handleLogout} className="logout-btn">تسجيل خروج</button>
                             <button
                                 onClick={refreshPlatformSettings}
@@ -2035,6 +2141,13 @@ ${partialBlock}${creditBlock}
                                                     {p.color && <ColorSwatch color={p.color} />}
                                                 </div>
                                             )}
+                                            {p.supplier && (
+                                                <div style={{ marginTop: '4px' }}>
+                                                    <span style={{ display: 'inline-block', padding: '2px 8px', background: '#eff6ff', color: '#1d4ed8', borderRadius: '9999px', fontSize: '11px', fontWeight: 600, border: '1px solid #bfdbfe' }}>
+                                                        {p.supplier.name}
+                                                    </span>
+                                                </div>
+                                            )}
                                             {p.stock !== undefined && (
                                                 <div style={{
                                                     fontSize: '12px',
@@ -2147,20 +2260,12 @@ ${partialBlock}${creditBlock}
                                 <div style={{ flex: 1, minWidth: '250px' }}>
                                     <input
                                         type="text"
-                                        placeholder="🔍 ابحث عن منتج..."
+                                        placeholder="🔍 ابحث عن منتج (اسم، باركود، لون، مقاس، مورد)..."
+                                        value={browserSearchQuery}
                                         onChange={(e) => {
-                                            const query = e.target.value.toLowerCase();
-                                            if (query) {
-                                                const filtered = allBrowserProducts.filter(p =>
-                                                    p.nameAr?.toLowerCase().includes(query) ||
-                                                    p.nameEn?.toLowerCase().includes(query) ||
-                                                    p.code?.toLowerCase().includes(query) ||
-                                                    p.barcode?.toLowerCase().includes(query)
-                                                );
-                                                setBrowserProducts(filtered);
-                                            } else {
-                                                setBrowserProducts(allBrowserProducts);
-                                            }
+                                            const query = e.target.value;
+                                            setBrowserSearchQuery(query);
+                                            setBrowserProducts(applyBrowserFilters(allBrowserProducts, query, selectedColor, selectedSize));
                                         }}
                                         style={{
                                             width: '100%',
@@ -2255,6 +2360,57 @@ ${partialBlock}${creditBlock}
                                     ))}
                                 </div>
                             )}
+
+                            {/* Color filter chips */}
+                            {(() => {
+                                const uniqueColors = [...new Set(allBrowserProducts.map(p => p.color).filter(Boolean))] as string[];
+                                if (!uniqueColors.length) return null;
+                                return (
+                                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center', paddingTop: '4px' }}>
+                                        <span style={{ fontSize: '13px', color: '#6b7280', fontWeight: 600, whiteSpace: 'nowrap' }}>اللون:</span>
+                                        <button
+                                            onClick={() => { setSelectedColor(''); setBrowserProducts(applyBrowserFilters(allBrowserProducts, browserSearchQuery, '', selectedSize)); }}
+                                            style={{ padding: '4px 12px', borderRadius: '20px', border: '2px solid', cursor: 'pointer', fontSize: '12px', fontWeight: 600, whiteSpace: 'nowrap', background: !selectedColor ? '#667eea' : 'white', color: !selectedColor ? 'white' : '#4b5563', borderColor: !selectedColor ? 'transparent' : '#e5e7eb' }}
+                                        >الكل</button>
+                                        {uniqueColors.map(color => {
+                                            const hex = getColorHex(color);
+                                            const isMulti = hex === 'multicolor';
+                                            return (
+                                                <button
+                                                    key={color}
+                                                    onClick={() => { const nc = selectedColor === color ? '' : color; setSelectedColor(nc); setBrowserProducts(applyBrowserFilters(allBrowserProducts, browserSearchQuery, nc, selectedSize)); }}
+                                                    style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 10px', borderRadius: '20px', border: `2px solid ${selectedColor === color ? '#667eea' : '#e5e7eb'}`, cursor: 'pointer', fontSize: '12px', fontWeight: 600, background: selectedColor === color ? '#ede9fe' : 'white', transition: 'all 0.2s' }}
+                                                >
+                                                    <span style={{ width: 12, height: 12, borderRadius: 3, flexShrink: 0, background: isMulti ? 'linear-gradient(135deg,#ef4444,#22c55e,#3b82f6)' : hex, border: '1px solid rgba(0,0,0,0.15)', display: 'inline-block' }} />
+                                                    {color}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                );
+                            })()}
+
+                            {/* Size filter chips */}
+                            {(() => {
+                                const uniqueSizes = [...new Set(allBrowserProducts.map(p => p.size).filter(Boolean))] as string[];
+                                if (!uniqueSizes.length) return null;
+                                return (
+                                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center', paddingTop: '4px' }}>
+                                        <span style={{ fontSize: '13px', color: '#6b7280', fontWeight: 600, whiteSpace: 'nowrap' }}>المقاس:</span>
+                                        <button
+                                            onClick={() => { setSelectedSize(''); setBrowserProducts(applyBrowserFilters(allBrowserProducts, browserSearchQuery, selectedColor, '')); }}
+                                            style={{ padding: '4px 12px', borderRadius: '20px', border: '2px solid', cursor: 'pointer', fontSize: '12px', fontWeight: 600, whiteSpace: 'nowrap', background: !selectedSize ? '#667eea' : 'white', color: !selectedSize ? 'white' : '#4b5563', borderColor: !selectedSize ? 'transparent' : '#e5e7eb' }}
+                                        >الكل</button>
+                                        {uniqueSizes.map(size => (
+                                            <button
+                                                key={size}
+                                                onClick={() => { const ns = selectedSize === size ? '' : size; setSelectedSize(ns); setBrowserProducts(applyBrowserFilters(allBrowserProducts, browserSearchQuery, selectedColor, ns)); }}
+                                                style={{ padding: '4px 10px', borderRadius: '20px', border: `2px solid ${selectedSize === size ? '#667eea' : '#e5e7eb'}`, cursor: 'pointer', fontSize: '12px', fontWeight: 700, background: selectedSize === size ? '#1e293b' : 'white', color: selectedSize === size ? 'white' : '#1e293b', fontFamily: 'monospace', transition: 'all 0.2s' }}
+                                            >{size}</button>
+                                        ))}
+                                    </div>
+                                );
+                            })()}
                         </div>
 
                         {loadingProducts ? (
@@ -2742,7 +2898,98 @@ ${partialBlock}${creditBlock}
                     </div>
                 )}
 
+                {/* ══ Business Day Panel ══ */}
+                {showBdPanel && (
+                    <div
+                        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        onClick={() => setShowBdPanel(false)}
+                    >
+                        <div
+                            style={{ background: 'white', borderRadius: '20px', padding: '32px', width: '420px', maxWidth: '95vw', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}
+                            dir="rtl"
+                            onClick={e => e.stopPropagation()}
+                        >
+                            {/* Header */}
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+                                <h2 style={{ margin: 0, fontSize: '22px', fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <CalendarDays size={24} color="#667eea" />
+                                    يوم العمل
+                                </h2>
+                                <button onClick={() => setShowBdPanel(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '22px', color: '#64748b' }}>✕</button>
+                            </div>
 
+                            {/* Status card */}
+                            <div style={{
+                                padding: '16px 20px', borderRadius: '14px', marginBottom: '20px',
+                                background: businessDay ? '#f0fdf4' : '#fff1f2',
+                                border: `2px solid ${businessDay ? '#86efac' : '#fca5a5'}`
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: businessDay ? '10px' : '0' }}>
+                                    {businessDay
+                                        ? <CheckCircle size={22} color="#16a34a" />
+                                        : <XCircle size={22} color="#dc2626" />
+                                    }
+                                    <span style={{ fontWeight: 800, fontSize: '18px', color: businessDay ? '#16a34a' : '#dc2626' }}>
+                                        {businessDay ? 'مفتوح' : 'مغلق'}
+                                    </span>
+                                </div>
+                                {businessDay && (
+                                    <div style={{ fontSize: '13px', color: '#374151', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                        <div>📅 فُتح: {new Date(businessDay.openedAt).toLocaleString('ar-EG')}</div>
+                                        <div>👤 بواسطة: {businessDay.opener.fullName}</div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Notes input */}
+                            <div style={{ marginBottom: '16px' }}>
+                                <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600, fontSize: '14px', color: '#374151' }}>
+                                    ملاحظات (اختياري)
+                                </label>
+                                <textarea
+                                    value={bdNotes}
+                                    onChange={e => setBdNotes(e.target.value)}
+                                    placeholder="أضف ملاحظات ليوم العمل..."
+                                    rows={2}
+                                    style={{ width: '100%', padding: '10px 12px', border: '1px solid #d1d5db', borderRadius: '10px', fontSize: '14px', resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' }}
+                                />
+                            </div>
+
+                            {/* Message */}
+                            {bdMessage && (
+                                <div style={{ marginBottom: '14px', padding: '10px 14px', borderRadius: '8px', background: bdMessage.startsWith('✅') ? '#f0fdf4' : '#fff1f2', color: bdMessage.startsWith('✅') ? '#16a34a' : '#dc2626', fontWeight: 600, fontSize: '14px' }}>
+                                    {bdMessage}
+                                </div>
+                            )}
+
+                            {/* Action buttons */}
+                            <div style={{ display: 'flex', gap: '10px' }}>
+                                {!businessDay ? (
+                                    <button
+                                        onClick={handleOpenBd}
+                                        disabled={bdBusy}
+                                        style={{ flex: 1, padding: '14px', background: 'linear-gradient(135deg,#10b981,#059669)', color: 'white', border: 'none', borderRadius: '12px', cursor: bdBusy ? 'not-allowed' : 'pointer', fontWeight: 800, fontSize: '16px', opacity: bdBusy ? 0.7 : 1 }}
+                                    >
+                                        {bdBusy ? '⏳ جاري...' : '▶ فتح يوم العمل'}
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={handleCloseBd}
+                                        disabled={bdBusy}
+                                        style={{ flex: 1, padding: '14px', background: 'linear-gradient(135deg,#ef4444,#dc2626)', color: 'white', border: 'none', borderRadius: '12px', cursor: bdBusy ? 'not-allowed' : 'pointer', fontWeight: 800, fontSize: '16px', opacity: bdBusy ? 0.7 : 1 }}
+                                    >
+                                        {bdBusy ? '⏳ جاري...' : '■ إغلاق يوم العمل'}
+                                    </button>
+                                )}
+                                <button
+                                    onClick={() => { loadBusinessDay(); setBdMessage(''); }}
+                                    style={{ padding: '14px 18px', background: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}
+                                    title="تحديث"
+                                >🔄</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
             </div>
         </>
