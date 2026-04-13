@@ -526,15 +526,15 @@ export class ProductsService {
           break;
         case 'low':
           havingClause =
-            'HAVING COALESCE(SUM(sm.qty_change), 0) > 0 AND COALESCE(SUM(sm.qty_change), 0) <= COALESCE(p.min_qty, 0)';
+            'HAVING COALESCE(SUM(sm.qty_change), 0) > 0 AND COALESCE(SUM(sm.qty_change), 0) <= COALESCE(NULLIF(p.min_qty, 0), 5)';
           break;
         case 'enough':
           havingClause =
-            'HAVING COALESCE(SUM(sm.qty_change), 0) > COALESCE(p.min_qty, 0) AND COALESCE(SUM(sm.qty_change), 0) < COALESCE(p.max_qty, 999999)';
+            'HAVING COALESCE(SUM(sm.qty_change), 0) > COALESCE(NULLIF(p.min_qty, 0), 5) AND (p.max_qty IS NULL OR p.max_qty = 0 OR COALESCE(SUM(sm.qty_change), 0) < p.max_qty)';
           break;
         case 'high':
           havingClause =
-            'HAVING COALESCE(SUM(sm.qty_change), 0) >= COALESCE(p.max_qty, 999999)';
+            'HAVING p.max_qty IS NOT NULL AND p.max_qty > 0 AND COALESCE(SUM(sm.qty_change), 0) >= p.max_qty';
           break;
       }
 

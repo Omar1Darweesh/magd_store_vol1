@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import apiClient from '../api/client';
 import { useBusinessDay } from '../context/BusinessDayContext';
 import { businessDayApi } from '../api/businessDay';
@@ -196,6 +196,8 @@ export default function Expenses() {
     const { currentDay, loading: dayLoading } = useBusinessDay();
     const [businessDays, setBusinessDays] = useState<BusinessDay[]>([]);
     const [selectedDayId, setSelectedDayId] = useState<string>('');
+    const [daysLoaded, setDaysLoaded] = useState(false);   // true once history call resolves
+    const [filtersReady, setFiltersReady] = useState(false); // true once default filter is set
 
     // State
     const [stats, setStats] = useState<ExpenseStats | null>(null);
@@ -223,10 +225,13 @@ export default function Expenses() {
     // Fetch Data
     const fetchStats = useCallback(async () => {
         try {
-            const { data } = await apiClient.get('/expenses/stats');
+            const params = new URLSearchParams();
+            if (filters.dateFrom) params.set('dateFrom', filters.dateFrom);
+            if (filters.dateTo) params.set('dateTo', filters.dateTo);
+            const { data } = await apiClient.get(`/expenses/stats?${params}`);
             setStats(data);
         } catch (e) { console.error('Error fetching stats', e); }
-    }, []);
+    }, [filters.dateFrom, filters.dateTo]);
 
     const fetchCategories = useCallback(async () => {
         try {
@@ -256,32 +261,39 @@ export default function Expenses() {
         setLoading(false);
     }, [page, filters]);
 
-    useEffect(() => { fetchStats(); fetchCategories(); }, [fetchStats, fetchCategories]);
-    useEffect(() => { fetchExpenses(); }, [fetchExpenses]);
+    useEffect(() => { fetchCategories(); }, [fetchCategories]);
+    // Only fetch data AFTER the default date filter has been applied
+    useEffect(() => {
+        if (!filtersReady) return;
+        fetchStats();
+        fetchExpenses();
+    }, [filtersReady, fetchStats, fetchExpenses]);
 
     // Load business day history
     useEffect(() => {
-        businessDayApi.getHistory(0, 100).then(r => setBusinessDays(r.data)).catch(() => { });
+        businessDayApi.getHistory(0, 100)
+            .then(r => { setBusinessDays(r.data); setDaysLoaded(true); })
+            .catch(() => { setDaysLoaded(true); }); // mark ready even on error
     }, []);
 
-    // Initialize filter once: current day → last closed day → all
-    const defaultApplied = useRef(false);
+    // Initialize filter ONCE — wait for both dayLoading to finish and businessDays to load
     useEffect(() => {
-        if (defaultApplied.current || dayLoading) return;
+        if (filtersReady || dayLoading || !daysLoaded) return;
         const now = new Date().toISOString();
         if (currentDay) {
-            defaultApplied.current = true;
             setSelectedDayId('current');
             setFilters(f => ({ ...f, dateFrom: currentDay.openedAt, dateTo: now }));
-        } else if (businessDays.length > 0) {
+        } else {
             const last = businessDays.find(d => d.status === 'CLOSED');
             if (last) {
-                defaultApplied.current = true;
                 setSelectedDayId('last');
                 setFilters(f => ({ ...f, dateFrom: last.openedAt, dateTo: last.closedAt! }));
+            } else {
+                setSelectedDayId('all');
             }
         }
-    }, [currentDay, dayLoading, businessDays]);
+        setFiltersReady(true);
+    }, [dayLoading, daysLoaded, currentDay, businessDays, filtersReady]);
 
     // Handlers
     const applyQuickFilter = (id: string) => {
@@ -490,21 +502,21 @@ export default function Expenses() {
             <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', flexWrap: 'wrap' }}>
                 <StatCard
                     icon={<DollarSign size={24} />}
-                    label="إجمالي المصروفات"
+                    label="إجمالي الفترة المختارة"
                     value={stats ? fmt(stats.totalExpenses) + ' ج.م' : '...'}
                     subValue={stats ? `${stats.totalCount} مصروف` : ''}
                     bg="#fee2e2" iconColor="#dc2626" valueColor="#dc2626"
                 />
                 <StatCard
                     icon={<Calendar size={24} />}
-                    label="مصروفات اليوم"
+                    label="مصروفات اليوم (في الفترة)"
                     value={stats ? fmt(stats.todayExpenses) + ' ج.م' : '...'}
                     subValue={stats ? `${stats.todayCount} مصروف` : ''}
                     bg="#dcfce7" iconColor="#16a34a"
                 />
                 <StatCard
                     icon={<BarChart3 size={24} />}
-                    label="مصروفات الشهر"
+                    label="مصروفات الشهر (في الفترة)"
                     value={stats ? fmt(stats.monthExpenses) + ' ج.م' : '...'}
                     subValue={stats ? `${stats.monthCount} مصروف` : ''}
                     bg="#dbeafe" iconColor="#3b82f6"

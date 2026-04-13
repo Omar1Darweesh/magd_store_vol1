@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react';
 import apiClient from '../api/client';
-import { Plus, Edit, Trash, Shield, Check, Database } from 'lucide-react';
+import { Plus, Edit, Trash, Shield, Check, Database, Download, RefreshCw } from 'lucide-react';
+
+interface BackupInfo {
+    exists: boolean;
+    size?: number;
+    createdAt?: string;
+}
 
 interface Page {
     id: number;
@@ -30,12 +36,56 @@ export default function Roles() {
         pageIds: [] as number[],
         platformPermissionIds: [] as number[]
     });
+    const [backupInfo, setBackupInfo] = useState<{ manual: BackupInfo; automatic: BackupInfo } | null>(null);
+    const [backupLoading, setBackupLoading] = useState(false);
+    const [showBackupPanel, setShowBackupPanel] = useState(false);
 
     useEffect(() => {
         fetchRoles();
         fetchPages();
         fetchPlatformPermissions();
+        fetchBackupInfo();
     }, []);
+
+    const fetchBackupInfo = async () => {
+        try {
+            const { data } = await apiClient.get('/database/backup/info');
+            setBackupInfo(data);
+        } catch (e) {
+            console.error('Failed to fetch backup info', e);
+        }
+    };
+
+    const formatDate = (iso?: string) => {
+        if (!iso) return '-';
+        return new Date(iso).toLocaleString('ar-EG', {
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit'
+        });
+    };
+
+    const formatSize = (bytes?: number) => {
+        if (!bytes) return '-';
+        return bytes > 1024 * 1024
+            ? `${(bytes / 1024 / 1024).toFixed(2)} MB`
+            : `${(bytes / 1024).toFixed(1)} KB`;
+    };
+
+    /** Trigger browser download of a backup file */
+    const downloadFile = async (type: 'manual' | 'automatic') => {
+        const response = await apiClient.get(`/database/backup/download?type=${type}`, {
+            responseType: 'blob',
+        });
+        const url = URL.createObjectURL(new Blob([response.data]));
+        const a = document.createElement('a');
+        const date = new Date().toISOString().split('T')[0];
+        a.href = url;
+        a.download = `magd_backup_${type}_${date}.sql`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
 
     const fetchRoles = async () => {
         try {
@@ -64,20 +114,33 @@ export default function Roles() {
         }
     };
 
-    const handleBackup = async () => {
+    /** Create a manual backup on the server then immediately download it */
+    const handleCreateAndDownload = async () => {
+        const confirmed = confirm('سيتم إنشاء نسخة احتياطية وتحميلها على جهازك. هل تريد المتابعة؟');
+        if (!confirmed) return;
+        setBackupLoading(true);
         try {
-            const confirmed = confirm('هل تريد إنشاء نسخة احتياطية من قاعدة البيانات؟');
-            if (!confirmed) return;
-
-            // Show loading state
-            alert('جاري إنشاء النسخة الاحتياطية...');
-
-            const { data } = await apiClient.post('/database/backup');
-
-            alert(`✅ تم إنشاء النسخة الاحتياطية بنجاح!\n\nاسم الملف: ${data.filename}\nالحجم: ${(data.size / 1024 / 1024).toFixed(2)} MB`);
+            await apiClient.post('/database/backup');
+            await downloadFile('manual');
+            await fetchBackupInfo();
         } catch (e: any) {
             alert(e.response?.data?.message || 'فشل في إنشاء النسخة الاحتياطية');
             console.error(e);
+        } finally {
+            setBackupLoading(false);
+        }
+    };
+
+    /** Download the latest existing backup without creating a new one */
+    const handleDownloadLatest = async (type: 'manual' | 'automatic') => {
+        setBackupLoading(true);
+        try {
+            await downloadFile(type);
+        } catch (e: any) {
+            alert(e.response?.data?.message || 'لا توجد نسخة احتياطية للتحميل');
+            console.error(e);
+        } finally {
+            setBackupLoading(false);
         }
     };
 
@@ -157,9 +220,9 @@ export default function Roles() {
                 </div>
 
                 <div style={{ display: 'flex', gap: '12px' }}>
-                    {/* Backup Button */}
+                    {/* Backup Panel Toggle */}
                     <button
-                        onClick={handleBackup}
+                        onClick={() => setShowBackupPanel(v => !v)}
                         style={{
                             background: '#10b981',
                             color: 'white',
@@ -179,7 +242,7 @@ export default function Roles() {
                         onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                     >
                         <Database size={20} />
-                        نسخة احتياطية
+                        النسخ الاحتياطية
                     </button>
 
                     {/* New Role Button */}
@@ -209,6 +272,94 @@ export default function Roles() {
                 </div>
             </div>
 
+            {/* ====== BACKUP PANEL ====== */}
+            {showBackupPanel && (
+                <div style={{
+                    background: '#f0fdf4',
+                    border: '1px solid #bbf7d0',
+                    borderRadius: '12px',
+                    padding: '24px',
+                    marginBottom: '28px',
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: '20px',
+                    direction: 'rtl'
+                }}>
+                    <div>
+                        <h3 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '12px', color: '#065f46', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Database size={18} /> نسخة يدوية
+                        </h3>
+                        <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '4px' }}>
+                            آخر نسخة: <strong>{backupInfo?.manual?.exists ? formatDate(backupInfo.manual.createdAt) : 'لا توجد'}</strong>
+                        </p>
+                        <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '16px' }}>
+                            الحجم: <strong>{backupInfo?.manual?.exists ? formatSize(backupInfo.manual.size) : '-'}</strong>
+                        </p>
+                        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                            <button
+                                onClick={handleCreateAndDownload}
+                                disabled={backupLoading}
+                                style={{
+                                    background: '#10b981', color: 'white', border: 'none',
+                                    padding: '10px 18px', borderRadius: '8px', cursor: backupLoading ? 'not-allowed' : 'pointer',
+                                    display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontWeight: '600',
+                                    opacity: backupLoading ? 0.7 : 1
+                                }}
+                            >
+                                <RefreshCw size={16} />
+                                {backupLoading ? 'جاري...' : 'إنشاء وتحميل'}
+                            </button>
+                            {backupInfo?.manual?.exists && (
+                                <button
+                                    onClick={() => handleDownloadLatest('manual')}
+                                    disabled={backupLoading}
+                                    style={{
+                                        background: '#065f46', color: 'white', border: 'none',
+                                        padding: '10px 18px', borderRadius: '8px', cursor: backupLoading ? 'not-allowed' : 'pointer',
+                                        display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontWeight: '600',
+                                        opacity: backupLoading ? 0.7 : 1
+                                    }}
+                                >
+                                    <Download size={16} />
+                                    تحميل الأخيرة
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '12px', color: '#1e40af', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Database size={18} /> نسخة تلقائية (يومية 9م)
+                        </h3>
+                        <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '4px' }}>
+                            آخر نسخة: <strong>{backupInfo?.automatic?.exists ? formatDate(backupInfo.automatic.createdAt) : 'لم تُنشأ بعد'}</strong>
+                        </p>
+                        <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '16px' }}>
+                            الحجم: <strong>{backupInfo?.automatic?.exists ? formatSize(backupInfo.automatic.size) : '-'}</strong>
+                        </p>
+                        {backupInfo?.automatic?.exists ? (
+                            <button
+                                onClick={() => handleDownloadLatest('automatic')}
+                                disabled={backupLoading}
+                                style={{
+                                    background: '#1d4ed8', color: 'white', border: 'none',
+                                    padding: '10px 18px', borderRadius: '8px', cursor: backupLoading ? 'not-allowed' : 'pointer',
+                                    display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontWeight: '600',
+                                    opacity: backupLoading ? 0.7 : 1
+                                }}
+                            >
+                                <Download size={16} />
+                                تحميل النسخة التلقائية
+                            </button>
+                        ) : (
+                            <p style={{ fontSize: '13px', color: '#9ca3af', fontStyle: 'italic' }}>
+                                ستُنشأ تلقائياً في الساعة 9:00 مساءً
+                            </p>
+                        )}
+                    </div>
+                </div>
+            )}
+
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '20px' }}>
                 {roles.map(role => (
@@ -222,7 +373,7 @@ export default function Roles() {
                                 <button onClick={() => openEditModal(role)} style={{ background: '#eff6ff', border: 'none', padding: '6px', borderRadius: '6px', cursor: 'pointer', color: '#2563eb' }}>
                                     <Edit size={16} />
                                 </button>
-                                {role.name !== 'Admin' && (
+                                {role.name.toUpperCase() !== 'ADMIN' && (
                                     <button onClick={() => handleDelete(role.id)} style={{ background: '#fef2f2', border: 'none', padding: '6px', borderRadius: '6px', cursor: 'pointer', color: '#ef4444' }}>
                                         <Trash size={16} />
                                     </button>

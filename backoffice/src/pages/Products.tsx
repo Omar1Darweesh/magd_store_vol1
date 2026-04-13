@@ -553,10 +553,10 @@ export default function Products() {
                             }}
                         >
                             <option value="">كل المخزون</option>
-                            <option value="empty">نافذ (0)</option>
-                            <option value="low">منخفض (&lt;= الحد الأدنى)</option>
-                            <option value="enough">كافي (بين الحدود)</option>
-                            <option value="high">مرتفع (&gt;= الحد الأقصى)</option>
+                            <option value="empty">🔴 نافذ (فارغ)</option>
+                            <option value="low">🟡 منخفض</option>
+                            <option value="enough">🟢 جيد</option>
+                            <option value="high">🔵 كثير</option>
                         </select>
                     </div>
 
@@ -817,8 +817,10 @@ export default function Products() {
                             <tbody>
                                 {products.map((product) => {
                                     const stock = product.stock || 0;
-                                    const isLowStock = stock > 0 && stock <= product.minQty;
                                     const isOutOfStock = stock <= 0;
+                                    const isLowStock = !isOutOfStock && stock <= (product.minQty || 5);
+                                    const isHighStock = !isOutOfStock && product.maxQty > 0 && stock >= product.maxQty;
+                                    const isGoodStock = !isOutOfStock && !isLowStock && !isHighStock;
 
                                     return (
                                         <tr
@@ -895,15 +897,21 @@ export default function Products() {
                                                     borderRadius: '9999px',
                                                     fontSize: '0.875rem',
                                                     fontWeight: '500',
-                                                    background: isOutOfStock ? '#fee2e2' : isLowStock ? '#fef3c7' : '#dcfce7',
-                                                    color: isOutOfStock ? '#dc2626' : isLowStock ? '#d97706' : '#16a34a',
+                                                    background: isOutOfStock ? '#fee2e2' : isLowStock ? '#fef3c7' : isHighStock ? '#dbeafe' : '#dcfce7',
+                                                    color: isOutOfStock ? '#dc2626' : isLowStock ? '#d97706' : isHighStock ? '#1d4ed8' : '#16a34a',
                                                 }}>
                                                     {stock} {product.unit}
-                                                    {isLowStock && !isOutOfStock && (
-                                                        <span style={{ fontSize: '0.75rem' }}>قليل</span>
-                                                    )}
                                                     {isOutOfStock && (
-                                                        <span style={{ fontSize: '0.75rem' }}>نفذ</span>
+                                                        <span style={{ fontSize: '0.75rem' }}>نافذ</span>
+                                                    )}
+                                                    {isLowStock && (
+                                                        <span style={{ fontSize: '0.75rem' }}>منخفض</span>
+                                                    )}
+                                                    {isGoodStock && (
+                                                        <span style={{ fontSize: '0.75rem' }}>جيد</span>
+                                                    )}
+                                                    {isHighStock && (
+                                                        <span style={{ fontSize: '0.75rem' }}>كثير</span>
                                                     )}
                                                 </div>
                                             </td>

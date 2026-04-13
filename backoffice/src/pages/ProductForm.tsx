@@ -145,14 +145,31 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
         const svgData = barcodeRef.current ? barcodeRef.current.outerHTML : '';
         const productName = formData.nameAr || formData.nameEn || 'منتج';
         const price = formData.priceRetail;
-        const code = formData.code || '';
+        const wholesale = formData.priceWholesale;
+
+        // Floor price to integer (520.00 → 520, 162.50 → 162)
+        const toInt = (n: number) => Math.floor(n).toString();
+
+        // Deterministic random digits seeded from the barcode value
+        // Same barcode → same digits every print; different barcode → different digits
+        const hashSeed = (str: string) =>
+            Math.abs(str.split('').reduce((a, c) => (((a << 5) - a) + c.charCodeAt(0)) | 0, 0));
+        let rngState = hashSeed(barcodeValue);
+        const nextDigit = () => {
+            rngState = (rngState * 1664525 + 1013904223) & 0x7fffffff;
+            return rngState % 10;
+        };
+        const seededDigits = (n: number) => Array.from({ length: n }, () => nextDigit()).join('');
+
+        const encodedLine = `${seededDigits(2)} ${toInt(price)} ${seededDigits(1)} ${toInt(wholesale)} ${seededDigits(2)}`;
+
         const htmlContent = `<!DOCTYPE html>
 <html dir="rtl">
 <head>
   <meta charset="UTF-8">
   <title>تسمية منتج</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; color: #000 !important; font-weight: 900 !important; }
     body { margin: 0; padding: 0; font-family: Arial, 'Segoe UI', Tahoma, sans-serif; font-weight: 700; }
     .label {
       width: 40mm; height: 28mm;
@@ -170,8 +187,9 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
     .price {
       font-size: 9pt; font-weight: 900;
     }
-    .code {
-      font-size: 5pt; font-weight: 700; color: #333;
+    .encoded-line {
+      font-size: 5.5pt; font-weight: 700; letter-spacing: 0.5pt;
+      direction: ltr; text-align: center;
     }
     .barcode-wrap {
       width: 100%; display: flex; justify-content: center;
@@ -188,9 +206,8 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
 <body>
   <div class="label">
     <div class="product-name">${productName}</div>
-    ${price ? `<div class="price">${price.toFixed(2)} ج.م</div>` : ''}
     <div class="barcode-wrap">${svgData}</div>
-    ${code ? `<div class="code">${code}</div>` : ''}
+    <div class="encoded-line">${encodedLine}</div>
   </div>
 </body>
 </html>`;
@@ -608,7 +625,7 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
                                     <option value="">
                                         {!selectedCategoryId ? 'اختر التصنيف أولاً...'
                                             : subcategories.length === 0 ? 'لا توجد تصنيفات فرعية'
-                                            : 'بدون تصنيف فرعي'}
+                                                : 'بدون تصنيف فرعي'}
                                     </option>
                                     {subcategories.map((sub) => (
                                         <option key={sub.id} value={sub.id}>
@@ -642,7 +659,7 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
                                     <option value="">
                                         {!selectedSubcategoryId ? 'اختر الفرعي أولاً...'
                                             : itemTypes.length === 0 ? 'لا توجد أنواع'
-                                            : 'بدون نوع صنف'}
+                                                : 'بدون نوع صنف'}
                                     </option>
                                     {itemTypes.map((type) => (
                                         <option key={type.id} value={type.id}>

@@ -142,6 +142,10 @@ function SourceBadge({ source }: { source: string }) {
 export default function DayCashSheet() {
     const { currentDay } = useBusinessDay();
 
+    // Current logged-in user (from localStorage set by Layout)
+    const currentUser: any = JSON.parse(localStorage.getItem('user') || '{}');
+    const isAdmin = (currentUser?.roles as string[] | undefined)?.some(r => r.toUpperCase() === 'ADMIN') ?? false;
+
     const [businessDayId, setBusinessDayId] = useState<string>('ALL');
     const [businessDays, setBusinessDays] = useState<BusinessDay[]>([]);
     const [selectedDay, setSelectedDay] = useState<BusinessDay | null>(null);
@@ -321,6 +325,16 @@ export default function DayCashSheet() {
                     <p style={{ color: '#64748b', fontSize: '14px', margin: '4px 0 0' }}>
                         عرض الوارد والصادر المرتبط بالخزينة لكل يوم عمل
                     </p>
+                    {!isAdmin && (
+                        <span style={{
+                            display: 'inline-flex', alignItems: 'center', gap: '5px',
+                            marginTop: '6px', background: '#eff6ff', color: '#2563eb',
+                            border: '1px solid #bfdbfe', borderRadius: '20px',
+                            padding: '3px 12px', fontSize: '12px', fontWeight: '600',
+                        }}>
+                            👤 تعرض حركاتك أنت فقط — {currentUser?.fullName || currentUser?.username}
+                        </span>
+                    )}
                 </div>
 
                 {/* Day selector */}

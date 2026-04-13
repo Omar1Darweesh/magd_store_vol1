@@ -251,18 +251,25 @@ export class ExpensesService {
   async getStats(options?: { dateFrom?: string; dateTo?: string }) {
     const where: Prisma.ExpenseWhereInput = {};
 
+    // Parse the period bounds once so we can reuse them for intersection
+    let periodStart: Date | undefined;
+    let periodEnd: Date | undefined;
+
     if (options?.dateFrom || options?.dateTo) {
-      where.createdAt = {};
-      if (options.dateFrom) {
-        where.createdAt.gte = options.dateFrom.includes('T')
+      if (options?.dateFrom) {
+        periodStart = options.dateFrom.includes('T')
           ? new Date(options.dateFrom)
           : new Date(options.dateFrom + 'T00:00:00');
       }
-      if (options.dateTo) {
-        where.createdAt.lte = options.dateTo.includes('T')
+      if (options?.dateTo) {
+        periodEnd = options.dateTo.includes('T')
           ? new Date(options.dateTo)
           : new Date(options.dateTo + 'T23:59:59.999');
       }
+      where.createdAt = {
+        ...(periodStart ? { gte: periodStart } : {}),
+        ...(periodEnd ? { lte: periodEnd } : {}),
+      };
     }
 
     // Total expenses
@@ -272,29 +279,36 @@ export class ExpensesService {
       _count: true,
     });
 
-    // Today's expenses — use createdAt (consistent with all filtering)
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    // Today's expenses — intersect calendar-today with the active period filter
+    const calToday = new Date();
+    calToday.setHours(0, 0, 0, 0);
+    const calTomorrow = new Date(calToday);
+    calTomorrow.setDate(calTomorrow.getDate() + 1);
+
+    // Use the LATER of (period start, calendar today) and EARLIER of (period end, calendar tomorrow)
+    const todayStart = periodStart && periodStart > calToday ? periodStart : calToday;
+    const todayEnd = periodEnd && periodEnd < calTomorrow ? periodEnd : calTomorrow;
 
     const todayResult = await this.prisma.expense.aggregate({
       where: {
         ...where,
-        createdAt: { gte: today, lt: tomorrow },
+        createdAt: { gte: todayStart, lt: todayEnd },
       },
       _sum: { amount: true },
       _count: true,
     });
 
-    // This month's expenses — use createdAt
-    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59);
+    // This month's expenses — intersect calendar month with the active period filter
+    const firstDayOfMonth = new Date(calToday.getFullYear(), calToday.getMonth(), 1);
+    const lastDayOfMonth = new Date(calToday.getFullYear(), calToday.getMonth() + 1, 0, 23, 59, 59, 999);
+
+    const monthStart = periodStart && periodStart > firstDayOfMonth ? periodStart : firstDayOfMonth;
+    const monthEnd = periodEnd && periodEnd < lastDayOfMonth ? periodEnd : lastDayOfMonth;
 
     const monthResult = await this.prisma.expense.aggregate({
       where: {
         ...where,
-        createdAt: { gte: firstDayOfMonth, lte: lastDayOfMonth },
+        createdAt: { gte: monthStart, lte: monthEnd },
       },
       _sum: { amount: true },
       _count: true,

@@ -5,22 +5,48 @@ import {
 import { TreasuryService } from './treasury.service';
 import { CreateTreasuryTransactionDto, TreasuryQueryDto } from './dto/treasury.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { PrismaService } from '../prisma.service';
 
 @Controller('treasury')
 @UseGuards(JwtAuthGuard)
 export class TreasuryController {
-  constructor(private readonly treasuryService: TreasuryService) { }
+  constructor(
+    private readonly treasuryService: TreasuryService,
+    private readonly prisma: PrismaService,
+  ) { }
 
   @Get('summary')
-  getSummary(
+  async getSummary(
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
+    @Request() req?: any,
   ) {
-    return this.treasuryService.getSummary(dateFrom, dateTo);
+    const requestingUserId: number = req?.user?.userId;
+    const userWithRoles = await this.prisma.user.findUnique({
+      where: { id: requestingUserId },
+      select: { roles: { select: { role: { select: { name: true } } } } },
+    });
+    const isAdmin = userWithRoles?.roles.some(r => r.role.name.toUpperCase() === 'ADMIN') ?? false;
+    const scopedUserId = isAdmin ? undefined : requestingUserId;
+    return this.treasuryService.getSummary(dateFrom, dateTo, scopedUserId);
   }
 
   @Get('transactions')
-  getTransactions(@Query() query: TreasuryQueryDto) {
+  async getTransactions(@Query() query: TreasuryQueryDto, @Request() req: any) {
+    const requestingUserId: number = req.user.userId;
+
+    // Check if the requesting user has 'Admin' role
+    const userWithRoles = await this.prisma.user.findUnique({
+      where: { id: requestingUserId },
+      select: { roles: { select: { role: { select: { name: true } } } } },
+    });
+    const isAdmin = userWithRoles?.roles.some(r => r.role.name.toUpperCase() === 'ADMIN') ?? false;
+
+    // Non-admins are always scoped to their own transactions
+    if (!isAdmin) {
+      query.userId = String(requestingUserId);
+    }
+
     return this.treasuryService.getTransactions(query);
   }
 

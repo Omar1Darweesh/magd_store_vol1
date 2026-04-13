@@ -53,4 +53,7 @@ export class TreasuryQueryDto {
 
   @IsOptional()
   pageSize?: string;
+
+  @IsOptional()
+  userId?: string;
 }

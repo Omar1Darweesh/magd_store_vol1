@@ -266,7 +266,7 @@ export default function SalesDetail() {
                         margin: 5mm 0;
                         size: 80mm auto;
                     }
-                    * { font-family: 'Courier New', monospace; }
+                    * { font-family: 'Courier New', monospace; font-weight: 900 !important; color: #000 !important; }
                 }
             `}</style>
 
@@ -379,7 +379,7 @@ export default function SalesDetail() {
                     <div style={{ borderTop: '1px dashed #000', margin: '8px 0' }} />
 
                     {/* Invoice Info */}
-                    <div style={{ fontSize: '11px', marginBottom: '8px', fontWeight: '600' }}>
+                    <div style={{ fontSize: '11px', marginBottom: '8px', fontWeight: 'bold' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
                             <span style={{ color: '#000' }}>رقم الفاتورة:</span>
                             <span style={{ fontWeight: 'bold', color: '#000' }}>{sale.invoiceNo}</span>
@@ -439,7 +439,7 @@ export default function SalesDetail() {
 
 
                     {/* Totals */}
-                    <div style={{ fontSize: '11px', marginBottom: '8px', fontWeight: '600' }}>
+                    <div style={{ fontSize: '11px', marginBottom: '8px', fontWeight: 'bold' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
                             <span style={{ color: '#000' }}>المجموع الفرعي:</span>
                             <span style={{ color: '#000' }}>{Number(sale.subtotal).toFixed(2)} ج.م</span>
@@ -468,16 +468,17 @@ export default function SalesDetail() {
 
                     <div style={{ borderTop: '2px solid #000', margin: '8px 0' }} />
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', fontWeight: 'bold', marginBottom: '8px' }}>
-                        <span style={{ color: '#000' }}>الإجمالي:</span>
-                        <span style={{ color: '#000' }}>{Number(sale.total).toFixed(2)} ج.م</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', fontWeight: '900', marginBottom: '8px' }}>
+                        <span style={{ color: '#000', fontWeight: '900' }}>الإجمالي:</span>
+                        <span style={{ color: '#000', fontWeight: '900' }}>{Number(sale.total).toFixed(2)} ج.م</span>
                     </div>
 
                     <div style={{ borderTop: '2px solid #000', margin: '8px 0' }} />
 
                     {sale.notes && (
-                        <div style={{ fontSize: '10px', marginBottom: '8px', fontWeight: '600', color: '#000' }}>
-                            <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>ملاحظات:</div>
+                        <div style={{ fontSize: '10px', marginBottom: '8px', fontWeight: '900', color: '#000' }}
+                        >
+                            <div style={{ fontWeight: '900', marginBottom: '2px' }}>ملاحظات:</div>
                             <div>{sale.notes}</div>
                         </div>
                     )}

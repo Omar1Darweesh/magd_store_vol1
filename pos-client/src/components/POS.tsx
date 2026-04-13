@@ -805,14 +805,14 @@ function POS() {
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;800;900&display=swap" rel="stylesheet">
 <style>
 /* ── Reset ── */
-* { margin:0; padding:0; box-sizing:border-box; }
+* { margin:0; padding:0; box-sizing:border-box; color:#000 !important; font-weight:900 !important; }
 
 /* ── Body: fills popup exactly, @page controls paper ── */
 body {
   font-family: 'Cairo', Tahoma, Arial, sans-serif;
   font-size: 11px;
-  font-weight: 700 !important;
-  color: #000;
+  font-weight: 900 !important;
+  color: #000 !important;
   direction: rtl;
   width: 100%;
   padding: 2mm 2mm 4mm;
@@ -835,7 +835,8 @@ td, th {
   overflow: hidden;
   word-break: break-word;
   padding: 0;
-  font-weight: 700 !important;
+  font-weight: 900 !important;
+  color: #000 !important;
 }
 
 /* ── Alignment helpers ── */
@@ -846,7 +847,7 @@ td, th {
 /* ── Dividers ── */
 .thick { border: none; border-top: 2px solid #000; margin: 4px 0; }
 .thin  { border: none; border-top: 1px solid #000; margin: 2px 0; }
-.dash  { border: none; border-top: 1px dashed #888; margin: 5px 0; }
+.dash  { border: none; border-top: 1px dashed #000; margin: 5px 0; }
 
 /* ── Header ── */
 .logo      { text-align: center; padding: 3px 0 2px; }
@@ -860,8 +861,8 @@ td, th {
 .info .val { width: 58%; }
 
 /* ── Items table ── */
-.items thead th { font-size: 10px; font-weight: 900; padding: 3px 1px; }
-.items tbody td { font-size: 10px; padding: 4px 1px; border-bottom: 1px dotted #bbb; }
+.items thead th { font-size: 10px; font-weight: 900; padding: 3px 1px; color: #000; }
+.items tbody td { font-size: 10px; padding: 4px 1px; border-bottom: 1px dotted #000; color: #000; font-weight: 900 !important; }
 
 /* Column widths — set on <th> with table-layout:fixed */
 .col-n { width: 50%; text-align: right; font-weight: 800; }
@@ -882,10 +883,11 @@ td, th {
 
 /* ── Grand total bar ── */
 .grand {
-  background: #000; color: #fff;
+  background: #fff; color: #000 !important;
   display: flex; justify-content: space-between; align-items: center;
   padding: 7px 6px; margin: 5px 0;
-  font-size: 15px; font-weight: 900;
+  font-size: 15px; font-weight: 900 !important;
+  border-top: 3px solid #000; border-bottom: 3px solid #000;
 }
 
 /* ── Partial / Credit ── */
@@ -893,7 +895,7 @@ td, th {
 .partial .lbl { width: 58%; }
 .partial .val { width: 42%; }
 .partial td   { padding: 3px 0; font-weight: 900; font-size: 11px; }
-.credit       { background: #000; color: #fff; text-align: center; padding: 5px; font-size: 11px; font-weight: 900; margin-bottom: 5px; }
+.credit       { background: #fff; color: #000 !important; text-align: center; padding: 5px; font-size: 11px; font-weight: 900 !important; margin-bottom: 5px; border: 2px solid #000; }
 
 /* ── Footer ── */
 .policy { text-align: center; font-size: 9px; line-height: 1.8; }

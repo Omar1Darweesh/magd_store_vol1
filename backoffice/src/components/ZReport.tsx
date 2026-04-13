@@ -49,21 +49,21 @@ export function buildReceiptHtml(report: ZReport): string {
 <meta charset="utf-8"/>
 <title>Z Report - يوم #${day.id}</title>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Courier New', Courier, monospace; font-size: 13px; background: #fff; color: #111; direction: rtl; }
+* { box-sizing: border-box; margin: 0; padding: 0; color: #000 !important; font-weight: 900 !important; }
+body { font-family: 'Courier New', Courier, monospace; font-size: 13px; background: #fff; color: #000; direction: rtl; font-weight: 900; }
 .receipt { width: 302px; margin: 0 auto; padding: 14px 10px; }
 .center { text-align: center; }
 .store { font-size: 18px; font-weight: 900; letter-spacing: 2px; margin-bottom: 2px; }
-.subtitle { font-size: 12px; color: #555; margin-bottom: 2px; }
-.title { font-size: 15px; font-weight: 800; margin: 4px 0; }
-.sep { color: #888; font-size: 11px; margin: 5px 0; letter-spacing: 0.5px; text-align: center; word-break: break-all; }
-.row { display: flex; justify-content: space-between; padding: 2px 0; font-size: 12px; }
-.row.bold { font-weight: 700; font-size: 13px; }
-.row.green span:last-child { color: #059669; }
-.row.red span:last-child { color: #c00; }
-.sec-title { font-weight: 800; font-size: 13px; text-align: center; margin: 4px 0 2px; }
-.net { display: flex; justify-content: space-between; font-weight: 900; font-size: 15px; border-top: 2px solid #111; margin-top: 6px; padding-top: 8px; }
-.meta { font-size: 11px; color: #555; text-align: center; margin-top: 10px; line-height: 1.8; }
+.subtitle { font-size: 12px; color: #000; margin-bottom: 2px; font-weight: 900; }
+.title { font-size: 15px; font-weight: 900; margin: 4px 0; }
+.sep { color: #000; font-size: 11px; margin: 5px 0; letter-spacing: 0.5px; text-align: center; word-break: break-all; font-weight: 900; }
+.row { display: flex; justify-content: space-between; padding: 2px 0; font-size: 12px; font-weight: 900; }
+.row.bold { font-weight: 900; font-size: 13px; }
+.row.green span:last-child { color: #000; }
+.row.red span:last-child { color: #000; }
+.sec-title { font-weight: 900; font-size: 13px; text-align: center; margin: 4px 0 2px; }
+.net { display: flex; justify-content: space-between; font-weight: 900; font-size: 15px; border-top: 2px solid #000; margin-top: 6px; padding-top: 8px; }
+.meta { font-size: 11px; color: #000; text-align: center; margin-top: 10px; line-height: 1.8; font-weight: 900; }
 @media print { @page { margin: 0; size: 80mm auto; } body { padding: 0; } .receipt { width: 100%; padding: 6px 4px; } }
 </style>
 </head>
@@ -105,7 +105,7 @@ body { font-family: 'Courier New', Courier, monospace; font-size: 13px; backgrou
   ${row('المصروفات', '- ' + money(summary.totalExpenses), 'red')}
   <div class="net">
     <span>صافي النقدية</span>
-    <span style="color:${summary.netCash >= 0 ? '#059669' : '#c00'}">${money(summary.netCash)}</span>
+    <span style="color:#000">${money(summary.netCash)}</span>
   </div>
   <div class="sep">${eq}</div>
   <div class="meta">

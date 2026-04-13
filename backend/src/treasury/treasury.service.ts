@@ -43,8 +43,9 @@ export class TreasuryService {
 
   // ─── Summary ─────────────────────────────────────────
 
-  async getSummary(dateFrom?: string, dateTo?: string) {
+  async getSummary(dateFrom?: string, dateTo?: string, userId?: number) {
     const range = this.dateRange(dateFrom, dateTo);
+    const userFilter = userId ? { createdBy: userId } : {};
 
     // 1. Sales income (per payment method)
     const salesIncome = await this.prisma.salesInvoice.groupBy({
@@ -53,32 +54,38 @@ export class TreasuryService {
       where: {
         paymentStatus: { in: ['PAID', 'PARTIAL'] },
         ...(range ? { createdAt: range } : {}),
+        ...userFilter,
       },
     });
 
-    // 2. Supplier payments (outgoing) — filter by createdAt so business day
-    //    boundaries are always respected (paymentDate may be midnight UTC)
+    // 2. Supplier payments (outgoing)
     const supplierOut = await this.prisma.supplierPayment.groupBy({
       by: ['method'],
       _sum: { amount: true },
-      where: range ? { createdAt: range } : {},
+      where: {
+        ...(range ? { createdAt: range } : {}),
+        ...userFilter,
+      },
     });
 
-    // 3. Expenses (outgoing, per payment method) — same: use createdAt
+    // 3. Expenses (outgoing, per payment method)
     const expenseOut = await this.prisma.expense.groupBy({
       by: ['paymentMethod'],
       _sum: { amount: true },
-      where: range ? { createdAt: range } : {},
+      where: {
+        ...(range ? { createdAt: range } : {}),
+        ...userFilter,
+      },
     });
 
-    // 4. Manual treasury transactions — transactionDate is now always new Date()
-    //    but use createdAt for safety
+    // 4. Manual treasury transactions
     const manualIn = await this.prisma.treasuryTransaction.groupBy({
       by: ['paymentMethod'],
       _sum: { amount: true },
       where: {
         type: 'INCOME',
         ...(range ? { createdAt: range } : {}),
+        ...userFilter,
       },
     });
 
@@ -88,6 +95,7 @@ export class TreasuryService {
       where: {
         type: 'EXPENSE',
         ...(range ? { createdAt: range } : {}),
+        ...userFilter,
       },
     });
 
@@ -148,6 +156,7 @@ export class TreasuryService {
     const pageSize = parseInt(query.pageSize || '50');
     const skip = (page - 1) * pageSize;
     const range = this.dateRange(query.dateFrom, query.dateTo);
+    const userIdFilter = query.userId ? { createdBy: parseInt(query.userId) } : {};
 
     // Fetch from all sources in parallel
     const [sales, supplierPayments, expenses, manualEntries] = await Promise.all([
@@ -159,6 +168,7 @@ export class TreasuryService {
             paymentStatus: { in: ['PAID', 'PARTIAL'] },
             ...(range ? { createdAt: range } : {}),
             ...(query.paymentMethod ? { paymentMethod: query.paymentMethod as PaymentMethod } : {}),
+            ...(query.userId ? { createdBy: parseInt(query.userId) } : {}),
           },
           select: {
             id: true,
@@ -177,6 +187,7 @@ export class TreasuryService {
         : this.prisma.supplierPayment.findMany({
           where: {
             ...(range ? { createdAt: range } : {}),
+            ...userIdFilter,
           },
           select: {
             id: true,
@@ -198,6 +209,7 @@ export class TreasuryService {
           where: {
             ...(range ? { createdAt: range } : {}),
             ...(query.paymentMethod ? { paymentMethod: query.paymentMethod as PaymentMethod } : {}),
+            ...userIdFilter,
           },
           select: {
             id: true,
@@ -219,6 +231,7 @@ export class TreasuryService {
           ...(query.type ? { type: query.type as any } : {}),
           ...(range ? { createdAt: range } : {}),
           ...(query.paymentMethod ? { paymentMethod: query.paymentMethod as PaymentMethod } : {}),
+          ...userIdFilter,
         },
         include: { user: { select: { fullName: true } } },
         orderBy: { createdAt: 'desc' },
