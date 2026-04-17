@@ -106,7 +106,7 @@ if [ -d "$APP_DIR/.git" ]; then
     cd "$APP_DIR"
     git fetch origin
     git checkout "$BRANCH"
-    git pull origin "$BRANCH"
+    git reset --hard "origin/$BRANCH"
 else
     echo "Cloning repository..."
     # If repo is private, git will prompt for GitHub credentials here.
