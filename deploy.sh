@@ -118,8 +118,11 @@ fi
 echo ""
 echo "--- Step 4: Writing backend .env ---"
 
+# URL-encode the password so special chars like @ ! # don't break the connection string
+DB_PASS_ENCODED=$(python3 -c "import urllib.parse, sys; print(urllib.parse.quote(sys.argv[1], safe=''))" "$DB_PASS")
+
 cat > "$APP_DIR/backend/.env" <<ENV
-DATABASE_URL="postgresql://$DB_USER:$DB_PASS@localhost:5432/$DB_NAME?schema=public"
+DATABASE_URL="postgresql://$DB_USER:$DB_PASS_ENCODED@localhost:5432/$DB_NAME?schema=public"
 JWT_SECRET="$JWT_SECRET"
 JWT_EXPIRES_IN="1h"
 REFRESH_TOKEN_EXPIRES_IN="7d"
