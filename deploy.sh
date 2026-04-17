@@ -179,7 +179,8 @@ pm2 start "$MAIN_JS" --name "sahlaa-backend"
 pm2 save
 
 # Register PM2 to auto-start on reboot (running as root)
-env PATH=$PATH:/usr/bin pm2 startup systemd -u root --hp /root | tail -1 | bash
+pm2 startup systemd -u root --hp /root 2>/dev/null || true
+systemctl enable pm2-root 2>/dev/null || true
 
 echo ""
 echo "--- Step 8: Configuring nginx ---"
