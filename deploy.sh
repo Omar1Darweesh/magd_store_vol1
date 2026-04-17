@@ -8,7 +8,7 @@ set -e
 # ── Config ────────────────────────────────────────────────────
 REPO_URL="https://github.com/Omar1Darweesh/magd_store_vol1.git"
 BRANCH="magd_store_vol4"
-APP_DIR="/home/sahlaa-ai/app"
+APP_DIR="/root/app"
 DB_NAME="sahlaa_pos"
 DB_USER="sahlaa"
 DOMAIN="sahlaa-ai.lamarpos.cloud"
@@ -160,8 +160,8 @@ pm2 delete sahlaa-backend 2>/dev/null || true
 pm2 start dist/main.js --name "sahlaa-backend"
 pm2 save
 
-# Register PM2 to auto-start on reboot
-pm2 startup systemd -u "$(whoami)" --hp "$HOME" | tail -1 | sudo bash
+# Register PM2 to auto-start on reboot (running as root)
+env PATH=$PATH:/usr/bin pm2 startup systemd -u root --hp /root | tail -1 | bash
 
 echo ""
 echo "--- Step 8: Configuring nginx ---"
@@ -174,7 +174,7 @@ server {
 
     # Serve backoffice React app
     location / {
-        root /home/sahlaa-ai/app/backoffice/dist;
+        root /root/app/backoffice/dist;
         index index.html;
         try_files $uri $uri/ /index.html;
     }
@@ -199,7 +199,7 @@ server {
 
     # Serve POS React app
     location / {
-        root /home/sahlaa-ai/app/pos-client/dist;
+        root /root/app/pos-client/dist;
         index index.html;
         try_files $uri $uri/ /index.html;
     }
