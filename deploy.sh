@@ -159,8 +159,23 @@ echo ""
 echo "--- Step 7: Starting backend with PM2 ---"
 
 cd "$APP_DIR/backend"
+
+# Find the actual compiled main.js (NestJS can output to dist/ or dist/src/)
+MAIN_JS=$(find "$APP_DIR/backend/dist" -name "main.js" | head -1)
+if [ -z "$MAIN_JS" ]; then
+    echo "ERROR: Could not find dist/main.js — rebuilding backend..."
+    npm run build
+    MAIN_JS=$(find "$APP_DIR/backend/dist" -name "main.js" | head -1)
+fi
+
+if [ -z "$MAIN_JS" ]; then
+    echo "ERROR: Build failed, main.js still not found. Exiting."
+    exit 1
+fi
+
+echo "Starting backend from: $MAIN_JS"
 pm2 delete sahlaa-backend 2>/dev/null || true
-pm2 start dist/main.js --name "sahlaa-backend"
+pm2 start "$MAIN_JS" --name "sahlaa-backend"
 pm2 save
 
 # Register PM2 to auto-start on reboot (running as root)
