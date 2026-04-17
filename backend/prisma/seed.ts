@@ -213,6 +213,7 @@ async function main() {
         { key: 'roles', nameAr: 'الأدوار والصلاحيات', nameEn: 'Roles', route: '/roles', category: 'admin', icon: 'Shield', sortOrder: 14 },
         { key: 'platform-settings', nameAr: 'إعدادات المنصات', nameEn: 'Platform Settings', route: '/platform-settings', category: 'admin', icon: 'Settings', sortOrder: 15 },
         { key: 'reports', nameAr: 'التقارير', nameEn: 'Reports', route: '/reports', category: 'admin', icon: 'BarChart3', sortOrder: 16 },
+        { key: 'expenses', nameAr: 'المصروفات', nameEn: 'Expenses', route: '/expenses', category: 'transactions', icon: 'Receipt', sortOrder: 6 },
         { key: 'business-day', nameAr: 'يوم العمل', nameEn: 'Business Day', route: '/business-day', category: 'admin', icon: 'CalendarDays', sortOrder: 17 },
         { key: 'day-cash-sheet', nameAr: 'يومية الصندوق', nameEn: 'Day Cash Sheet', route: '/day-cash-sheet', category: 'admin', icon: 'BookOpen', sortOrder: 18 },
     ];
