@@ -126,7 +126,7 @@ DATABASE_URL="postgresql://$DB_USER:$DB_PASS_ENCODED@localhost:5432/$DB_NAME?sch
 JWT_SECRET="$JWT_SECRET"
 JWT_EXPIRES_IN="1h"
 REFRESH_TOKEN_EXPIRES_IN="7d"
-PORT=3000
+PORT=3010
 HOST=0.0.0.0
 ENV
 
@@ -199,7 +199,7 @@ server {
     }
 
     location /api {
-        proxy_pass http://127.0.0.1:3000;
+        proxy_pass http://127.0.0.1:3010;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -222,7 +222,7 @@ server {
     }
 
     location /api {
-        proxy_pass http://127.0.0.1:3000;
+        proxy_pass http://127.0.0.1:3010;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
