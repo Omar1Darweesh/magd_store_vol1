@@ -139,6 +139,8 @@ cd "$APP_DIR/backend"
 npm install
 npx prisma generate
 npx prisma migrate deploy
+# Push any schema models not yet covered by migrations (e.g. added to schema.prisma without a migration)
+npx prisma db push --accept-data-loss
 npm run build
 echo "Backend built."
 
@@ -174,8 +176,23 @@ if [ -z "$MAIN_JS" ]; then
 fi
 
 echo "Starting backend from: $MAIN_JS"
+
+# Write ecosystem config so PM2 always sets cwd + env vars (dotenv needs cwd to load .env)
+cat > "$APP_DIR/backend/ecosystem.config.js" <<ECOSYSEOF
+module.exports = {
+  apps: [{
+    name: 'sahlaa-backend',
+    script: '$MAIN_JS',
+    cwd: '$APP_DIR/backend',
+    env: {
+      NODE_ENV: 'production'
+    }
+  }]
+};
+ECOSYSEOF
+
 pm2 delete sahlaa-backend 2>/dev/null || true
-pm2 start "$MAIN_JS" --name "sahlaa-backend"
+pm2 start "$APP_DIR/backend/ecosystem.config.js"
 pm2 save
 
 # Register PM2 to auto-start on reboot (running as root)
