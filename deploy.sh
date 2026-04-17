@@ -185,20 +185,19 @@ systemctl enable pm2-root 2>/dev/null || true
 echo ""
 echo "--- Step 8: Configuring nginx ---"
 
-sudo tee /etc/nginx/sites-available/sahlaa >/dev/null <<'NGINXEOF'
-# Backoffice (admin panel) — port 80
+# Write HTTP-only config — Certbot will upgrade to HTTPS automatically when run
+tee /etc/nginx/sites-available/sahlaa-ai.lamarpos.cloud >/dev/null <<'NGINXEOF'
+# Backoffice (admin panel)
 server {
     listen 80;
-    server_name sahlaa-ai.lamarpos.cloud 76.13.11.228;
+    server_name sahlaa-ai.lamarpos.cloud;
 
-    # Serve backoffice React app
     location / {
         root /root/app/backoffice/dist;
         index index.html;
         try_files $uri $uri/ /index.html;
     }
 
-    # Proxy API requests to NestJS backend on port 3000
     location /api {
         proxy_pass http://127.0.0.1:3000;
         proxy_http_version 1.1;
@@ -211,19 +210,17 @@ server {
     }
 }
 
-# POS Client (cashier screen) — port 8080
+# POS Client (cashier screen) on port 8080
 server {
     listen 8080;
-    server_name sahlaa-ai.lamarpos.cloud 76.13.11.228;
+    server_name sahlaa-ai.lamarpos.cloud;
 
-    # Serve POS React app
     location / {
         root /root/app/pos-client/dist;
         index index.html;
         try_files $uri $uri/ /index.html;
     }
 
-    # API also available on this port (same backend)
     location /api {
         proxy_pass http://127.0.0.1:3000;
         proxy_http_version 1.1;
@@ -237,11 +234,20 @@ server {
 }
 NGINXEOF
 
-sudo ln -sf /etc/nginx/sites-available/sahlaa /etc/nginx/sites-enabled/sahlaa
-sudo rm -f /etc/nginx/sites-enabled/default
-sudo nginx -t
-sudo systemctl restart nginx
-echo "nginx configured and restarted."
+ln -sf /etc/nginx/sites-available/sahlaa-ai.lamarpos.cloud /etc/nginx/sites-enabled/sahlaa-ai.lamarpos.cloud
+nginx -t && systemctl reload nginx
+echo "nginx configured."
+
+echo ""
+echo "--- Step 8b: Installing SSL certificate ---"
+if command -v certbot &>/dev/null; then
+    certbot --nginx -d sahlaa-ai.lamarpos.cloud --non-interactive --agree-tos --register-unsafely-without-email --redirect 2>/dev/null \
+        || echo "Certbot failed or cert already exists — continuing."
+else
+    apt-get install -y certbot python3-certbot-nginx -qq
+    certbot --nginx -d sahlaa-ai.lamarpos.cloud --non-interactive --agree-tos --register-unsafely-without-email --redirect 2>/dev/null \
+        || echo "Certbot failed — site is running on HTTP for now."
+fi
 
 echo ""
 echo "--- Step 9: Opening firewall ports ---"
@@ -268,9 +274,9 @@ echo "============================================"
 echo "   Deployment Complete!"
 echo "============================================"
 echo ""
-echo "  Backoffice (admin): http://$DOMAIN"
-echo "  POS Client:         http://$DOMAIN:8080"
-echo "  API:                http://$DOMAIN/api"
+echo "  Backoffice (admin): https://$DOMAIN"
+echo "  POS Client:         https://$DOMAIN:8080"
+echo "  API:                https://$DOMAIN/api"
 echo ""
 echo "  pm2 status              -- check backend"
 echo "  pm2 logs sahlaa-backend -- view logs"
