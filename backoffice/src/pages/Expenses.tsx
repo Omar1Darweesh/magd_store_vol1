@@ -803,7 +803,7 @@ export default function Expenses() {
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                             <FileText size={16} style={{ color: '#6366f1' }} />
                                             <span style={{ fontWeight: '600', color: '#1e293b' }}>{exp.expenseNo}</span>
-                                            {exp.isRecurring && <Repeat size={14} style={{ color: '#d97706' }} title="متكرر" />}
+                                            {exp.isRecurring && <Repeat size={14} style={{ color: '#d97706' }} />}
                                         </div>
                                     </td>
                                     <td style={{ padding: '16px' }}>
