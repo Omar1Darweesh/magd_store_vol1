@@ -210,9 +210,9 @@ server {
     }
 }
 
-# POS Client (cashier screen) on port 8080
+# POS Client (cashier screen) on port 8090
 server {
-    listen 8080;
+    listen 8090;
     server_name sahlaa-ai.lamarpos.cloud;
 
     location / {
@@ -275,7 +275,7 @@ echo "   Deployment Complete!"
 echo "============================================"
 echo ""
 echo "  Backoffice (admin): https://$DOMAIN"
-echo "  POS Client:         https://$DOMAIN:8080"
+echo "  POS Client:         https://$DOMAIN:8090"
 echo "  API:                https://$DOMAIN/api"
 echo ""
 echo "  pm2 status              -- check backend"
