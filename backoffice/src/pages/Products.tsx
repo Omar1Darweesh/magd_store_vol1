@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Clock, Edit, Trash, Plus, Search, Filter, TrendingUp, ChevronDown } from 'lucide-react';
+import { Clock, Edit, Trash, Plus, Search, Filter, TrendingUp, ChevronDown, Download } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import ProductForm from './ProductForm';
 import ProductAuditHistory from './ProductAuditHistory';
 import ProductTransactions from './ProductTransactions';
@@ -308,6 +309,73 @@ export default function Products() {
 
     const hasActiveFilters = searchTerm || selectedCategory || selectedSubcategory || selectedItemType || stockFilter || sizeFilter || colorFilter || selectedSupplier;
 
+    const exportToExcel = async () => {
+        try {
+            // Fetch ALL products (no pagination) with current filters
+            const params: any = { take: 10000, active: true };
+            if (searchTerm) params.search = searchTerm;
+            if (selectedCategory) params.categoryId = selectedCategory;
+            if (selectedSubcategory) params.subcategoryId = selectedSubcategory;
+            if (selectedItemType) params.itemTypeId = selectedItemType;
+            if (selectedSupplier) params.supplierId = selectedSupplier;
+            if (stockFilter) params.stockStatus = stockFilter;
+            if (!showInactive) params.active = true;
+
+            const response = await apiClient.get('/products', { params });
+            let allProducts = response.data.data || response.data || [];
+            if (sizeFilter) allProducts = allProducts.filter((p: any) => p.size === sizeFilter);
+            if (colorFilter) allProducts = allProducts.filter((p: any) => p.color === colorFilter);
+
+            const rows = allProducts.map((p: any) => {
+                const stock = p.stock || 0;
+                const isOutOfStock = stock <= 0;
+                const isLowStock = !isOutOfStock && stock <= (p.minQty || 5);
+                const isHighStock = !isOutOfStock && p.maxQty > 0 && stock >= p.maxQty;
+                let stockStatus = 'جيد';
+                if (isOutOfStock) stockStatus = 'نافذ';
+                else if (isLowStock) stockStatus = 'منخفض';
+                else if (isHighStock) stockStatus = 'زائد';
+
+                return {
+                    'الكود': p.code || '',
+                    'الاسم': p.nameAr || p.nameEn || '',
+                    'الباركود': p.barcode || '',
+                    'التصنيف': p.category?.nameAr || p.category?.name || '',
+                    'التصنيف الفرعي': p.itemType?.subcategory?.nameAr || p.itemType?.subcategory?.name || '',
+                    'اللون': p.color || '',
+                    'المقاس': p.size || '',
+                    'المورد': p.supplier?.name || '',
+                    'سعر التجزئة': Number(p.priceRetail || 0),
+                    'سعر الجملة': Number(p.priceWholesale || 0),
+                    'التكلفة': Number(p.cost || 0),
+                    'الكمية في المخزن': stock,
+                    'الحد الأدنى': p.minQty || 0,
+                    'الحد الأقصى': p.maxQty || 0,
+                    'حالة المخزون': stockStatus,
+                    'الحالة': p.active ? 'نشط' : 'غير نشط',
+                };
+            });
+
+            const ws = XLSX.utils.json_to_sheet(rows);
+
+            // Column widths
+            ws['!cols'] = [
+                { wch: 12 }, { wch: 35 }, { wch: 16 }, { wch: 14 }, { wch: 16 },
+                { wch: 12 }, { wch: 10 }, { wch: 18 }, { wch: 14 }, { wch: 14 },
+                { wch: 12 }, { wch: 16 }, { wch: 12 }, { wch: 12 }, { wch: 14 }, { wch: 10 },
+            ];
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'المنتجات');
+
+            const date = new Date().toISOString().slice(0, 10);
+            XLSX.writeFile(wb, `products-${date}.xlsx`);
+        } catch (err) {
+            console.error('Export failed:', err);
+            alert('فشل تصدير البيانات');
+        }
+    };
+
     return (
         <div style={{ padding: '2rem' }}>
             {/* Header */}
@@ -320,27 +388,49 @@ export default function Products() {
                 <h1 style={{ margin: 0, fontSize: '1.875rem', fontWeight: 'bold' }}>
                     المنتجات
                 </h1>
-                <button
-                    onClick={() => {
-                        setEditingProduct(null);
-                        setShowForm(true);
-                    }}
-                    style={{
-                        padding: '0.75rem 1.5rem',
-                        background: '#6366f1',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        fontSize: '1rem',
-                    }}
-                >
-                    <Plus size={20} />
-                    إضافة منتج
-                </button>
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    <button
+                        onClick={exportToExcel}
+                        style={{
+                            padding: '0.75rem 1.5rem',
+                            background: '#059669',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            fontSize: '1rem',
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = '#047857'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = '#059669'}
+                    >
+                        <Download size={20} />
+                        تصدير Excel
+                    </button>
+                    <button
+                        onClick={() => {
+                            setEditingProduct(null);
+                            setShowForm(true);
+                        }}
+                        style={{
+                            padding: '0.75rem 1.5rem',
+                            background: '#6366f1',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            fontSize: '1rem',
+                        }}
+                    >
+                        <Plus size={20} />
+                        إضافة منتج
+                    </button>
+                </div>
             </div>
 
             {/* Enhanced Filters */}

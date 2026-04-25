@@ -2287,7 +2287,7 @@ ${partialBlock}${creditBlock}
                                 </div>
                             </div>
 
-                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', overflowX: 'auto', paddingBottom: '5px' }}>
+                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'nowrap', overflowX: 'auto', paddingBottom: '5px', scrollbarWidth: 'thin' }}>
                                 <button
                                     onClick={() => {
                                         setSelectedCategory('');
@@ -2337,29 +2337,22 @@ ${partialBlock}${creditBlock}
 
                             {/* Supplier filter */}
                             {suppliers.length > 0 && (
-                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center', paddingTop: '4px' }}>
-                                    <span style={{ fontSize: '13px', color: '#6b7280', fontWeight: 600, whiteSpace: 'nowrap' }}>المورد:</span>
-                                    <button
-                                        onClick={() => { setSelectedSupplier(''); loadProductsForBrowser(selectedCategory || undefined, undefined); }}
+                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', paddingTop: '4px' }}>
+                                    <span style={{ fontSize: '13px', color: '#6b7280', fontWeight: 600, whiteSpace: 'nowrap', flexShrink: 0 }}>المورد:</span>
+                                    <select
+                                        value={selectedSupplier}
+                                        onChange={(e) => { setSelectedSupplier(e.target.value); loadProductsForBrowser(selectedCategory || undefined, e.target.value || undefined); }}
                                         style={{
-                                            padding: '6px 14px', borderRadius: '20px', border: '2px solid', cursor: 'pointer', fontSize: '13px', fontWeight: 600, transition: 'all 0.2s', whiteSpace: 'nowrap',
-                                            background: !selectedSupplier ? '#667eea' : 'white',
-                                            color: !selectedSupplier ? 'white' : '#4b5563',
-                                            borderColor: !selectedSupplier ? 'transparent' : '#e5e7eb',
+                                            padding: '6px 12px', borderRadius: '20px', border: '2px solid #e5e7eb', cursor: 'pointer',
+                                            fontSize: '13px', fontWeight: 600, background: selectedSupplier ? '#ede9fe' : 'white',
+                                            color: '#4b5563', outline: 'none', maxWidth: '220px', direction: 'rtl'
                                         }}
-                                    >الكل</button>
-                                    {suppliers.map(s => (
-                                        <button
-                                            key={s.id}
-                                            onClick={() => { setSelectedSupplier(s.id.toString()); loadProductsForBrowser(selectedCategory || undefined, s.id.toString()); }}
-                                            style={{
-                                                padding: '6px 14px', borderRadius: '20px', border: '2px solid', cursor: 'pointer', fontSize: '13px', fontWeight: 600, transition: 'all 0.2s', whiteSpace: 'nowrap',
-                                                background: selectedSupplier === s.id.toString() ? '#667eea' : 'white',
-                                                color: selectedSupplier === s.id.toString() ? 'white' : '#4b5563',
-                                                borderColor: selectedSupplier === s.id.toString() ? 'transparent' : '#e5e7eb',
-                                            }}
-                                        >{s.name}</button>
-                                    ))}
+                                    >
+                                        <option value=''>الكل</option>
+                                        {suppliers.map(s => (
+                                            <option key={s.id} value={s.id.toString()}>{s.name}</option>
+                                        ))}
+                                    </select>
                                 </div>
                             )}
 
@@ -2368,8 +2361,8 @@ ${partialBlock}${creditBlock}
                                 const uniqueColors = [...new Set(allBrowserProducts.map(p => p.color).filter(Boolean))] as string[];
                                 if (!uniqueColors.length) return null;
                                 return (
-                                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center', paddingTop: '4px' }}>
-                                        <span style={{ fontSize: '13px', color: '#6b7280', fontWeight: 600, whiteSpace: 'nowrap' }}>اللون:</span>
+                                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'nowrap', overflowX: 'auto', alignItems: 'center', paddingTop: '4px', paddingBottom: '4px', scrollbarWidth: 'thin' }}>
+                                        <span style={{ fontSize: '13px', color: '#6b7280', fontWeight: 600, whiteSpace: 'nowrap', flexShrink: 0 }}>اللون:</span>
                                         <button
                                             onClick={() => { setSelectedColor(''); setBrowserProducts(applyBrowserFilters(allBrowserProducts, browserSearchQuery, '', selectedSize)); }}
                                             style={{ padding: '4px 12px', borderRadius: '20px', border: '2px solid', cursor: 'pointer', fontSize: '12px', fontWeight: 600, whiteSpace: 'nowrap', background: !selectedColor ? '#667eea' : 'white', color: !selectedColor ? 'white' : '#4b5563', borderColor: !selectedColor ? 'transparent' : '#e5e7eb' }}
@@ -2397,8 +2390,8 @@ ${partialBlock}${creditBlock}
                                 const uniqueSizes = [...new Set(allBrowserProducts.map(p => p.size).filter(Boolean))] as string[];
                                 if (!uniqueSizes.length) return null;
                                 return (
-                                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center', paddingTop: '4px' }}>
-                                        <span style={{ fontSize: '13px', color: '#6b7280', fontWeight: 600, whiteSpace: 'nowrap' }}>المقاس:</span>
+                                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'nowrap', overflowX: 'auto', alignItems: 'center', paddingTop: '4px', paddingBottom: '4px', scrollbarWidth: 'thin' }}>
+                                        <span style={{ fontSize: '13px', color: '#6b7280', fontWeight: 600, whiteSpace: 'nowrap', flexShrink: 0 }}>المقاس:</span>
                                         <button
                                             onClick={() => { setSelectedSize(''); setBrowserProducts(applyBrowserFilters(allBrowserProducts, browserSearchQuery, selectedColor, '')); }}
                                             style={{ padding: '4px 12px', borderRadius: '20px', border: '2px solid', cursor: 'pointer', fontSize: '12px', fontWeight: 600, whiteSpace: 'nowrap', background: !selectedSize ? '#667eea' : 'white', color: !selectedSize ? 'white' : '#4b5563', borderColor: !selectedSize ? 'transparent' : '#e5e7eb' }}
@@ -2433,10 +2426,10 @@ ${partialBlock}${creditBlock}
                         ) : (
                             <div style={{
                                 flex: 1,
-                                padding: '30px',
+                                padding: '16px',
                                 display: 'grid',
-                                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                                gap: '20px',
+                                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                                gap: '12px',
                                 alignContent: 'start',
                                 overflowY: 'auto'
                             }}>
@@ -2451,8 +2444,8 @@ ${partialBlock}${creditBlock}
                                             key={product.id}
                                             style={{
                                                 background: 'white',
-                                                padding: '20px',
-                                                borderRadius: '16px',
+                                                padding: '12px',
+                                                borderRadius: '12px',
                                                 border: '2px solid #e5e7eb',
                                                 cursor: product.stock === 0 ? 'not-allowed' : 'pointer',
                                                 transition: 'all 0.2s',
@@ -2460,7 +2453,6 @@ ${partialBlock}${creditBlock}
                                                 display: 'flex',
                                                 flexDirection: 'column',
                                                 position: 'relative',
-                                                height: '420px',
                                                 opacity: product.stock === 0 ? 0.6 : 1
                                             }}
                                             onMouseEnter={(e) => {
@@ -2477,19 +2469,19 @@ ${partialBlock}${creditBlock}
                                             {product.stock !== undefined && (
                                                 <div style={{
                                                     position: 'absolute',
-                                                    top: '12px',
-                                                    left: '12px',
-                                                    padding: '6px 12px',
+                                                    top: '8px',
+                                                    left: '8px',
+                                                    padding: '3px 8px',
                                                     background: product.stock <= 10
                                                         ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'
                                                         : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                                                     color: 'white',
                                                     borderRadius: '20px',
-                                                    fontSize: '11px',
+                                                    fontSize: '10px',
                                                     fontWeight: '700',
                                                     boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
                                                     zIndex: 1,
-                                                    minWidth: '50px',
+                                                    minWidth: '40px',
                                                     textAlign: 'center'
                                                 }}>
                                                     {product.stock === 0 ? '❌ نفذ' : `📦 ${product.stock}`}
@@ -2497,52 +2489,51 @@ ${partialBlock}${creditBlock}
                                             )}
 
                                             <div style={{
-                                                fontSize: '16px',
+                                                fontSize: '13px',
                                                 fontWeight: '700',
                                                 color: '#1e293b',
-                                                marginBottom: '12px',
-                                                height: '48px',
+                                                marginBottom: '6px',
+                                                marginTop: '20px',
                                                 overflow: 'hidden',
                                                 textAlign: 'center',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                lineHeight: '1.4',
+                                                display: '-webkit-box',
+                                                WebkitLineClamp: 2,
+                                                WebkitBoxOrient: 'vertical',
+                                                lineHeight: '1.3',
                                                 direction: 'rtl'
                                             }}>
                                                 {product.nameAr || product.nameEn}
                                             </div>
 
                                             <div style={{
-                                                fontSize: '12px',
+                                                fontSize: '11px',
                                                 color: '#64748b',
-                                                marginBottom: '16px',
+                                                marginBottom: '6px',
                                                 textAlign: 'center',
-                                                height: '36px',
                                                 display: 'flex',
                                                 flexDirection: 'column',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
-                                                gap: '4px'
+                                                gap: '2px'
                                             }}>
                                                 <div style={{ fontWeight: '600' }}>{product.barcode}</div>
                                                 {product.code && <div style={{ fontSize: '11px', color: '#94a3b8' }}>#{product.code}</div>}
                                             </div>
 
                                             {(product.size || product.color) && (
-                                                <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+                                                <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', marginBottom: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
                                                     {product.size && <SizeBadge size={product.size} large />}
                                                     {product.color && <ColorSwatch color={product.color} large />}
                                                 </div>
                                             )}
 
                                             {product.supplier && (
-                                                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
+                                                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '4px' }}>
                                                     <span style={{
-                                                        display: 'inline-block', padding: '2px 10px',
+                                                        display: 'inline-block', padding: '1px 8px',
                                                         background: '#eff6ff', color: '#1d4ed8',
-                                                        borderRadius: '9999px', fontSize: '11px', fontWeight: 600,
-                                                        border: '1px solid #bfdbfe',
+                                                        borderRadius: '9999px', fontSize: '10px', fontWeight: 600,
+                                                        border: '1px solid #bfdbfe', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
                                                     }}>
                                                         {product.supplier.name}
                                                     </span>
@@ -2550,14 +2541,13 @@ ${partialBlock}${creditBlock}
                                             )}
 
                                             <div style={{
-                                                fontSize: '22px',
+                                                fontSize: '17px',
                                                 fontWeight: '800',
                                                 background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                                                 WebkitBackgroundClip: 'text',
                                                 WebkitTextFillColor: 'transparent',
                                                 textAlign: 'center',
-                                                marginBottom: '12px',
-                                                height: '28px',
+                                                marginBottom: '8px',
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
@@ -2584,8 +2574,6 @@ ${partialBlock}${creditBlock}
                                                 </div>
                                             )}
 
-                                            <div style={{ flex: 1 }}></div>
-
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
@@ -2599,20 +2587,20 @@ ${partialBlock}${creditBlock}
                                                 disabled={product.stock === 0}
                                                 style={{
                                                     width: '100%',
-                                                    padding: '12px',
+                                                    padding: '8px',
                                                     background: product.stock === 0 ? '#9ca3af' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                                                     color: 'white',
                                                     border: 'none',
-                                                    borderRadius: '10px',
+                                                    borderRadius: '8px',
                                                     cursor: product.stock === 0 ? 'not-allowed' : 'pointer',
-                                                    fontSize: '14px',
+                                                    fontSize: '12px',
                                                     fontWeight: '700',
                                                     transition: 'all 0.2s',
                                                     boxShadow: product.stock === 0 ? 'none' : '0 4px 12px rgba(102, 126, 234, 0.3)',
                                                     display: 'flex',
                                                     alignItems: 'center',
                                                     justifyContent: 'center',
-                                                    gap: '6px',
+                                                    gap: '4px',
                                                     opacity: product.stock === 0 ? 0.6 : 1
                                                 }}
                                                 onMouseEnter={(e) => {

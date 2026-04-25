@@ -163,54 +163,70 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
 
         const encodedLine = `${seededDigits(2)} ${toInt(price)} ${seededDigits(1)} ${toInt(wholesale)} ${seededDigits(2)}`;
 
+        const productColor = formData.color || '';
+
         const htmlContent = `<!DOCTYPE html>
 <html dir="rtl">
 <head>
   <meta charset="UTF-8">
   <title>تسمية منتج</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; color: #000 !important; font-weight: 900 !important; }
-    body { margin: 0; padding: 0; font-family: Arial, 'Segoe UI', Tahoma, sans-serif; font-weight: 700; }
-    .label {
-      width: 40mm; height: 28mm;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 0.5mm; padding: 1mm 1.5mm;
-      overflow: hidden;
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    /* ── SCREEN: nice preview ── */
+    @media screen {
+      body {
+        background: #777;
+        display: flex; align-items: center; justify-content: center;
+        min-height: 100vh; margin: 0;
+      }
+      .label {
+        width: 318px; height: 200px;
+        background: white; border-radius: 4px;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: space-evenly;
+        padding: 8px 10px;
+      }
+      .product-name { font-size: 13px; font-weight: 900; color: #000;
+        text-align: center; line-height: 1.2; width: 100%;
+        display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; }
+      .color-line   { font-size: 11px; font-weight: 700; color: #000; text-align: center; }
+      .barcode-wrap { width: 100%; display: flex; justify-content: center; }
+      .barcode-wrap svg { width: 294px !important; height: 68px !important; }
+      .encoded-line { font-size: 10px; font-weight: 700; color: #000; direction: ltr; text-align: center; }
     }
-    .product-name {
-      font-size: 7pt; font-weight: 900;
-      text-align: center; line-height: 1.1;
-      max-height: 7mm; overflow: hidden;
-      width: 100%;
-    }
-    .price {
-      font-size: 9pt; font-weight: 900;
-    }
-    .encoded-line {
-      font-size: 5.5pt; font-weight: 700; letter-spacing: 0.5pt;
-      direction: ltr; text-align: center;
-    }
-    .barcode-wrap {
-      width: 100%; display: flex; justify-content: center;
-    }
-    .barcode-wrap svg {
-      width: 34mm !important; height: 10mm !important;
-    }
+
+    /* ── PRINT: exact physical units ── */
     @media print {
-      @page { size: 40mm 28mm; margin: 0; }
-      body { margin: 0; padding: 0; }
+      @page { size: 39.7mm 25mm; margin: 0; }
+      html, body { width: 39.7mm; height: 25mm; overflow: hidden; font-family: Arial, Tahoma, sans-serif; }
+      .label {
+        width: 39.7mm; height: 25mm;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: space-evenly;
+        padding: 1mm 1.5mm; overflow: hidden;
+      }
+      .product-name { font-size: 6.5pt; font-weight: 900; color: #000;
+        text-align: center; line-height: 1.2; width: 100%;
+        display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; }
+      .color-line   { font-size: 6pt; font-weight: 700; color: #000; text-align: center; }
+      .barcode-wrap { width: 100%; display: flex; justify-content: center; }
+      .barcode-wrap svg { width: 37mm !important; height: 10mm !important; }
+      .encoded-line { font-size: 5.5pt; font-weight: 700; color: #000; direction: ltr; text-align: center; }
     }
   </style>
 </head>
 <body>
   <div class="label">
     <div class="product-name">${productName}</div>
+    ${productColor ? `<div class="color-line">اللون: ${productColor}</div>` : ''}
     <div class="barcode-wrap">${svgData}</div>
     <div class="encoded-line">${encodedLine}</div>
   </div>
+  <script>window.onload = function() { window.print(); };</script>
 </body>
 </html>`;
+        // Open window sized to match label at 96dpi (1mm ≈ 3.78px)
         const printWindow = window.open('', 'printLabel', 'width=400,height=300');
         if (!printWindow) {
             alert('تم حظر النافذة المنبثقة — يرجى السماح بالنوافذ المنبثقة لهذا الموقع');
@@ -219,10 +235,6 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
         printWindow.document.open();
         printWindow.document.write(htmlContent);
         printWindow.document.close();
-        setTimeout(() => {
-            printWindow.focus();
-            printWindow.print();
-        }, 500);
     };
 
     // Load categories on mount
